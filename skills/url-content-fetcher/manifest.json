@@ -1,0 +1,15 @@
+{
+  "name": "url-content-fetcher",
+  "version": "0.1.0",
+  "category": "Extraction · Platform URL → structured Markdown",
+  "description": "Fetch platform-specific social and article URLs from X/Twitter, Weibo, Zhihu, Xiaohongshu, Bilibili, and WeChat Articles, then reconstruct faithful structured Markdown with metadata, headings, lists, media links, and validation.",
+  "homepage": "https://github.com/chaos-design/skills/tree/main/skills/url-content-fetcher",
+  "compat": [
+    "claude-code",
+    "claude-ai",
+    "cursor",
+    "codex-cli",
+    "gemini-cli",
+    "opencode"
+  ]
+}

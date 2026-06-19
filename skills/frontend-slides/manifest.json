@@ -1,0 +1,15 @@
+{
+  "name": "frontend-slides",
+  "version": "0.1.0",
+  "category": "Presentation · Source content → deck-stage HTML",
+  "description": "Generate deck-stage HTML presentation pages from articles, notes, documents, images, or PPT-style content, using curated visual templates, the shared deck-stage runtime, direct section slides, and browser verification.",
+  "homepage": "https://github.com/chaos-design/skills/tree/main/skills/frontend-slides",
+  "compat": [
+    "claude-code",
+    "claude-ai",
+    "cursor",
+    "codex-cli",
+    "gemini-cli",
+    "opencode"
+  ]
+}

@@ -1,0 +1,349 @@
+{
+  "schema_version": 1,
+  "name": "templates",
+  "pack_name": "Bilingual Reader Optional Visual Templates",
+  "description": "Optional Bilingual Reader visual templates. Load this compact index first, shortlist from metadata, then inspect only the selected template file.",
+  "template_count": 14,
+  "usage": {
+    "selection": "Read this index first to choose a visual direction from metadata without loading every template.",
+    "final_generation": "After selecting a template, use it as visual guidance and generate a static, human-editable index.html with content written directly into the DOM.",
+    "never": "Do not bulk-read assets/templates/*/template.html. Do not modify template source for single-article content."
+  },
+  "template_policy": {
+    "rendering_model": "single offline HTML document",
+    "content_model": "article content belongs directly in the final HTML DOM; optional data.json must not be required for rendering",
+    "static_interactions": [
+      "theme switching",
+      "view switching",
+      "tooltip placement",
+      "pronunciation",
+      "quiz feedback",
+      "reading progress"
+    ],
+    "mobile_behavior": "responsive layout may reflow reading panes while preserving bilingual readability"
+  },
+  "templates": [
+    {
+      "name": "aurora-dashboard",
+      "path": "assets/templates/aurora-dashboard/template.html",
+      "tagline": "Glassmorphism dashboard with luminous aurora gradients and information panels.",
+      "mood": [
+        "luminous",
+        "analytical",
+        "modern",
+        "premium"
+      ],
+      "tone": [
+        "dashboard",
+        "polished",
+        "data-driven",
+        "high-tech"
+      ],
+      "formality": "medium-high",
+      "density": "medium-high",
+      "scheme": "dark",
+      "layout": "wide dashboard with hero metrics and neon glass cards",
+      "best_for": "Technology explainers, AI product reading notes, market analysis, research digests, and articles that benefit from a sharp analytical dashboard frame.",
+      "avoid_for": "Quiet literary essays, classical content, or dense legal text where glassy visual energy would distract from the reading."
+    },
+    {
+      "name": "blueprint-grid",
+      "path": "assets/templates/blueprint-grid/template.html",
+      "tagline": "Engineering blueprint on a dark cyan grid with specification-table reading rows.",
+      "mood": [
+        "technical",
+        "structured",
+        "precise",
+        "systematic"
+      ],
+      "tone": [
+        "blueprint",
+        "engineering",
+        "specification",
+        "methodical"
+      ],
+      "formality": "high",
+      "density": "medium-high",
+      "scheme": "dark",
+      "layout": "technical drawing header, grid background, numbered bilingual specification rows",
+      "best_for": "Architecture, engineering, systems design, product specs, API concepts, and procedural articles that should feel measured and exact.",
+      "avoid_for": "Personal essays, warm lifestyle content, or playful education where the strict blueprint metaphor would feel cold."
+    },
+    {
+      "name": "broadsheet",
+      "path": "assets/templates/broadsheet/template.html",
+      "tagline": "Vintage newspaper broadsheet with masthead rules, columns, and editorial hierarchy.",
+      "mood": [
+        "editorial",
+        "historical",
+        "dense",
+        "authoritative"
+      ],
+      "tone": [
+        "newspaper",
+        "classic",
+        "serif",
+        "reportage"
+      ],
+      "formality": "high",
+      "density": "high",
+      "scheme": "light",
+      "layout": "masthead hero, newspaper columns, thin vertical dividers, fixed anchor navigation",
+      "best_for": "News analysis, policy commentary, historical writing, public-interest essays, and article translations that should read like a serious front page.",
+      "avoid_for": "Highly interactive study sessions or modern SaaS/product content that needs a lighter interface language."
+    },
+    {
+      "name": "card-atlas",
+      "path": "assets/templates/card-atlas/template.html",
+      "tagline": "Anchored article atlas with a sticky source card and numbered bilingual reading cards.",
+      "mood": [
+        "exploratory",
+        "organized",
+        "spatial",
+        "curated"
+      ],
+      "tone": [
+        "atlas",
+        "card-based",
+        "guided",
+        "source-derived"
+      ],
+      "formality": "medium",
+      "density": "medium",
+      "scheme": "mixed",
+      "layout": "sticky hero/sidebar with indexed bilingual cards in the main reading lane",
+      "best_for": "Longform articles, source walkthroughs, concept maps, reading workshops, and content where section-to-section navigation matters.",
+      "avoid_for": "Very short texts or poster-like pages where the persistent atlas/sidebar would be unnecessary."
+    },
+    {
+      "name": "command-center",
+      "path": "assets/templates/command-center/template.html",
+      "tagline": "Kinetic command-center mosaic with a slim control dock and staggered reading stream.",
+      "mood": [
+        "kinetic",
+        "immersive",
+        "urgent",
+        "high-energy"
+      ],
+      "tone": [
+        "command-center",
+        "mosaic",
+        "operational",
+        "bold"
+      ],
+      "formality": "medium",
+      "density": "medium",
+      "scheme": "dark",
+      "layout": "vertical control dock, oversized hero, staggered bilingual cards, right-side anchors",
+      "best_for": "Strategic briefings, launch narratives, security or operations explainers, and articles that should feel active and decisive.",
+      "avoid_for": "Calm reflective prose, exam prep sheets, or contexts where movement and asymmetry would reduce concentration."
+    },
+    {
+      "name": "compact-study",
+      "path": "assets/templates/compact-study/template.html",
+      "tagline": "High-density study sheet optimized for efficient bilingual review and vocabulary scanning.",
+      "mood": [
+        "focused",
+        "efficient",
+        "compact",
+        "study-oriented"
+      ],
+      "tone": [
+        "study-sheet",
+        "utilitarian",
+        "dense",
+        "practical"
+      ],
+      "formality": "medium-high",
+      "density": "high",
+      "scheme": "dark",
+      "layout": "narrow margins, numbered bilingual rows, compact cards, horizontal principle strips",
+      "best_for": "Exam review, intensive reading, vocabulary-heavy material, technical summaries, and users who want maximum information per screen.",
+      "avoid_for": "Presentation-like pages, literary atmosphere, or content where breathing room and emotion are more important than density."
+    },
+    {
+      "name": "editorial-split",
+      "path": "assets/templates/editorial-split/template.html",
+      "tagline": "Magazine-style split layout with oversized typography and wide bilingual columns.",
+      "mood": [
+        "editorial",
+        "typographic",
+        "confident",
+        "minimal"
+      ],
+      "tone": [
+        "magazine",
+        "serif-led",
+        "spacious",
+        "literary-modern"
+      ],
+      "formality": "medium-high",
+      "density": "medium",
+      "scheme": "light",
+      "layout": "large editorial hero with broad paired reading columns",
+      "best_for": "Essays, interviews, cultural commentary, design writing, and pieces where typography should carry the visual identity.",
+      "avoid_for": "Highly granular technical references or flashcard-like study material that needs many compact UI elements."
+    },
+    {
+      "name": "gradient-magazine",
+      "path": "assets/templates/gradient-magazine/template.html",
+      "tagline": "Colorful magazine treatment with vivid gradients, asymmetric hero composition, and energetic cards.",
+      "mood": [
+        "vivid",
+        "expressive",
+        "optimistic",
+        "creative"
+      ],
+      "tone": [
+        "colorful",
+        "magazine",
+        "bold",
+        "contemporary"
+      ],
+      "formality": "medium",
+      "density": "medium",
+      "scheme": "mixed",
+      "layout": "asymmetric hero, gradient surfaces, vivid section and summary cards",
+      "best_for": "Creative industry articles, lifestyle explainers, product storytelling, trend reports, and accessible educational content.",
+      "avoid_for": "Regulated disclosures, quiet academic reading, or content that requires visual restraint."
+    },
+    {
+      "name": "ink-scroll",
+      "path": "assets/templates/ink-scroll/template.html",
+      "tagline": "Dark Chinese ink-wash scroll with seal accents, rice-paper panels, and literary pacing.",
+      "mood": [
+        "literary",
+        "cultural",
+        "atmospheric",
+        "contemplative"
+      ],
+      "tone": [
+        "Chinese ink-wash",
+        "scroll",
+        "serif",
+        "poetic"
+      ],
+      "formality": "high",
+      "density": "medium",
+      "scheme": "dark",
+      "layout": "scroll-like header, seal hero, bilingual paper panels, cinnabar annotation cards",
+      "best_for": "Chinese cultural content, literary essays, history, philosophy, poetry-adjacent readings, and bilingual pages needing a refined traditional atmosphere.",
+      "avoid_for": "SaaS dashboards, operational briefings, or casual youth-oriented content where the heritage visual language would feel too solemn."
+    },
+    {
+      "name": "kanban-flow",
+      "path": "assets/templates/kanban-flow/template.html",
+      "tagline": "Modern SaaS kanban board with workflow columns and pill badges.",
+      "mood": [
+        "organized",
+        "collaborative",
+        "clean",
+        "workflow-driven"
+      ],
+      "tone": [
+        "SaaS",
+        "kanban",
+        "project-management",
+        "approachable"
+      ],
+      "formality": "medium",
+      "density": "medium-high",
+      "scheme": "light",
+      "layout": "project board header, stat-free hero, kanban section columns, task-card bilingual rows",
+      "best_for": "Product management, startup articles, workflow explainers, learning plans, execution checklists, and content that maps naturally to tasks or stages.",
+      "avoid_for": "Classical literary reading or highly emotional narratives where task-board framing would flatten the tone."
+    },
+    {
+      "name": "midnight-lab",
+      "path": "assets/templates/midnight-lab/template.html",
+      "tagline": "Terminal-style midnight lab notebook with evidence blocks and assertion-like quizzes.",
+      "mood": [
+        "forensic",
+        "experimental",
+        "focused",
+        "technical"
+      ],
+      "tone": [
+        "terminal",
+        "lab-notes",
+        "evidence",
+        "developer"
+      ],
+      "formality": "medium-high",
+      "density": "medium-high",
+      "scheme": "dark",
+      "layout": "terminal top bar, experiment cover, stacked source/translation evidence blocks, conclusion lists",
+      "best_for": "Developer education, debugging stories, technical research, security analysis, and articles that benefit from a lab-record metaphor.",
+      "avoid_for": "Warm consumer-facing content or traditional print-style essays where terminal aesthetics would be too narrow."
+    },
+    {
+      "name": "mono-focus",
+      "path": "assets/templates/mono-focus/template.html",
+      "tagline": "Monospace dossier workspace with command-line panels and scanline navigation.",
+      "mood": [
+        "focused",
+        "minimal",
+        "dossier-like",
+        "technical"
+      ],
+      "tone": [
+        "monospace",
+        "terminal",
+        "evidence-led",
+        "restrained"
+      ],
+      "formality": "medium-high",
+      "density": "medium",
+      "scheme": "dark",
+      "layout": "command-line panels, compact reading workspace, scanline-style navigation",
+      "best_for": "Code-adjacent articles, research notes, investigative summaries, concise briefs, and readers who prefer a low-distraction technical interface.",
+      "avoid_for": "Design-forward editorials, cultural-literary pieces, or highly visual narratives needing expressive typography."
+    },
+    {
+      "name": "paper-notes",
+      "path": "assets/templates/paper-notes/template.html",
+      "tagline": "Soft paper-note timeline that turns bilingual reading into a route of learning stops.",
+      "mood": [
+        "soft",
+        "friendly",
+        "guided",
+        "lightweight"
+      ],
+      "tone": [
+        "paper-notes",
+        "timeline",
+        "study-route",
+        "approachable"
+      ],
+      "formality": "medium-low",
+      "density": "medium",
+      "scheme": "light",
+      "layout": "capsule header, station-style hero, vertical timeline stops, checkpoint quiz cards",
+      "best_for": "Beginner-friendly reading, classroom handouts, guided learning journeys, reflective articles, and content that should feel clear without being severe.",
+      "avoid_for": "Hard technical specs, urgent briefings, or dark cinematic content that needs stronger contrast and authority."
+    },
+    {
+      "name": "synthwave-arcade",
+      "path": "assets/templates/synthwave-arcade/template.html",
+      "tagline": "Retro synthwave arcade interface with neon scanlines, grid horizon, and level panels.",
+      "mood": [
+        "retro",
+        "energetic",
+        "playful",
+        "cyberpunk"
+      ],
+      "tone": [
+        "neon",
+        "arcade",
+        "synthwave",
+        "high-energy"
+      ],
+      "formality": "low",
+      "density": "medium",
+      "scheme": "dark",
+      "layout": "neon top bar, scanline horizon background, arcade hero, level-based bilingual panels",
+      "best_for": "Gaming, internet culture, youth technology, creative coding, hackathon recaps, and articles that can benefit from nostalgic digital energy.",
+      "avoid_for": "Healthcare, finance, legal, or any context where neon playfulness would undermine trust."
+    }
+  ]
+}

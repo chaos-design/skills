@@ -1,0 +1,15 @@
+{
+  "name": "content-slides",
+  "version": "0.1.0",
+  "category": "Presentation · Source content → HTML slide deck",
+  "description": "Convert URLs, PDFs, DOCX files, Markdown files, plain text, screenshots, and pasted notes normalized through web-markdown into a single self-contained 16:9 HTML slide deck with source-faithful structure, distinctive visual style, fixed-stage layout, and delivery verification.",
+  "homepage": "https://github.com/chaos-design/skills/tree/main/skills/content-slides",
+  "compat": [
+    "claude-code",
+    "claude-ai",
+    "cursor",
+    "codex-cli",
+    "gemini-cli",
+    "opencode"
+  ]
+}

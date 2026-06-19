@@ -1,0 +1,30 @@
+<!-- bilingual-reader-template
+name: gradient-magazine
+style: colorful magazine, asymmetric hero, vivid section cards
+-->
+<style>
+  body{background:
+    linear-gradient(115deg,color-mix(in srgb,var(--accent) 18%,transparent),transparent 38%),
+    linear-gradient(245deg,color-mix(in srgb,var(--accent2) 20%,transparent),transparent 42%),
+    var(--bg)}
+  header{border:0;background:linear-gradient(90deg,var(--panel),color-mix(in srgb,var(--accent) 18%,var(--panel)))}
+  .wrap{max-width:1200px}
+  .hero{min-height:360px;display:flex;flex-direction:column;justify-content:flex-end;border:0;border-radius:34px;background:
+    linear-gradient(140deg,color-mix(in srgb,var(--accent) 70%,#000),color-mix(in srgb,var(--accent2) 62%,#000));overflow:hidden}
+  .hero h2{font-size:clamp(36px,6vw,72px);line-height:.98;color:#fff;max-width:760px}
+  .hero p,.hero .zh,.hero .meta{color:rgba(255,255,255,.86);max-width:760px}
+  .sec-title{font-size:28px;border:0}
+  .row{border:0;background:transparent;gap:16px}
+  .cell{border-radius:22px!important;border:1px solid var(--border);box-shadow:0 18px 50px rgba(0,0,0,.18)}
+  .cell.en{background:var(--panel);border-right:1px solid var(--border)}
+  .cell.zh{background:linear-gradient(135deg,var(--panel2),color-mix(in srgb,var(--accent) 12%,var(--panel2)))}
+  .sum-card,.card,.pri{border:0;background:linear-gradient(135deg,var(--panel),var(--panel2))}
+
+  .doc-title-link{display:block;flex:1;min-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text);font-weight:800;text-decoration:none;cursor:pointer}
+  .doc-title-link:hover{color:var(--accent)}
+  .reader-header .ctrls{margin-left:auto;justify-content:flex-end}
+  .theme-group{display:inline-flex;align-items:center}
+  .theme-btn{display:inline-flex;align-items:center;gap:6px}
+  .theme-btn .ico{width:15px;height:15px;flex-shrink:0}
+
+</style>

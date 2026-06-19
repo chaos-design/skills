@@ -1,0 +1,697 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Skills Test Outputs · AI Agents Guide</title>
+    <style>
+      :root {
+        --ink: #141414;
+        --muted: #667085;
+        --line: #d0d5dd;
+        --bg: #f6f7f9;
+        --card: #fff;
+        --accent: #0b5fff;
+        --purple: #7a3cff;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei',
+          sans-serif;
+        background: var(--bg);
+        color: var(--ink);
+        display: grid;
+        grid-template-columns: 300px minmax(0, 1fr);
+        height: 100vh;
+        overflow: hidden;
+      }
+      main {
+        min-width: 0;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        border-right: 1px solid var(--line);
+        background: var(--card);
+      }
+      header {
+        height: 160px;
+        padding: 12px;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.94));
+        backdrop-filter: blur(10px);
+        box-shadow: 0 10px 24px rgba(16, 24, 40, 0.06);
+      }
+      header p {
+        word-break: break-all;
+      }
+      h1 {
+        margin: 0 0 6px;
+        font-size: clamp(20px, 3.6vw, 24px);
+        line-height: 1.08;
+      }
+      p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.7;
+      }
+      .content {
+        flex: 1;
+        overflow: auto;
+      }
+      .content .section {
+        margin-bottom: 12px;
+      }
+      .section {
+        position: relative;
+      }
+      .section h2 {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0;
+        padding: 7px 10px;
+        background: rgba(244, 243, 225, 0.95);
+        backdrop-filter: blur(8px);
+        font-size: 17px;
+      }
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 28px;
+        height: 20px;
+        padding: 0 7px;
+        border-radius: 999px;
+        background: var(--accent);
+        color: #fff;
+        font-size: 11px;
+      }
+      .badge.purple {
+        background: var(--purple);
+      }
+      .grid {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        padding: 12px;
+      }
+      a.card {
+        display: block;
+        min-height: 0;
+        padding: 8px 9px;
+        border: 1px solid transparent;
+        border-radius: 9px;
+        background: transparent;
+        color: inherit;
+        text-decoration: none;
+        transition:
+          border-color 0.18s,
+          box-shadow 0.18s,
+          background 0.18s;
+      }
+      a.card:hover {
+        border-color: var(--line);
+        background: #f8fafc;
+      }
+      .doc-grid a.card:hover {
+        border-color: var(--purple);
+      }
+      a.card.active {
+        border-color: color-mix(in srgb, var(--accent) 34%, var(--line));
+        background: #eaf1ff;
+        box-shadow: inset 2px 0 0 var(--accent);
+      }
+      .doc-grid a.card.active {
+        border-color: color-mix(in srgb, var(--purple) 34%, var(--line));
+        background: #f1ebff;
+        box-shadow: inset 2px 0 0 var(--purple);
+      }
+      .name {
+        margin-bottom: 3px;
+        font-weight: 750;
+        font-size: 13px;
+      }
+      .desc {
+        color: var(--muted);
+        font-size: 11px;
+        line-height: 1.35;
+      }
+      .wide {
+        max-width: 520px;
+      }
+      code {
+        color: #344054;
+        background: #eaecf0;
+        border-radius: 6px;
+        padding: 2px 6px;
+      }
+      .preview {
+        display: grid;
+        grid-template-rows: auto minmax(0, 1fr);
+        min-width: 0;
+        min-height: 0;
+      }
+      .preview-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.86);
+        backdrop-filter: blur(10px);
+      }
+      .current {
+        min-width: 0;
+        font-weight: 800;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .open-link {
+        flex: 0 0 auto;
+        color: var(--accent);
+        font-size: 13px;
+        font-weight: 700;
+        text-decoration: none;
+      }
+      iframe {
+        width: 100%;
+        height: 100%;
+        border: 0;
+        background: #fff;
+        outline: none;
+      }
+      @media (max-width: 900px) {
+        body {
+          grid-template-columns: 1fr;
+          grid-template-rows: auto minmax(0, 1fr);
+        }
+        main {
+          height: auto;
+          max-height: 42vh;
+          border-right: 0;
+          border-bottom: 1px solid var(--line);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>AI Agents Guide · Skills Test Outputs</h1>
+        <p>
+          来源：
+          <a
+            href="https://openai.com/business/guides-and-resources/a-practical-guide-to-building-ai-agents/"
+          >
+            https://openai.com/business/guides-and-resources/a-practical-guide-to-building-ai-agents/
+          </a>
+        </p>
+      </header>
+      <div class="content">
+        <section class="section">
+          <h2>
+            <span class="badge">14</span>
+            Bilingual Reader Templates
+          </h2>
+          <div class="grid">
+            <a class="card" href="bilingual-reader/aurora-dashboard/index.html">
+              <div class="name">aurora-dashboard</div>
+              <div class="desc">
+                Glassmorphism dashboard with luminous aurora gradients and metric-heavy panels.
+              </div>
+            </a>
+            <a class="card" href="bilingual-reader/blueprint-grid/index.html">
+              <div class="name">blueprint-grid</div>
+              <div class="desc">
+                Engineering blueprint on a dark cyan grid with specification-table reading rows.
+              </div>
+            </a>
+            <a class="card" href="bilingual-reader/broadsheet/index.html">
+              <div class="name">broadsheet</div>
+              <div class="desc">
+                Vintage newspaper broadsheet with masthead rules, columns, and editorial hierarchy.
+              </div>
+            </a>
+            <a class="card" href="bilingual-reader/card-atlas/index.html">
+              <div class="name">card-atlas</div>
+              <div class="desc">
+                Anchored article atlas with a sticky source card and numbered bilingual reading
+                cards.
+              </div>
+            </a>
+            <a class="card" href="bilingual-reader/command-center/index.html">
+              <div class="name">command-center</div>
+              <div class="desc">
+                Kinetic command-center mosaic with a slim control dock and staggered reading stream.
+              </div>
+            </a>
+            <a class="card" href="bilingual-reader/compact-study/index.html">
+              <div class="name">compact-study</div>
+              <div class="desc">
+                High-density study sheet optimized for efficient bilingual review and vocabulary
+                scanning.
+              </div>
+            </a>
+            <a class="card" href="bilingual-reader/editorial-split/index.html">
+              <div class="name">editorial-split</div>
+              <div class="desc">
+                Magazine-style split layout with oversized typography and wide bilingual columns.
+              </div>
+            </a>
+            <a class="card" href="bilingual-reader/gradient-magazine/index.html">
+              <div class="name">gradient-magazine</div>
+              <div class="desc">
+                Colorful magazine treatment with vivid gradients, asymmetric hero composition, and
+                energetic cards.
+              </div>
+            </a>
+            <a class="card" href="bilingual-reader/ink-scroll/index.html">
+              <div class="name">ink-scroll</div>
+              <div class="desc">
+                Dark Chinese ink-wash scroll with seal accents, rice-paper panels, and literary
+                pacing.
+              </div>
+            </a>
+            <a class="card" href="bilingual-reader/kanban-flow/index.html">
+              <div class="name">kanban-flow</div>
+              <div class="desc">
+                Modern SaaS kanban board with project stats, workflow columns, and pill badges.
+              </div>
+            </a>
+            <a class="card" href="bilingual-reader/midnight-lab/index.html">
+              <div class="name">midnight-lab</div>
+              <div class="desc">
+                Terminal-style midnight lab notebook with evidence blocks and assertion-like
+                quizzes.
+              </div>
+            </a>
+            <a class="card" href="bilingual-reader/mono-focus/index.html">
+              <div class="name">mono-focus</div>
+              <div class="desc">
+                Monospace dossier workspace with command-line panels and scanline navigation.
+              </div>
+            </a>
+            <a class="card" href="bilingual-reader/paper-notes/index.html">
+              <div class="name">paper-notes</div>
+              <div class="desc">
+                Soft paper-note timeline that turns bilingual reading into a route of learning
+                stops.
+              </div>
+            </a>
+            <a class="card" href="bilingual-reader/synthwave-arcade/index.html">
+              <div class="name">synthwave-arcade</div>
+              <div class="desc">
+                Retro synthwave arcade interface with neon scanlines, grid horizon, and level
+                panels.
+              </div>
+            </a>
+          </div>
+        </section>
+        <section class="section">
+          <h2>
+            <span class="badge purple">34</span>
+            Frontend Slides Templates
+          </h2>
+          <div class="grid doc-grid">
+            <a class="card" href="frontend-slides/8-bit-orbit/index.html">
+              <div class="name">8-bit-orbit</div>
+              <div class="desc">
+                <strong>8-Bit Orbit</strong>
+                <br />
+                Pixel-art neon arcade aesthetic on a deep navy void.
+              </div>
+            </a>
+            <a class="card" href="frontend-slides/biennale-yellow/index.html">
+              <div class="name">biennale-yellow</div>
+              <div class="desc">
+                <strong>Biennale Yellow</strong>
+                <br />
+                Solar yellow on warm parchment with deep indigo serif and atmospheric sun-glow
+                gradients.
+              </div>
+            </a>
+            <a class="card" href="frontend-slides/block-frame/index.html">
+              <div class="name">block-frame</div>
+              <div class="desc">
+                <strong>BlockFrame</strong>
+                <br />
+                Neobrutalist deck with pastel-neon color blocks and chunky black borders.
+              </div>
+            </a>
+            <a class="card" href="frontend-slides/blue-professional/index.html">
+              <div class="name">blue-professional</div>
+              <div class="desc">
+                <strong>Blue Professional</strong>
+                <br />
+                Cream paper background with electric cobalt blue accents; clean modern professional.
+              </div>
+            </a>
+            <a class="card" href="frontend-slides/bold-poster/index.html">
+              <div class="name">bold-poster</div>
+              <div class="desc">
+                <strong>Bold Poster</strong>
+                <br />
+                Editorial poster aesthetic with massive Shrikhand display and a single fire-engine
+                red accent.
+              </div>
+            </a>
+            <a class="card" href="frontend-slides/broadside/index.html">
+              <div class="name">broadside</div>
+              <div class="desc">
+                <strong>Broadside</strong>
+                <br />
+                Dark editorial canvas with a single fire orange accent and bilingual Latin/Chinese
+                type stack.
+              </div>
+            </a>
+            <a class="card" href="frontend-slides/capsule/index.html">
+              <div class="name">capsule</div>
+              <div class="desc">
+                <strong>Capsule</strong>
+                <br />
+                Modular pill-shaped cards on warm bone with a full pastel-pop palette.
+              </div>
+            </a>
+            <a class="card" href="frontend-slides/cartesian/index.html">
+              <div class="name">cartesian</div>
+              <div class="desc">
+                <strong>Cartesian</strong>
+                <br />
+                Quiet warm-neutral palette with classical Playfair serifs; tasteful and unhurried.
+              </div>
+            </a>
+            <a class="card" href="frontend-slides/cobalt-grid/index.html">
+              <div class="name">cobalt-grid</div>
+              <div class="desc">
+                <strong>Cobalt Grid</strong>
+                <br />
+                Electric cobalt serifs on a graph-paper canvas, anchored by stair-stepped
+                pixel-glitch decorati…
+              </div>
+            </a>
+            <a class="card" href="frontend-slides/coral/index.html">
+              <div class="name">coral</div>
+              <div class="desc">
+                <strong>Coral</strong>
+                <br />
+                Cream and coral on near-black, set in oversized Bebas Neue.
+              </div>
+            </a>
+            <a class="card" href="frontend-slides/creative-mode/index.html">
+              <div class="name">creative-mode</div>
+              <div class="desc">
+                <strong>Creative Mode</strong>
+                <br />
+                Cream paper canvas with confident multi-color (green, pink, orange, yellow) accents
+                and Archivo…
+              </div>
+            </a>
+            <a class="card" href="frontend-slides/daisy-days/index.html">
+              <div class="name">daisy-days</div>
+              <div class="desc">
+                <strong>Daisy Days</strong>
+                <br />
+                Cheerful pastel deck with hand-drawn daisies, stars, and rainbows. Friendly, soft,
+                and warm.
+              </div>
+            </a>
+            <a class="card" href="frontend-slides/editorial-forest/index.html">
+              <div class="name">editorial-forest</div>
+              <div class="desc">
+                <strong>Editorial Forest</strong>
+                <br />
+                Forest green, dusty pink, and warm cream meet Source Serif 4 in a quiet, intentional
+                quarterly-…
+              </div>
+            </a>
+            <a class="card" href="frontend-slides/editorial-tri-tone/index.html">
+              <div class="name">editorial-tri-tone</div>
+              <div class="desc">
+                <strong>Editorial Tri-Tone</strong>
+                <br />
+                Three-color editorial system: dusty pink, mustard cream, and deep burgundy, set in
+                Bricolage + …
+              </div>
+            </a>
+            <a class="card" href="frontend-slides/emerald-editorial/index.html">
+              <div class="name">emerald-editorial</div>
+              <div class="desc">
+                <strong>Emerald Editorial</strong>
+                <br />
+                A magazine-cover business deck: emerald + navy + paper, double-rule masthead
+                ornaments, and a b…
+              </div>
+            </a>
+            <a class="card" href="frontend-slides/grove/index.html">
+              <div class="name">grove</div>
+              <div class="desc">
+                <strong>Grove</strong>
+                <br />
+                Forest-green canvas with cream type, classical Playfair serifs, and a single rust
+                accent.
+              </div>
+            </a>
+            <a class="card" href="frontend-slides/long-table/index.html">
+              <div class="name">long-table</div>
+              <div class="desc">
+                <strong>Long Table</strong>
+                <br />
+                Warm cream and rust-red supper-club aesthetic with bold uppercase grotesk headlines,
+                Fraunces s…
+              </div>
+            </a>
+            <a class="card" href="frontend-slides/mat/index.html">
+              <div class="name">mat</div>
+              <div class="desc">
+                <strong>Mat</strong>
+                <br />
+                Dark sage canvas with bone paper and burnt-orange accent; mid-century modern with
+                wood underton…
+              </div>
+            </a>
+            <a class="card" href="frontend-slides/monochrome/index.html">
+              <div class="name">monochrome</div>
+              <div class="desc">
+                <strong>Monochrome</strong>
+                <br />
+                Ivory ledger paper with all-black type; Lora serif headlines, Jost body, no color at
+                all.
+              </div>
+            </a>
+            <a class="card" href="frontend-slides/neo-grid-bold/index.html">
+              <div class="name">neo-grid-bold</div>
+              <div class="desc">
+                <strong>Neo-Grid Bold</strong>
+                <br />
+                Editorial neo-brutalism with a single neon yellow accent on off-white paper.
+              </div>
+            </a>
+            <a class="card" href="frontend-slides/peoples-platform/index.html">
+              <div class="name">peoples-platform</div>
+              <div class="desc">
+                <strong>People's Platform (Block &amp; Bold)</strong>
+                <br />
+                Activist poster energy: blue, orange, red on cream, with Alfa Slab + Caveat Brush.
+              </div>
+            </a>
+            <a class="card" href="frontend-slides/pin-and-paper/index.html">
+              <div class="name">pin-and-paper</div>
+              <div class="desc">
+                <strong>Pin &amp; Paper</strong>
+                <br />
+                Yellow paper with safety-pin illustrations, ink-blue handwritten Caveat, paper-grain
+                texture.
+              </div>
+            </a>
+            <a class="card" href="frontend-slides/pink-script/index.html">
+              <div class="name">pink-script</div>
+              <div class="desc">
+                <strong>Pink Script — After Hours</strong>
+                <br />
+                Black canvas, hot pink accent, pearl-cream paper, Instrument Serif headlines:
+                late-night editor…
+              </div>
+            </a>
+            <a class="card" href="frontend-slides/playful/index.html">
+              <div class="name">playful</div>
+              <div class="desc">
+                <strong>Playful</strong>
+                <br />
+                Sun-warm peach background with Syne display: a friendly indie launch deck.
+              </div>
+            </a>
+            <a class="card" href="frontend-slides/raw-grid/index.html">
+              <div class="name">raw-grid</div>
+              <div class="desc">
+                <strong>Raw Grid</strong>
+                <br />
+                Neo-brutalist deck with thick borders, offset shadows, and a pink/sage/ink palette.
+              </div>
+            </a>
+            <a class="card" href="frontend-slides/retro-windows/index.html">
+              <div class="name">retro-windows</div>
+              <div class="desc">
+                <strong>Retro Windows</strong>
+                <br />
+                Windows 95 chrome: gray title bars, MS Sans Serif, pixel typography, full nostalgia.
+              </div>
+            </a>
+            <a class="card" href="frontend-slides/retro-zine/index.html">
+              <div class="name">retro-zine</div>
+              <div class="desc">
+                <strong>Retro Zine</strong>
+                <br />
+                Beige paper with green accent and Bebas Neue + Caveat: a riso-printed zine in HTML
+                form.
+              </div>
+            </a>
+            <a class="card" href="frontend-slides/sakura-chroma/index.html">
+              <div class="name">sakura-chroma</div>
+              <div class="desc">
+                <strong>Sakura Chroma</strong>
+                <br />
+                Vintage Japanese cassette-package aesthetic: cream paper, diagonal rainbow ribbons,
+                condensed b…
+              </div>
+            </a>
+            <a class="card" href="frontend-slides/scatterbrain/index.html">
+              <div class="name">scatterbrain</div>
+              <div class="desc">
+                <strong>Scatterbrain</strong>
+                <br />
+                Post-it inspired: pastel sticky notes, Caveat handwriting, Shrikhand and Zilla Slab
+                type stack.
+              </div>
+            </a>
+            <a class="card" href="frontend-slides/signal/index.html">
+              <div class="name">signal</div>
+              <div class="desc">
+                <strong>Signal</strong>
+                <br />
+                Deep navy canvas with bone paper and a single muted-gold accent; institutional with
+                quiet weigh…
+              </div>
+            </a>
+            <a class="card" href="frontend-slides/soft-editorial/index.html">
+              <div class="name">soft-editorial</div>
+              <div class="desc">
+                <strong>Soft Editorial</strong>
+                <br />
+                Cormorant Garamond serif on warm paper with sage, blush, and lemon accents.
+              </div>
+            </a>
+            <a class="card" href="frontend-slides/stencil-tablet/index.html">
+              <div class="name">stencil-tablet</div>
+              <div class="desc">
+                <strong>Stencil &amp; Tablet</strong>
+                <br />
+                Bone paper with stencil-cut headlines and a six-color earth palette: archaeology
+                meets brand.
+              </div>
+            </a>
+            <a class="card" href="frontend-slides/studio/index.html">
+              <div class="name">studio</div>
+              <div class="desc">
+                <strong>Studio</strong>
+                <br />
+                Black canvas with electric-yellow type; high-voltage design studio aesthetic.
+              </div>
+            </a>
+            <a class="card" href="frontend-slides/vellum/index.html">
+              <div class="name">vellum</div>
+              <div class="desc">
+                <strong>Vellum</strong>
+                <br />
+                Deep navy canvas with warm-yellow Cormorant serifs and a single dusty teal accent. A
+                quiet, sch…
+              </div>
+            </a>
+          </div>
+        </section>
+        <section class="section">
+          <h2>
+            <span class="badge">2</span>
+            Content To Slides
+          </h2>
+          <div class="grid">
+            <a class="card wide" href="content-slides/building-effective-agents.html">
+              <div class="name">Building Effective AI Agents</div>
+              <div class="desc">12 页 16:9 单文件 HTML 幻灯片，支持底部控制、键盘、滚轮和触摸导航。</div>
+            </a>
+            <a
+              class="card wide"
+              href="content-slides/a-practical-guide-to-building-ai-agents/a-practical-guide-to-building-ai-agents.html"
+            >
+              <div class="name">构建 AI Agents 实用指南</div>
+              <div class="desc">12 页 16:9 HTML 幻灯片，支持键盘、滚轮、触摸和右侧锚点导航。</div>
+            </a>
+          </div>
+        </section>
+      </div>
+    </main>
+    <section class="preview" aria-label="测试页面预览窗口">
+      <div class="preview-bar">
+        <div class="current" id="currentName">aurora-dashboard</div>
+        <a
+          class="open-link"
+          id="openStandalone"
+          href="bilingual-reader/aurora-dashboard/index.html"
+          target="_blank"
+          rel="noopener"
+        >
+          单独打开
+        </a>
+      </div>
+      <iframe
+        id="previewFrame"
+        title="Skills 测试输出预览"
+        src="bilingual-reader/aurora-dashboard/index.html"
+        tabindex="0"
+      ></iframe>
+    </section>
+    <script>
+      const cards = Array.from(document.querySelectorAll('.card'));
+      const frame = document.getElementById('previewFrame');
+      const currentName = document.getElementById('currentName');
+      const openStandalone = document.getElementById('openStandalone');
+      const fallback = 'bilingual-reader/aurora-dashboard/index.html';
+      function cardLabel(card) {
+        return card.querySelector('.name')?.textContent.trim() || card.getAttribute('href');
+      }
+      function normalizeHref(href) {
+        return cards.some(card => card.getAttribute('href') === href) ? href : fallback;
+      }
+      function selectPreview(href, push = true) {
+        const selected = normalizeHref(href);
+        const card = cards.find(item => item.getAttribute('href') === selected);
+        if (!card) return;
+        cards.forEach(item => item.classList.toggle('active', item === card));
+        if (frame.getAttribute('src') !== selected) frame.src = selected;
+        currentName.textContent = cardLabel(card);
+        openStandalone.href = selected;
+        if (push) history.replaceState(null, '', '#' + encodeURIComponent(selected));
+        frame.focus();
+      }
+      cards.forEach(card =>
+        card.addEventListener('click', event => {
+          event.preventDefault();
+          selectPreview(card.getAttribute('href'));
+        }),
+      );
+      window.addEventListener('hashchange', () => {
+        selectPreview(decodeURIComponent(location.hash.slice(1)), false);
+      });
+      frame.addEventListener('load', () => frame.focus());
+      selectPreview(decodeURIComponent(location.hash.slice(1)), false);
+    </script>
+  </body>
+</html>

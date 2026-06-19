@@ -1,0 +1,15 @@
+{
+  "name": "geo-flow-map",
+  "version": "0.1.0",
+  "category": "Visualization · Geographic intent → interactive SVG map",
+  "description": "Generate zero-dependency interactive SVG geographic maps from user intent, including real-outline world and China maps, markers, regions, flow routes, labels, legends, tooltips, scope inference, and final map validation.",
+  "homepage": "https://github.com/chaos-design/skills/tree/main/skills/geo-flow-map",
+  "compat": [
+    "claude-code",
+    "claude-ai",
+    "cursor",
+    "codex-cli",
+    "gemini-cli",
+    "opencode"
+  ]
+}

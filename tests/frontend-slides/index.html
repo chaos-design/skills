@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Frontend Slides Bold Template Pack 预览</title>
+<style>
+:root{--ink:#141414;--muted:#667085;--line:#d0d5dd;--bg:#f6f7f9;--card:#fff;--accent:#7a3cff;--accent-soft:#f1ebff}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--ink)}
+.shell{display:grid;grid-template-columns:330px minmax(0,1fr);height:100vh;min-height:640px}
+.sidebar{display:flex;flex-direction:column;min-width:0;border-right:1px solid var(--line);background:var(--card)}
+.head{padding:22px 18px 16px;border-bottom:1px solid var(--line)}
+h1{margin:0 0 8px;font-size:24px;letter-spacing:-.03em}
+p{margin:0;color:var(--muted);font-size:13px;line-height:1.65}
+code{color:#344054;background:#eaecf0;border-radius:6px;padding:2px 6px}
+.grid{display:flex;flex-direction:column;gap:8px;min-height:0;overflow:auto;padding:12px}
+.card{display:block;width:100%;padding:12px 13px;border:1px solid transparent;border-radius:12px;background:transparent;color:inherit;text-decoration:none;text-align:left;transition:.16s}
+.card:hover{border-color:var(--line);background:#f8fafc}
+.card.active{border-color:color-mix(in srgb,var(--accent) 34%,var(--line));background:var(--accent-soft);box-shadow:inset 3px 0 0 var(--accent)}
+.name{margin-bottom:5px;font-size:14px;font-weight:750;line-height:1.25}
+.desc{color:var(--muted);font-size:12px;line-height:1.45}
+.desc strong{color:var(--ink)}
+.viewer{display:grid;grid-template-rows:auto minmax(0,1fr);min-width:0;min-height:0}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.86);backdrop-filter:blur(10px)}
+.current{min-width:0;font-weight:800;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.open-link{flex:0 0 auto;color:var(--accent);font-size:13px;font-weight:700;text-decoration:none}
+iframe{width:100%;height:100%;border:0;background:#fff;outline:none}
+@media(max-width:860px){.shell{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr)}.sidebar{border-right:0;border-bottom:1px solid var(--line)}.grid{flex-direction:row;overflow:auto}.card{min-width:230px}}
+</style>
+</head>
+<body>
+<main class="shell">
+<aside class="sidebar">
+<div class="head">
+<h1>Frontend Slides Bold Template Pack 预览</h1>
+<p>共 <code>34</code> 个来自参考设计包的 deck-stage 测试模板。点击左侧菜单会在当前页面内切换预览。</p>
+</div>
+<div class="grid">
+<a class="card" href="8-bit-orbit/index.html"><div class="name">8-bit-orbit</div><div class="desc"><strong>8-Bit Orbit</strong><br>Pixel-art neon arcade aesthetic on a deep navy void.</div></a>
+<a class="card" href="biennale-yellow/index.html"><div class="name">biennale-yellow</div><div class="desc"><strong>Biennale Yellow</strong><br>Solar yellow on warm parchment with deep indigo serif and atmospheric sun-glow gradients.</div></a>
+<a class="card" href="block-frame/index.html"><div class="name">block-frame</div><div class="desc"><strong>BlockFrame</strong><br>Neobrutalist deck with pastel-neon color blocks and chunky black borders.</div></a>
+<a class="card" href="blue-professional/index.html"><div class="name">blue-professional</div><div class="desc"><strong>Blue Professional</strong><br>Cream paper background with electric cobalt blue accents; clean modern professional.</div></a>
+<a class="card" href="bold-poster/index.html"><div class="name">bold-poster</div><div class="desc"><strong>Bold Poster</strong><br>Editorial poster aesthetic with massive Shrikhand display and a single fire-engine red accent.</div></a>
+<a class="card" href="broadside/index.html"><div class="name">broadside</div><div class="desc"><strong>Broadside</strong><br>Dark editorial canvas with a single fire orange accent and bilingual Latin/Chinese type stack.</div></a>
+<a class="card" href="capsule/index.html"><div class="name">capsule</div><div class="desc"><strong>Capsule</strong><br>Modular pill-shaped cards on warm bone with a full pastel-pop palette.</div></a>
+<a class="card" href="cartesian/index.html"><div class="name">cartesian</div><div class="desc"><strong>Cartesian</strong><br>Quiet warm-neutral palette with classical Playfair serifs; tasteful and unhurried.</div></a>
+<a class="card" href="cobalt-grid/index.html"><div class="name">cobalt-grid</div><div class="desc"><strong>Cobalt Grid</strong><br>Electric cobalt serifs on a graph-paper canvas, anchored by stair-stepped pixel-glitch decorations and slim hairline ru…</div></a>
+<a class="card" href="coral/index.html"><div class="name">coral</div><div class="desc"><strong>Coral</strong><br>Cream and coral on near-black, set in oversized Bebas Neue.</div></a>
+<a class="card" href="creative-mode/index.html"><div class="name">creative-mode</div><div class="desc"><strong>Creative Mode</strong><br>Cream paper canvas with confident multi-color (green, pink, orange, yellow) accents and Archivo Black display.</div></a>
+<a class="card" href="daisy-days/index.html"><div class="name">daisy-days</div><div class="desc"><strong>Daisy Days</strong><br>Cheerful pastel deck with hand-drawn daisies, stars, and rainbows. Friendly, soft, and warm.</div></a>
+<a class="card" href="editorial-forest/index.html"><div class="name">editorial-forest</div><div class="desc"><strong>Editorial Forest</strong><br>Forest green, dusty pink, and warm cream meet Source Serif 4 in a quiet, intentional quarterly-review deck.</div></a>
+<a class="card" href="editorial-tri-tone/index.html"><div class="name">editorial-tri-tone</div><div class="desc"><strong>Editorial Tri-Tone</strong><br>Three-color editorial system: dusty pink, mustard cream, and deep burgundy, set in Bricolage + Instrument Serif.</div></a>
+<a class="card" href="emerald-editorial/index.html"><div class="name">emerald-editorial</div><div class="desc"><strong>Emerald Editorial</strong><br>A magazine-cover business deck: emerald + navy + paper, double-rule masthead ornaments, and a bold Bodoni-style display…</div></a>
+<a class="card" href="grove/index.html"><div class="name">grove</div><div class="desc"><strong>Grove</strong><br>Forest-green canvas with cream type, classical Playfair serifs, and a single rust accent.</div></a>
+<a class="card" href="long-table/index.html"><div class="name">long-table</div><div class="desc"><strong>Long Table</strong><br>Warm cream and rust-red supper-club aesthetic with bold uppercase grotesk headlines, Fraunces serifs, and pill-shaped o…</div></a>
+<a class="card" href="mat/index.html"><div class="name">mat</div><div class="desc"><strong>Mat</strong><br>Dark sage canvas with bone paper and burnt-orange accent; mid-century modern with wood undertones.</div></a>
+<a class="card" href="monochrome/index.html"><div class="name">monochrome</div><div class="desc"><strong>Monochrome</strong><br>Ivory ledger paper with all-black type; Lora serif headlines, Jost body, no color at all.</div></a>
+<a class="card" href="neo-grid-bold/index.html"><div class="name">neo-grid-bold</div><div class="desc"><strong>Neo-Grid Bold</strong><br>Editorial neo-brutalism with a single neon yellow accent on off-white paper.</div></a>
+<a class="card" href="peoples-platform/index.html"><div class="name">peoples-platform</div><div class="desc"><strong>People's Platform (Block &amp; Bold)</strong><br>Activist poster energy: blue, orange, red on cream, with Alfa Slab + Caveat Brush.</div></a>
+<a class="card" href="pin-and-paper/index.html"><div class="name">pin-and-paper</div><div class="desc"><strong>Pin &amp; Paper</strong><br>Yellow paper with safety-pin illustrations, ink-blue handwritten Caveat, paper-grain texture.</div></a>
+<a class="card" href="pink-script/index.html"><div class="name">pink-script</div><div class="desc"><strong>Pink Script — After Hours</strong><br>Black canvas, hot pink accent, pearl-cream paper, Instrument Serif headlines: late-night editorial luxury.</div></a>
+<a class="card" href="playful/index.html"><div class="name">playful</div><div class="desc"><strong>Playful</strong><br>Sun-warm peach background with Syne display: a friendly indie launch deck.</div></a>
+<a class="card" href="raw-grid/index.html"><div class="name">raw-grid</div><div class="desc"><strong>Raw Grid</strong><br>Neo-brutalist deck with thick borders, offset shadows, and a pink/sage/ink palette.</div></a>
+<a class="card" href="retro-windows/index.html"><div class="name">retro-windows</div><div class="desc"><strong>Retro Windows</strong><br>Windows 95 chrome: gray title bars, MS Sans Serif, pixel typography, full nostalgia.</div></a>
+<a class="card" href="retro-zine/index.html"><div class="name">retro-zine</div><div class="desc"><strong>Retro Zine</strong><br>Beige paper with green accent and Bebas Neue + Caveat: a riso-printed zine in HTML form.</div></a>
+<a class="card" href="sakura-chroma/index.html"><div class="name">sakura-chroma</div><div class="desc"><strong>Sakura Chroma</strong><br>Vintage Japanese cassette-package aesthetic: cream paper, diagonal rainbow ribbons, condensed bold type, JIS-style spec…</div></a>
+<a class="card" href="scatterbrain/index.html"><div class="name">scatterbrain</div><div class="desc"><strong>Scatterbrain</strong><br>Post-it inspired: pastel sticky notes, Caveat handwriting, Shrikhand and Zilla Slab type stack.</div></a>
+<a class="card" href="signal/index.html"><div class="name">signal</div><div class="desc"><strong>Signal</strong><br>Deep navy canvas with bone paper and a single muted-gold accent; institutional with quiet weight.</div></a>
+<a class="card" href="soft-editorial/index.html"><div class="name">soft-editorial</div><div class="desc"><strong>Soft Editorial</strong><br>Cormorant Garamond serif on warm paper with sage, blush, and lemon accents.</div></a>
+<a class="card" href="stencil-tablet/index.html"><div class="name">stencil-tablet</div><div class="desc"><strong>Stencil &amp; Tablet</strong><br>Bone paper with stencil-cut headlines and a six-color earth palette: archaeology meets brand.</div></a>
+<a class="card" href="studio/index.html"><div class="name">studio</div><div class="desc"><strong>Studio</strong><br>Black canvas with electric-yellow type; high-voltage design studio aesthetic.</div></a>
+<a class="card" href="vellum/index.html"><div class="name">vellum</div><div class="desc"><strong>Vellum</strong><br>Deep navy canvas with warm-yellow Cormorant serifs and a single dusty teal accent. A quiet, scholarly aesthetic.</div></a>
+</div>
+</aside>
+<section class="viewer" aria-label="模板预览窗口">
+<div class="bar">
+<div class="current" id="currentName">8-bit-orbit</div>
+<a class="open-link" id="openStandalone" href="8-bit-orbit/index.html" target="_blank" rel="noopener">单独打开</a>
+</div>
+<iframe id="previewFrame" title="Frontend Slides 模板页面" src="8-bit-orbit/index.html" tabindex="0"></iframe>
+</section>
+</main>
+<script>
+const cards = Array.from(document.querySelectorAll('.card'));
+const frame = document.getElementById('previewFrame');
+const currentName = document.getElementById('currentName');
+const openStandalone = document.getElementById('openStandalone');
+const fallback = '8-bit-orbit';
+function cardName(card) {
+  return card.querySelector('.name')?.textContent.trim() || '';
+}
+function normalizeName(name) {
+  return cards.some((card) => cardName(card) === name) ? name : fallback;
+}
+function selectTemplate(name, push = true) {
+  const selected = normalizeName(name);
+  const card = cards.find((item) => cardName(item) === selected);
+  if (!card) return;
+  const nextSrc = card.getAttribute('href');
+  cards.forEach((item) => item.classList.toggle('active', item === card));
+  if (frame.getAttribute('src') !== nextSrc) frame.src = nextSrc;
+  currentName.textContent = selected;
+  openStandalone.href = nextSrc;
+  if (push) history.replaceState(null, '', '#' + selected);
+  frame.focus();
+}
+cards.forEach((card) => card.addEventListener('click', (event) => {
+  event.preventDefault();
+  selectTemplate(cardName(card));
+}));
+window.addEventListener('hashchange', () => selectTemplate(location.hash.slice(1), false));
+frame.addEventListener('load', () => frame.focus());
+selectTemplate(location.hash.slice(1), false);
+</script>
+</body>
+</html>

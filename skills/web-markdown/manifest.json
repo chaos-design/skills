@@ -1,0 +1,15 @@
+{
+  "name": "web-markdown",
+  "version": "0.1.0",
+  "category": "Extraction · Web and documents → faithful Markdown",
+  "description": "Convert URLs, PDFs, DOCX files, Markdown files, plain text, screenshots, and pasted notes into faithful Markdown using Microsoft MarkItDown, with Camofox as a rendered URL fallback and validation for source order, media, links, and code.",
+  "homepage": "https://github.com/chaos-design/skills/tree/main/skills/web-markdown",
+  "compat": [
+    "claude-code",
+    "claude-ai",
+    "cursor",
+    "codex-cli",
+    "gemini-cli",
+    "opencode"
+  ]
+}

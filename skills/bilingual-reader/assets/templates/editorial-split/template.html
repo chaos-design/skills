@@ -1,0 +1,38 @@
+<!-- bilingual-reader-template
+name: editorial-split
+style: magazine editorial, large typography, wide bilingual columns
+-->
+<style>
+  :root{--radius:6px;--radius-lg:10px;--radius-sm:999px}
+  body{letter-spacing:.01em}
+  header{padding:20px max(24px,calc((100vw - 1320px)/2))}
+  header h1{font-family:Georgia,"Times New Roman","Songti SC",serif;font-size:22px}
+  .wrap{max-width:1320px;padding-top:18px}
+  .hero{border:none;border-bottom:1px solid var(--border);border-radius:0;background:transparent;padding:44px 0 34px}
+  .hero h2{font-family:Georgia,"Times New Roman","Songti SC",serif;font-size:clamp(40px,7vw,86px);line-height:.95;letter-spacing:-.055em;max-width:920px}
+  .hero p{font-size:18px;max-width:780px}
+  .sec-title{font-family:Georgia,"Times New Roman","Songti SC",serif;font-size:29px;border-bottom:1px solid var(--accent)}
+  .row{grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);border-radius:0;border-left:0;border-right:0;background:transparent}
+  .cell.en{font-size:18px;line-height:1.85;border-radius:0}
+  .cell.zh{font-size:16px;line-height:1.95;border-radius:0;background:color-mix(in srgb,var(--panel2) 55%,transparent)}
+  .sum-card,.card,.pri{border-radius:0}
+  .toc{border-radius:26px;right:24px}
+  /* 功能区：杂志编辑风文字标签栏，替代胶囊按钮形态 */
+  .ctrls{gap:24px}
+  .seg{background:transparent;border:none;border-bottom:1px solid var(--border);border-radius:0;padding:0;gap:20px}
+  .seg-btn{font-family:Georgia,"Times New Roman","Songti SC",serif;border-radius:0;padding:6px 2px;margin-bottom:-1px;border-bottom:2px solid transparent}
+  .seg-btn:hover{color:var(--text)}
+  .seg-btn.active{background:transparent;color:var(--text);box-shadow:none;border-bottom-color:var(--accent);font-weight:700}
+  .group-lab{font-family:Georgia,"Times New Roman","Songti SC",serif}
+  .btn{font-family:Georgia,"Times New Roman","Songti SC",serif;background:transparent;border:none;border-bottom:2px solid transparent;border-radius:0;padding:6px 2px;margin-bottom:-1px;color:var(--muted)}
+  .btn:hover{border-color:transparent;border-bottom-color:var(--border);color:var(--text)}
+  .btn.active{background:transparent;color:var(--text);border-bottom-color:var(--accent);font-weight:700}
+
+  .doc-title-link{display:block;flex:1;min-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text);font-weight:800;text-decoration:none;cursor:pointer}
+  .doc-title-link:hover{color:var(--accent)}
+  .reader-header .ctrls{margin-left:auto;justify-content:flex-end}
+  .theme-group{display:inline-flex;align-items:center}
+  .theme-btn{display:inline-flex;align-items:center;gap:6px}
+  .theme-btn .ico{width:15px;height:15px;flex-shrink:0}
+
+</style>

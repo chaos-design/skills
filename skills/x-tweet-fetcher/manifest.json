@@ -1,0 +1,15 @@
+{
+  "name": "x-tweet-fetcher",
+  "version": "2.1.0",
+  "category": "Extraction · X/Twitter and social content fetcher",
+  "description": "Fetch tweets, replies, user timelines, X Articles, growth monitoring data, and supported Chinese platform content without login or API keys for basic tweet extraction, with optional Camofox-backed workflows for richer sources.",
+  "homepage": "https://github.com/chaos-design/skills/tree/main/skills/x-tweet-fetcher",
+  "compat": [
+    "claude-code",
+    "claude-ai",
+    "cursor",
+    "codex-cli",
+    "gemini-cli",
+    "opencode"
+  ]
+}

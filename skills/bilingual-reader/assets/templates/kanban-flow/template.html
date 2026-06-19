@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>__PAGE_TITLE__</title>
+<!-- bilingual-reader-template
+name: kanban-flow
+style: 独立整页模板 · 看板流 / modern SaaS project kanban board
+structure: 项目看板顶栏 + 无统计数据的任务流 hero + 看板列章节 + 任务卡双列对照 + 彩色 pill 徽标 + 右侧锚点导航
+-->
+<style>
+  :root{
+    --bg:#eef1f6; --panel:#ffffff; --panel2:#f4f6fb; --border:#e2e6ef;
+    --text:#1e2530; --muted:#6b7585; --en:#2c3543; --zh:#3a4250;
+    --accent:#4f6ef7; --accent2:#8b5cf6; --green:#22c55e; --tip-bg:#ffffff;
+    --accent-ink:#fff; --accent2-ink:#fff; --accent-shadow:rgba(79,110,247,.28);
+    --hl:rgba(79,110,247,.12);
+    --radius:14px; --radius-lg:18px; --radius-sm:9px;
+    --hero-angle:135deg;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0; background:var(--bg); color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:16px; line-height:1.7; transition:background .3s,color .3s;
+    background-image:radial-gradient(color-mix(in srgb,var(--accent) 7%,transparent) 1px,transparent 1px);
+    background-size:26px 26px}
+  __RUNTIME_CSS__
+
+  /* —— 顶栏：项目看板工具条 —— */
+  header{position:sticky; top:0; z-index:900; backdrop-filter:blur(12px);
+    background:color-mix(in srgb,var(--panel) 82%,transparent);
+    border-bottom:1px solid var(--border); padding:12px 24px;
+    display:flex; align-items:center; gap:16px;
+    box-shadow:0 4px 18px rgba(30,37,48,.06)}
+  header h1{font-size:17px; margin:0; flex:1; min-width:140px; font-weight:800; letter-spacing:.3px;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:flex; align-items:center; gap:10px}
+  header h1::before{content:""; width:10px; height:10px; border-radius:3px; flex-shrink:0;
+    background:linear-gradient(135deg,var(--accent),var(--accent2)); box-shadow:0 2px 8px var(--accent-shadow)}
+  header h1 span{color:var(--accent)}
+  .ctrls{display:flex; gap:10px; align-items:center}
+  .seg{display:inline-flex; background:var(--panel2); border:1px solid var(--border);
+    border-radius:999px; padding:3px; gap:2px}
+  .seg-btn{display:inline-flex; align-items:center; gap:6px; background:transparent; color:var(--muted);
+    border:none; cursor:pointer; padding:7px 15px; font-size:13.5px; font-weight:600;
+    font-family:inherit; transition:.18s; white-space:nowrap; border-radius:999px}
+  .seg-btn .ico{width:15px; height:15px; flex-shrink:0}
+  .seg-btn:hover{color:var(--accent); background:var(--hl)}
+  .seg-btn.active{background:var(--accent); color:var(--accent-ink); box-shadow:0 3px 10px var(--accent-shadow)}
+  header .btn{
+    background:var(--panel2); color:var(--muted); border:1px solid var(--border);
+    box-shadow:none; padding:7px 15px; border-radius:999px; font-size:13.5px;
+    font-weight:600; transform:none;
+  }
+  header .btn:hover{
+    color:var(--accent); background:var(--hl); border-color:var(--border);
+    filter:none; transform:none; box-shadow:none;
+  }
+
+  .wrap{max-width:1040px; margin:0 auto; padding:30px 28px 90px}
+
+  /* —— Hero：项目看板头部 —— */
+  .hero{position:relative; border:1px solid var(--border); border-radius:var(--radius-lg);
+    background:linear-gradient(var(--hero-angle),color-mix(in srgb,var(--panel) 92%,var(--accent) 8%),var(--panel2));
+    padding:34px 38px; margin-bottom:34px; box-shadow:0 10px 30px rgba(30,37,48,.07); overflow:hidden}
+  .hero::before{content:"BOARD"; position:absolute; top:20px; right:24px; font-size:11px; font-weight:800;
+    letter-spacing:2px; color:var(--accent-ink); background:linear-gradient(135deg,var(--accent),var(--accent2));
+    padding:5px 12px; border-radius:999px; box-shadow:0 4px 14px var(--accent-shadow)}
+  .hero h2{margin:0 0 10px; font-size:30px; line-height:1.3; letter-spacing:.2px; font-weight:800; max-width:80%}
+  .hero .meta{display:inline-flex; align-items:center; gap:8px; color:var(--muted); font-size:13px; font-weight:600;
+    background:var(--panel); border:1px solid var(--border); padding:5px 12px; border-radius:999px}
+  .hero .meta::before{content:""; width:7px; height:7px; border-radius:50%; background:var(--green)}
+  .hero .en{color:var(--en); margin:16px 0 0; font-size:16px; line-height:1.7}
+  .hero .zh{color:var(--zh); margin:6px 0 0; font-size:15.5px; line-height:1.7}
+
+  .block{margin-bottom:34px}
+  /* —— 列头：看板列标题 —— */
+  .sec-title{display:flex; align-items:center; gap:12px; font-size:19px; font-weight:800; letter-spacing:.3px;
+    margin:0 0 18px; padding:0 0 0 14px; position:relative}
+  .sec-title::before{content:""; position:absolute; left:0; top:2px; bottom:2px; width:5px; border-radius:999px;
+    background:linear-gradient(180deg,var(--accent),var(--accent2))}
+  .sec-title .num{background:linear-gradient(135deg,var(--accent),var(--accent2)); color:var(--accent-ink);
+    min-width:30px; height:30px; padding:0 9px; border-radius:999px; display:grid; place-items:center;
+    font-size:13px; font-weight:800; box-shadow:0 3px 10px var(--accent-shadow)}
+  .note{color:var(--muted); font-size:13.5px; margin:-6px 0 16px; padding-left:14px}
+
+  /* —— 速览：卡组 —— */
+  .sum-lead{background:var(--panel); border:1px solid var(--border); border-left:5px solid var(--accent);
+    border-radius:var(--radius); padding:16px 20px; font-size:16px; margin-bottom:18px; color:var(--text);
+    box-shadow:0 4px 14px rgba(30,37,48,.05); line-height:1.8}
+  .sum-lead b{color:var(--accent)}
+  .sum-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:16px}
+  .sum-card{background:var(--panel); border:1px solid var(--border); border-radius:var(--radius);
+    padding:18px 20px; position:relative; box-shadow:0 4px 14px rgba(30,37,48,.05); transition:.2s}
+  .sum-card:hover{transform:translateY(-3px); box-shadow:0 10px 26px rgba(30,37,48,.1); border-color:color-mix(in srgb,var(--accent) 40%,var(--border))}
+  .sum-card .ico{font-size:24px; margin-bottom:8px; display:inline-grid; place-items:center; width:42px; height:42px;
+    border-radius:var(--radius-sm); background:var(--hl)}
+  .sum-card h4{margin:0 0 6px; font-size:15.5px; color:var(--text); font-weight:800}
+  .sum-card p{margin:0; font-size:14px; color:var(--en); line-height:1.75}
+
+  /* —— Sections rows：任务卡双列对照 —— */
+  .study-table{display:flex; flex-direction:column; gap:12px}
+  .study-row{display:grid; grid-template-columns:40px 1fr 1fr; align-items:stretch;
+    background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden;
+    transition:.2s; box-shadow:0 3px 12px rgba(30,37,48,.05)}
+  .study-row:hover{transform:translateY(-2px); box-shadow:0 10px 26px rgba(30,37,48,.1);
+    border-color:color-mix(in srgb,var(--accent) 40%,var(--border))}
+  .study-row .no{display:grid; place-items:center; font-size:12px; font-weight:800; color:var(--accent-ink);
+    background:linear-gradient(160deg,var(--accent),var(--accent2))}
+  .study-row .en{padding:15px 18px; color:var(--en); font-size:15px; line-height:1.8;
+    border-right:1px solid var(--border); position:relative}
+  .study-row .en::before{content:"EN"; position:absolute; top:8px; right:10px; font-size:9px; font-weight:800;
+    letter-spacing:1px; color:var(--accent); background:var(--hl); padding:1px 6px; border-radius:6px}
+  .study-row .zh{padding:15px 18px; color:var(--zh); font-size:15.5px; line-height:1.85; position:relative}
+  .study-row .zh::before{content:"ZH"; position:absolute; top:8px; right:10px; font-size:9px; font-weight:800;
+    letter-spacing:1px; color:var(--accent2); background:color-mix(in srgb,var(--accent2) 12%,transparent); padding:1px 6px; border-radius:6px}
+
+  /* —— Cards：任务卡 —— */
+  .cards{display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:16px}
+  .card{background:var(--panel); border:1px solid var(--border); border-radius:var(--radius);
+    padding:18px 20px; transition:.2s; position:relative; box-shadow:0 4px 14px rgba(30,37,48,.05)}
+  .card:hover{transform:translateY(-3px); box-shadow:0 10px 26px rgba(30,37,48,.1);
+    border-color:color-mix(in srgb,var(--accent) 40%,var(--border))}
+  .card .top{display:flex; align-items:center; gap:12px}
+  .card .tag{width:38px; height:38px; border-radius:var(--radius-sm); color:var(--accent2-ink);
+    background:linear-gradient(135deg,var(--accent2),var(--accent)); display:grid; place-items:center;
+    font-size:16px; font-weight:800; flex-shrink:0}
+  .card h4{margin:0; font-size:15.5px; color:var(--text); font-weight:800}
+  .card .zhname{font-size:13px; color:var(--muted)}
+  .card .body{font-size:14px; color:var(--en); line-height:1.75; margin-top:12px}
+  .card .when{margin-top:10px; padding-top:10px; border-top:1px dashed var(--border); color:var(--zh)}
+
+  /* —— Quiz —— */
+  .quiz{background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); padding:22px 24px;
+    box-shadow:0 4px 14px rgba(30,37,48,.05)}
+  .quiz .q-txt{font-size:16.5px; font-weight:800; margin-bottom:16px}
+  .quiz .opt{display:block; width:100%; text-align:left; background:var(--panel2); border:1px solid var(--border);
+    border-radius:var(--radius-sm); padding:12px 16px; margin-bottom:10px; cursor:pointer; color:var(--text);
+    font-size:14.5px; font-family:inherit; font-weight:600; transition:.15s}
+  .quiz .opt:hover{border-color:var(--accent); background:var(--hl)}
+  .quiz .opt.correct{background:color-mix(in srgb,var(--green) 16%,transparent); border-color:var(--green)}
+  .quiz .opt.wrong{background:color-mix(in srgb,var(--accent) 16%,transparent); border-color:var(--accent)}
+  .quiz .fb{margin-top:12px; font-size:13.5px; color:var(--muted); min-height:20px}
+  .quiz-nav{display:flex; justify-content:space-between; align-items:center; margin-top:14px}
+  .quiz-nav small{color:var(--muted); font-size:12.5px; font-weight:600}
+  .btn{background:var(--accent); color:var(--accent-ink); border:none; padding:9px 20px;
+    border-radius:999px; cursor:pointer; font-size:13.5px; font-weight:700; font-family:inherit;
+    box-shadow:0 3px 10px var(--accent-shadow); transition:.15s}
+  .btn:hover{filter:brightness(1.08); transform:translateY(-1px)}
+
+  /* —— Summary box：里程碑卡 —— */
+  .summary-box{border:1px solid var(--border); border-radius:var(--radius-lg);
+    background:linear-gradient(var(--hero-angle),var(--panel),var(--panel2)); padding:26px 28px;
+    box-shadow:0 10px 30px rgba(30,37,48,.07)}
+  .summary-box h3{margin:0 0 16px; color:var(--text); font-size:19px; font-weight:800; display:flex; align-items:center; gap:10px}
+  .summary-box h3::before{content:"★"; color:var(--accent); font-size:18px}
+  .summary-box .q{font-size:15.5px; border-left:4px solid var(--accent); padding:8px 0 8px 16px;
+    margin:10px 0; color:var(--text); line-height:1.85; background:var(--hl); border-radius:0 var(--radius-sm) var(--radius-sm) 0}
+  .summary-box .q.zh{border-left-color:var(--accent2); color:var(--zh);
+    background:color-mix(in srgb,var(--accent2) 8%,transparent)}
+  .pri-strip{display:flex; flex-wrap:wrap; gap:14px; margin-top:18px}
+  .pri{flex:1 1 190px; background:var(--panel); border:1px solid var(--border); border-radius:var(--radius);
+    padding:16px 18px; box-shadow:0 4px 14px rgba(30,37,48,.05)}
+  .pri .big{font-size:26px; font-weight:800; color:var(--accent); line-height:1.1}
+  .pri h4{margin:8px 0 4px; font-size:14.5px; color:var(--text); font-weight:800}
+  .pri p{margin:0; font-size:13px; color:var(--en); line-height:1.65}
+
+  /* —— Original：分组列 —— */
+  .og-h{display:flex; align-items:center; gap:10px; margin:26px 0 14px; padding:10px 16px; font-size:15.5px;
+    font-weight:800; color:var(--text); border:1px solid var(--border); border-left:5px solid var(--accent);
+    border-radius:var(--radius-sm); background:var(--panel)}
+  .og-row{display:grid; grid-template-columns:1fr 1fr; background:var(--panel); border:1px solid var(--border);
+    border-radius:var(--radius); margin-bottom:12px; overflow:hidden; box-shadow:0 3px 12px rgba(30,37,48,.05)}
+  .og-row .en{padding:15px 18px; color:var(--en); font-size:14.5px; line-height:1.8; border-right:1px solid var(--border)}
+  .og-row .zh{padding:15px 18px; color:var(--zh); font-size:15px; line-height:1.85}
+
+  /* —— Glossary —— */
+  #glossary{display:none}
+  #glossary.show{display:block}
+  .gloss-group{display:block; margin:24px 0 14px; padding:10px 16px;
+    background:var(--panel); border:1px solid var(--border); border-radius:var(--radius-sm)}
+  .gloss-group .gg-desc{font-size:14.5px; color:var(--text); font-weight:800}
+  .gloss-group .gg-count{margin-left:auto; font-size:12px; color:var(--muted); font-weight:700;
+    background:var(--panel2); border:1px solid var(--border); padding:3px 10px; border-radius:999px}
+  .gloss-grid-inner{display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:16px; margin-bottom:14px}
+  .gloss-item{background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); padding:18px 20px;
+    box-shadow:0 4px 14px rgba(30,37,48,.05); transition:.2s}
+  .gloss-item:hover{transform:translateY(-2px); box-shadow:0 10px 26px rgba(30,37,48,.1)}
+  .gloss-item .grow{display:flex; align-items:center; gap:10px}
+  .gloss-item .word,.gloss-item .gw{display:inline-block; font-weight:900; color:var(--accent); font-size:23px; line-height:1.05; letter-spacing:.06em; text-shadow:0 0 12px color-mix(in srgb,var(--accent) 24%,transparent)}
+  .gloss-item .gsub{display:flex; align-items:center; gap:10px; margin-top:6px}
+  .gloss-item .gipa{color:var(--accent2); font-size:13px; font-family:Georgia,serif}
+  .gloss-item .gpos{font-size:11px; background:var(--accent2); color:var(--accent2-ink); padding:2px 9px; border-radius:999px; font-style:italic}
+  .gloss-item .gdef{font-size:14.5px; color:var(--text); margin-top:10px; line-height:1.8}
+  .gloss-item .geg{font-size:13px; color:var(--en); font-style:italic; margin-top:8px; line-height:1.65}
+  .gloss-item .geg .egzh{display:block; color:var(--muted); font-style:normal; margin-top:4px}
+
+  footer{text-align:center; color:var(--muted); font-size:12.5px; padding:18px; border-top:1px solid var(--border);
+    margin-top:30px; letter-spacing:.3px}
+  footer a{color:var(--accent); font-weight:700; text-decoration:none}
+  footer a:hover{text-decoration:underline}
+
+  /* —— TOC：右侧锚点 —— */
+  .toc{position:fixed; right:16px; top:50%; transform:translateY(-50%); z-index:800;
+    display:flex; flex-direction:column; align-items:center; gap:10px; padding:14px 11px;
+    background:color-mix(in srgb,var(--panel) 88%,transparent); border:1px solid var(--border);
+    border-radius:999px; backdrop-filter:blur(10px); box-shadow:0 8px 24px rgba(30,37,48,.1)}
+  .toc a{width:10px; height:10px; border-radius:50%; background:var(--border); cursor:pointer; transition:.25s; position:relative; flex-shrink:0}
+  .toc a:hover{background:var(--accent2); transform:scale(1.35)}
+  .toc a.active{background:linear-gradient(135deg,var(--accent),var(--accent2)); height:24px; border-radius:999px}
+  .toc a span{position:absolute; right:22px; top:50%; transform:translateY(-50%) translateX(6px); white-space:nowrap;
+    background:var(--panel); border:1px solid var(--border); padding:5px 12px; border-radius:var(--radius-sm); font-size:12.5px;
+    opacity:0; pointer-events:none; transition:.2s; color:var(--text); font-weight:600; box-shadow:0 4px 14px rgba(30,37,48,.12)}
+  .toc a:hover span{opacity:1; transform:translateY(-50%)}
+
+  body.mode-original .summary-view{display:none}
+  body.mode-original #originalSection{display:block}
+  #originalSection{display:none}
+  body.mode-original .toc,body.gloss-open .toc{display:none}
+  body.gloss-open .hero,body.gloss-open .summary-view,body.gloss-open #originalSection{display:none!important}
+
+  @media(max-width:760px){
+    .toc{display:none}
+    .study-row{grid-template-columns:34px 1fr}
+    .study-row .en{border-right:none; border-bottom:1px solid var(--border)}
+    .study-row .zh{grid-column:2 / -1}
+    .og-row{grid-template-columns:1fr}
+    .og-row .en{border-right:none; border-bottom:1px solid var(--border)}
+    .hero h2{max-width:100%}
+  }
+
+  .doc-title-link{display:block;flex:1;min-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text);font-weight:800;text-decoration:none;cursor:pointer}
+  .doc-title-link:hover{color:var(--accent)}
+  .reader-header .ctrls{margin-left:auto;justify-content:flex-end}
+  .theme-group{display:inline-flex;align-items:center}
+  .theme-btn{display:inline-flex;align-items:center;gap:6px}
+  .theme-btn .ico{width:15px;height:15px;flex-shrink:0}
+
+</style>
+</head>
+<body>
+<div id="progress"></div>
+
+<header class="reader-header">
+  <a class="doc-title-link" href="__SOURCE_URL__" target="_blank" rel="noopener" aria-label="打开原文链接">__HEADER_TITLE__</a>
+  <div class="ctrls" aria-label="阅读功能区">
+    <div class="seg view-seg" role="group" aria-label="阅读视图">
+      <button class="seg-btn active" type="button" data-mode="summary" onclick="setMode('summary',this)"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 4.6L18 9l-4.2 1.4L12 15l-1.8-4.6L6 9l4.2-1.4z"/></svg>精读</button>
+      <button class="seg-btn" type="button" data-mode="original" onclick="setMode('original',this)"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6c-1.8-1.2-4-1.8-6.5-1.8C4.7 4.2 4 4.9 4 5.7v11.6c0 .8.7 1.5 1.5 1.4C8 18.6 10.2 19.2 12 20.4"/><path d="M12 6c1.8-1.2 4-1.8 6.5-1.8.8 0 1.5.7 1.5 1.5v11.6c0 .8-.7 1.5-1.5 1.4-2.5-.1-4.7.5-6.5 1.7"/><path d="M12 6v14.4"/></svg>原文</button>
+      <button class="seg-btn" type="button" id="glossBtn" data-mode="glossary" onclick="setMode('glossary',this)"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5C4 4.7 4.7 4 5.5 4H18a2 2 0 0 1 2 2v13.5"/><path d="M4 5.5v13A1.5 1.5 0 0 0 5.5 20H20"/><path d="M8 8.5h7M8 12h7"/></svg>词汇</button>
+    </div>
+    <div class="theme-group" role="group" aria-label="主题设置">
+      <button class="btn theme-btn" type="button" id="themeBtn" onclick="switchTheme()"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13.5A8 8 0 1 1 10.5 4a6.5 6.5 0 0 0 9.5 9.5z"/></svg>主题</button>
+    </div>
+  </div>
+</header>
+
+<nav class="toc" id="toc"></nav>
+
+<div class="wrap">
+  <div class="hero" id="hero"></div>
+
+  <section id="glossary">
+    <h3 class="sec-title"><span class="num">A-Z</span>核心词汇表</h3>
+    <p class="note">全文重点词汇按 CEFR 分级，点 🔊 朗读。点击顶部「精读」或「原文」可切换回阅读视图。</p>
+    <div id="glossGrid"></div>
+  </section>
+
+  <div id="contentHost"></div>
+
+  <section id="originalSection">
+    <h3 class="sec-title"><span class="num">DOC</span><span id="ogTitle"></span></h3>
+    <p class="note" id="ogMeta"></p>
+    <div id="originalHost"></div>
+  </section>
+</div>
+
+<footer id="footer"></footer>
+
+<script>
+window.BILINGUAL_READER_DATA = __DATA_JSON__;
+window.BILINGUAL_READER_THEME = __THEME_JSON__;
+const DATA = window.BILINGUAL_READER_DATA, THEME = window.BILINGUAL_READER_THEME;
+</script>
+<script>
+__RUNTIME_JS__
+</script>
+<script>
+/* ===== kanban-flow：看板流的页面骨架与渲染 ===== */
+const esc = BR.escapeHtml;
+
+function renderHero(){
+  const h=DATA.hero||{};
+  document.getElementById('hero').innerHTML=
+    `<h2>${esc(h.title)}</h2>`+
+    (h.meta?`<div class="meta">${esc(h.meta)}</div>`:'')+
+    (h.en?`<p class="en">${esc(h.en)}</p>`:'')+
+    (h.zh?`<p class="zh">${esc(h.zh)}</p>`:'');
+}
+
+function sectionBlock(inner,toc,title,num){
+  return `<section class="summary-view block" data-toc="${esc(toc||'')}" data-title="${esc(title||toc||'')}">
+      <h3 class="sec-title"><span class="num">${esc(num||'')}</span>${esc(title||'')}</h3>${inner}</section>`;
+}
+
+function renderContent(){
+  const host=document.getElementById('contentHost');
+  let html='';
+  const s=DATA.summary||{};
+  if(s.lead||s.cards){
+    let inner=(s.lead?`<div class="sum-lead">${s.lead}</div>`:'')+
+      `<div class="sum-grid">`+(s.cards||[]).map(c=>
+        `<div class="sum-card"><div class="ico">${esc(c.icon||'')}</div><h4>${esc(c.title)}</h4><p>${esc(c.body)}</p></div>`).join('')+`</div>`;
+    html+=sectionBlock(inner,'速览','全文速览','览');
+  }
+  (DATA.sections||[]).forEach(sec=>{
+    let inner='';
+    if(sec.type==='cards'){
+      inner=(sec.note?`<p class="note">${esc(sec.note)}</p>`:'')+`<div class="cards" data-cards="1"></div>`;
+    }else if(sec.type==='quiz'){
+      inner=`<div class="quiz" data-quiz="1"></div>`;
+    }else if(sec.type==='summary'){
+      inner=summaryBoxHtml(sec.box||{});
+    }else{
+      inner=`<div class="study-table">`+(sec.rows||[]).map((r,i)=>
+        `<div class="study-row"><div class="no">${String(i+1).padStart(2,'0')}</div>`+
+        `<div class="en">${r.en}</div><div class="zh">${esc(r.zh)}</div></div>`).join('')+`</div>`;
+    }
+    html+=sectionBlock(inner,sec.toc,sec.title,sec.num);
+  });
+  host.innerHTML=html;
+  hydrateCards(); hydrateQuiz();
+}
+
+function summaryBoxHtml(box){
+  const pri=(box.principles||[]).map(p=>
+    `<div class="pri"><div class="big">${esc(p.big||'')}</div><h4>${esc(p.title||'')}</h4>`+
+    `<p>${esc(p.en||'')}<br><span style="color:var(--zh)">${esc(p.zh||'')}</span></p></div>`).join('');
+  return `<div class="summary-box"><h3>${esc(box.heading||'一句话精髓')}</h3>`+
+    (box.enQuote?`<div class="q">${esc(box.enQuote)}</div>`:'')+
+    (box.zhQuote?`<div class="q zh">${esc(box.zhQuote)}</div>`:'')+
+    (box.intro?`<p style="font-size:14px;color:var(--en);margin:10px 0 0">${esc(box.intro)}</p>`:'')+
+    (pri?`<div class="pri-strip">${pri}</div>`:'')+`</div>`;
+}
+
+function hydrateCards(){
+  const sec=(DATA.sections||[]).find(s=>s.type==='cards');
+  const host=document.querySelector('[data-cards]');
+  if(!sec||!host)return;
+  (sec.cards||[]).forEach(p=>{
+    const c=document.createElement('div'); c.className='card';
+    c.innerHTML=`<div class="top"><span class="tag">${esc(p.ico||'')}</span><div><h4>${esc(p.en)}</h4>`+
+      (p.zh?`<div class="zhname">${esc(p.zh)}</div>`:'')+`</div></div>`+
+      `<div class="body">${esc(p.body||'')}${p.when?`<div class="when">${esc(p.when)}</div>`:''}</div>`;
+    host.appendChild(c);
+  });
+}
+
+function hydrateQuiz(){
+  const sec=(DATA.sections||[]).find(s=>s.type==='quiz');
+  const qz=document.querySelector('[data-quiz]');
+  if(!sec||!qz)return;
+  const QUIZ=sec.quiz||[]; let qi=0,score=0;
+  function render(){
+    const item=QUIZ[qi];
+    qz.innerHTML=`<div class="q-txt">Q${qi+1}. ${esc(item.q)}</div>`+
+      item.opts.map((o,i)=>`<button class="opt" data-i="${i}">${String.fromCharCode(65+i)}. ${esc(o)}</button>`).join('')+
+      `<div class="fb"></div><div class="quiz-nav"><small>第 ${qi+1}/${QUIZ.length} 题 · 得分 ${score}</small><button class="btn" id="nextQ" style="display:none">下一题 →</button></div>`;
+    let answered=false;
+    qz.querySelectorAll('.opt').forEach(b=>{
+      b.onclick=()=>{
+        if(answered)return; answered=true;
+        const i=+b.dataset.i;
+        if(i===item.a){b.classList.add('correct');score++;}
+        else{b.classList.add('wrong');qz.querySelectorAll('.opt')[item.a].classList.add('correct');}
+        qz.querySelector('.fb').textContent=item.fb||'';
+        const nb=document.getElementById('nextQ');
+        if(qi<QUIZ.length-1){nb.style.display='inline-block';nb.onclick=()=>{qi++;render();};}
+        else{nb.style.display='inline-block';nb.textContent='重新测验 ↺';nb.onclick=()=>{qi=0;score=0;render();};
+          qz.querySelector('.fb').textContent+=`  🎉 完成！最终得分 ${score}/${QUIZ.length}`;}
+      };
+    });
+  }
+  render();
+}
+
+function renderOriginalRow(r){
+  if(r.type==='image'){
+    const cap=r.caption?`<figcaption>${esc(r.caption)}</figcaption>`:'';
+    return `<figure class="og-media"><img src="${esc(r.src||'')}" alt="${esc(r.alt||'')}" loading="lazy">${cap}</figure>`;
+  }
+  return `<div class="og-row"><div class="en">${esc(r.en)}</div><div class="zh">${esc(r.zh)}</div></div>`;
+}
+
+function renderOriginal(){
+  const o=DATA.original||{};
+  document.getElementById('ogTitle').textContent=o.title||'原文全文对照';
+  document.getElementById('ogMeta').textContent=o.meta||'';
+  document.getElementById('originalHost').innerHTML=(o.groups||[]).map(g=>
+    `<div class="og-h">${esc(g.group)}</div>`+
+    (g.rows||[]).map(renderOriginalRow).join('')
+  ).join('');
+}
+
+function renderGlossary(){
+  const host=document.getElementById('glossGrid');
+  const groups=BR.groupGlossary(); const links=[];
+  host.innerHTML=groups.map(g=>{
+    const gid='gloss-'+g.lvc;
+    links.push({id:gid,label:g.level});
+    const items=g.items.map(d=>
+      `<div class="gloss-item"><div class="grow"><span class="gw">${esc(d.w)}</span>`+
+      `<button class="speak" title="朗读" data-speak="${esc(d.w)}">🔊</button></div>`+
+      `${(d.ipa || (d.pos && d.pos !== "术语")) ? `<div class="gsub">${d.ipa ? `<span class="gipa">${esc(d.ipa)}</span>` : ""}${d.pos && d.pos !== "术语" ? `<span class="gpos">${esc(d.pos)}</span>` : ""}</div>` : ""}`+
+      `<div class="gdef">${esc(d.def)}</div><div class="geg">🗣 ${esc(d.eg||'')}`+
+      `${d.egzh?`<span class="egzh">${esc(d.egzh)}</span>`:''}</div></div>`).join('');
+    return `<div class="gloss-group" id="${gid}" style="scroll-margin-top:74px"><span class="lv lv-${g.lvc}">${esc(g.level)}</span>`+
+      `<span class="gg-desc">${esc(g.desc)}</span><span class="gg-count">${g.items.length} 词</span></div>`+
+      `<div class="gloss-grid-inner">${items}</div>`;
+  }).join('');
+  host.querySelectorAll('[data-speak]').forEach(b=>b.addEventListener('click',e=>BR.speak(b.getAttribute('data-speak'),e)));
+  return links;
+}
+
+function renderFooter(){
+  const f=DATA.footer||{};
+  document.getElementById('footer').innerHTML=f.sourceUrl?
+    `原文：<a href="${esc(f.sourceUrl)}" target="_blank" rel="noopener">《${esc(f.sourceText||f.sourceUrl)}》</a>`:esc(f.sourceText||'');
+}
+
+/* ===== 控制：视图 / 主题 / 词汇表 ===== */
+function scrollToActiveFirstAnchor(behavior='auto'){
+  const target=document.querySelector('section[data-toc]');
+  if(target)requestAnimationFrame(()=>target.scrollIntoView({behavior,block:'start'}));
+}
+function scrollToGlossaryTop(behavior='auto'){
+  const target=document.getElementById('glossary');
+  if(target)requestAnimationFrame(()=>target.scrollIntoView({behavior,block:'start'}));
+}
+function setMode(m,btn){
+  const glossary=document.getElementById('glossary');
+  document.body.classList.toggle('mode-original',m==='original');
+  document.body.classList.toggle('gloss-open',m==='glossary');
+  if(glossary)glossary.classList.toggle('show',m==='glossary');
+  document.querySelectorAll('.view-seg .seg-btn[data-mode]').forEach(b=>b.classList.toggle('active',b.dataset.mode===m));
+  if(m==='glossary')scrollToGlossaryTop('smooth');
+  else scrollToActiveFirstAnchor('smooth');
+}
+function switchTheme(){
+  const mode=BR.toggleTheme();
+  const moon='<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13.5A8 8 0 1 1 10.5 4a6.5 6.5 0 0 0 9.5 9.5z"/></svg>';
+  const sun='<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
+  document.getElementById('themeBtn').innerHTML=(mode==='light'?sun:moon)+'主题';
+}
+const glossBtn=document.getElementById("glossBtn");
+function openGloss(){setMode('glossary',glossBtn);}
+function closeGloss(){
+  const cur=document.body.classList.contains('mode-original')?'original':'summary';
+  const target=document.querySelector(`.view-seg .seg-btn[data-mode="${cur}"]`);
+  if(target)setMode(cur,target);
+}
+function toggleGloss(){setMode('glossary',glossBtn);}
+
+/* ===== 初始化 ===== */
+renderHero(); renderContent(); renderOriginal(); renderGlossary(); renderFooter();
+BR.autowrap(document.querySelectorAll('#originalSection .og-row .en'));
+BR.mountTooltips(document);
+
+const toc=document.getElementById("toc");
+let secList=document.querySelectorAll("section[data-toc]");
+let tocLinks=[];
+secList.forEach((s,i)=>{s.id="sec"+i; s.style.scrollMarginTop="74px";});
+tocLinks=renderToc(sectionAnchors());
+BR.initProgress((pct,sc,max)=>{
+  if(document.body.classList.contains("gloss-open")){
+    let gc=0;
+    const groups=document.querySelectorAll(".gloss-group");
+    groups.forEach((g,i)=>{if(g.getBoundingClientRect().top<160)gc=i;});
+    if(max<=0||sc>=max-2){gc=groups.length-1;}
+    tocLinks.forEach((a,i)=>a.classList.toggle("active",i===gc));
+    return;
+  }
+  let cur=0; secList.forEach((s,i)=>{if(s.getBoundingClientRect().top<160)cur=i;});
+  if(max<=0||sc>=max-2){cur=secList.length-1;}
+  tocLinks.forEach((a,i)=>a.classList.toggle('active',i===cur));
+});
+scrollToActiveFirstAnchor();
+</script>
+</body>
+</html>

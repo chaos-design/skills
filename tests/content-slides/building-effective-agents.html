@@ -1,0 +1,948 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Building Effective AI Agents</title>
+    <style>
+      :root {
+        --stage-bg: #05070d;
+        --slide-bg: #07111f;
+        --panel: rgba(14, 25, 44, 0.82);
+        --panel-strong: rgba(20, 37, 64, 0.92);
+        --line: rgba(140, 177, 255, 0.22);
+        --text-primary: #f4f8ff;
+        --text-secondary: #b7c5de;
+        --muted: #7f8da8;
+        --accent: #6ee7ff;
+        --accent-2: #9dffb0;
+        --accent-3: #ffcf70;
+        --danger: #ff7a90;
+        --link-color: #2f81f7;
+        --link-hover: #6ee7ff;
+        --link-underline: rgba(47, 129, 247, 0.7);
+        --font-body: "Helvetica Neue", "PingFang SC", "Microsoft YaHei", sans-serif;
+        --slide-padding: 92px;
+        --content-gap: 36px;
+        --duration-normal: 680ms;
+        --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+        --kbd-bar-bg: rgba(6, 12, 22, 0.76);
+        --kbd-text: rgba(244, 248, 255, 0.9);
+        --kbd-bg: rgba(255, 255, 255, 0.14);
+        --kbd-key-text: #ffffff;
+        --chrome-border: rgba(255, 255, 255, 0.18);
+        --control-accent: var(--accent);
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      /* ===========================================
+         FIXED 16:9 STAGE: MANDATORY BASE STYLES
+         Include this ENTIRE file in every presentation.
+         Slides are authored at 1920×1080 and scaled as a whole.
+         =========================================== */
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        overflow: hidden;
+        background: var(--stage-bg, #000);
+      }
+
+      .deck-viewport {
+        position: fixed;
+        inset: 0;
+        overflow: hidden;
+        background: var(--stage-bg, #000);
+      }
+
+      .deck-stage {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        transform-origin: 0 0;
+        background: var(--slide-bg, #fff);
+      }
+
+      .slide {
+        position: absolute;
+        inset: 0;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        display: block;
+        visibility: hidden;
+        opacity: 0;
+        pointer-events: none;
+        background: var(--slide-bg, #fff);
+        color: var(--text-primary, #111);
+      }
+
+      .slide.active,
+      .slide.visible {
+        visibility: visible;
+        opacity: 1;
+        pointer-events: auto;
+        z-index: 1;
+      }
+
+      img,
+      video,
+      canvas,
+      svg {
+        max-width: 100%;
+        max-height: 100%;
+      }
+
+      @media print {
+        html,
+        body {
+          width: 1920px;
+          height: auto;
+          overflow: visible;
+          background: #fff;
+        }
+
+        .deck-viewport {
+          position: static;
+          overflow: visible;
+          background: #fff;
+        }
+
+        .deck-stage {
+          position: static;
+          width: auto;
+          height: auto;
+          transform: none;
+          background: none;
+        }
+
+        .slide {
+          position: relative;
+          display: block;
+          visibility: visible;
+          opacity: 1;
+          pointer-events: auto;
+          width: 1920px;
+          height: 1080px;
+          break-after: page;
+          page-break-after: always;
+        }
+
+        .slide:last-child {
+          break-after: auto;
+          page-break-after: auto;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms;
+          transition-duration: 0.2s;
+        }
+      }
+
+      body {
+        font-family: var(--font-body);
+      }
+
+      .slide::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+          radial-gradient(circle at 12% 16%, rgba(110, 231, 255, 0.16), transparent 26%),
+          radial-gradient(circle at 86% 12%, rgba(157, 255, 176, 0.11), transparent 30%),
+          linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+        background-size: auto, auto, 80px 80px, 80px 80px;
+        pointer-events: none;
+      }
+
+      .slide-content,
+      .title-slide {
+        position: absolute;
+        inset: 0;
+        padding: var(--slide-padding);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: var(--content-gap);
+      }
+
+      .title-slide {
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+      }
+
+      .eyebrow {
+        color: var(--accent);
+        font-size: 28px;
+        font-weight: 800;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+      }
+
+      h1,
+      h2,
+      h3 {
+        color: var(--text-primary);
+        line-height: 1.06;
+        letter-spacing: -0.04em;
+        text-wrap: balance;
+      }
+
+      h1 {
+        max-width: 1280px;
+        font-size: 118px;
+      }
+
+      h2 {
+        max-width: 1180px;
+        font-size: 76px;
+      }
+
+      h3 {
+        font-size: 34px;
+        letter-spacing: -0.02em;
+      }
+
+      p,
+      li {
+        color: var(--text-secondary);
+        font-size: 28px;
+        line-height: 1.45;
+      }
+
+      ul {
+        display: grid;
+        gap: 18px;
+        padding-left: 1.15em;
+      }
+
+      a {
+        color: var(--link-color);
+        text-decoration-line: underline;
+        text-decoration-thickness: 0.08em;
+        text-underline-offset: 0.16em;
+        text-decoration-color: var(--link-underline);
+      }
+
+      a:hover,
+      a:focus-visible {
+        color: var(--link-hover);
+        outline: none;
+      }
+
+      .kicker-row {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        color: var(--muted);
+        font-size: 24px;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        height: 40px;
+        padding: 0 18px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        color: var(--accent);
+        background: rgba(110, 231, 255, 0.08);
+        font-size: 18px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      .grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 28px;
+      }
+
+      .grid-3 {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 24px;
+      }
+
+      .card {
+        min-height: 210px;
+        padding: 30px;
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        background: var(--panel);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 24px 80px rgba(0, 0, 0, 0.18);
+      }
+
+      .card.compact {
+        min-height: 170px;
+      }
+
+      .card strong {
+        display: block;
+        margin-bottom: 12px;
+        color: var(--text-primary);
+        font-size: 30px;
+        line-height: 1.16;
+      }
+
+      .card p,
+      .card li {
+        font-size: 23px;
+      }
+
+      .stat {
+        display: grid;
+        place-items: center;
+        min-height: 330px;
+        border-radius: 28px;
+        background: linear-gradient(135deg, rgba(110, 231, 255, 0.18), rgba(157, 255, 176, 0.08));
+        border: 1px solid rgba(110, 231, 255, 0.32);
+      }
+
+      .stat b {
+        display: block;
+        color: var(--accent);
+        font-size: 130px;
+        line-height: 0.9;
+        letter-spacing: -0.08em;
+      }
+
+      .stat span {
+        color: var(--text-secondary);
+        font-size: 26px;
+      }
+
+      .flow {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+      }
+
+      .node {
+        flex: 1;
+        min-height: 124px;
+        padding: 22px;
+        border: 1px solid rgba(110, 231, 255, 0.34);
+        border-radius: 22px;
+        background: rgba(110, 231, 255, 0.08);
+        color: var(--text-primary);
+        font-size: 24px;
+        font-weight: 800;
+        text-align: center;
+        display: grid;
+        place-items: center;
+      }
+
+      .arrow {
+        color: var(--accent);
+        font-size: 42px;
+        font-weight: 900;
+      }
+
+      .quote {
+        max-width: 1320px;
+        padding-left: 34px;
+        border-left: 8px solid var(--accent-2);
+        color: var(--text-primary);
+        font-size: 52px;
+        line-height: 1.2;
+        letter-spacing: -0.035em;
+      }
+
+      .visual-card {
+        display: grid;
+        grid-template-columns: 1.05fr 0.95fr;
+        gap: 28px;
+        align-items: center;
+        padding: 30px;
+        border: 1px solid var(--line);
+        border-radius: 28px;
+        background: var(--panel-strong);
+      }
+
+      .visual-card svg {
+        width: 100%;
+        height: auto;
+      }
+
+      .visual-note {
+        display: grid;
+        gap: 16px;
+      }
+
+      .source {
+        max-width: 1320px;
+        color: var(--muted);
+        font-size: 22px;
+      }
+
+      .reveal {
+        opacity: 0;
+        transform: translateY(30px);
+        transition:
+          opacity var(--duration-normal) var(--ease-out-expo),
+          transform var(--duration-normal) var(--ease-out-expo);
+      }
+
+      .slide.visible .reveal {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .slide.visible .reveal:nth-child(1) { transition-delay: 0.1s; }
+      .slide.visible .reveal:nth-child(2) { transition-delay: 0.2s; }
+      .slide.visible .reveal:nth-child(3) { transition-delay: 0.3s; }
+      .slide.visible .reveal:nth-child(4) { transition-delay: 0.4s; }
+      .slide.visible .reveal:nth-child(5) { transition-delay: 0.5s; }
+      .slide.visible .reveal:nth-child(6) { transition-delay: 0.6s; }
+
+      .deck-controls-zone {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 70px;
+        z-index: 1000;
+        pointer-events: auto;
+      }
+
+      .deck-controls {
+        position: absolute;
+        left: 50%;
+        bottom: 10px;
+        transform: translateX(-50%) translateY(24px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        min-height: 44px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: var(--kbd-bar-bg);
+        border: 1px solid var(--chrome-border);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(14px);
+        color: var(--kbd-text);
+        font: 700 13px var(--font-body);
+        opacity: 0;
+        filter: blur(5px);
+        transition:
+          opacity 0.42s var(--ease-out-expo),
+          transform 0.48s var(--ease-out-expo),
+          filter 0.42s var(--ease-out-expo);
+        width: max-content;
+        max-width: min(92vw, 720px);
+      }
+
+      .deck-controls-zone:hover .deck-controls,
+      .deck-controls-zone.show-controls .deck-controls,
+      .deck-controls-zone:focus-within .deck-controls {
+        opacity: 0.96;
+        transform: translateX(-50%) translateY(0);
+        filter: blur(0);
+      }
+
+      .deck-page-controls,
+      .deck-shortcuts {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        white-space: nowrap;
+      }
+
+      .deck-page-btn {
+        width: 30px;
+        height: 30px;
+        border: 0;
+        border-radius: 50%;
+        cursor: pointer;
+        background: transparent;
+        color: var(--kbd-key-text);
+        font-size: 18px;
+      }
+
+      .deck-page-btn:hover {
+        color: var(--control-accent);
+      }
+
+      .deck-page-btn:disabled {
+        opacity: 0.36;
+        cursor: default;
+      }
+
+      .deck-page-status {
+        min-width: 48px;
+        text-align: center;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .deck-control-separator {
+        width: 1px;
+        height: 22px;
+        margin: 0 4px;
+        background: rgba(255, 255, 255, 0.18);
+      }
+
+      .shortcut-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 4px 8px 4px 12px;
+        border-radius: 999px;
+        color: var(--kbd-text);
+        font-weight: 500;
+      }
+
+      .deck-shortcuts kbd {
+        min-width: 24px;
+        padding: 4px 7px;
+        border-radius: 7px;
+        background: var(--kbd-bg);
+        color: var(--kbd-key-text);
+        font: 500 11px var(--font-body);
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="deck-viewport">
+      <main class="deck-stage" id="deckStage">
+        <section class="slide title-slide active visible">
+          <div class="eyebrow reveal">Anthropic Engineering</div>
+          <h1 class="reveal">构建有效 AI Agents</h1>
+          <p class="reveal source">
+            基于 Anthropic Engineering 文章
+            <a
+              href="https://www.anthropic.com/engineering/building-effective-agents"
+              target="_blank"
+              rel="noopener"
+            >《Building Effective AI Agents》</a>
+            转换生成
+          </p>
+        </section>
+
+        <section class="slide">
+          <div class="slide-content">
+            <div class="kicker-row reveal"><span class="pill">Core thesis</span>过去一年客户实践总结</div>
+            <h2 class="reveal">最成功的 agent 实现，通常不是最复杂的实现</h2>
+            <div class="grid-3">
+              <div class="card reveal">
+                <strong>简单优先</strong>
+                <p>先用最简单的方案解决问题，只有当收益明确时才增加复杂度。</p>
+              </div>
+              <div class="card reveal">
+                <strong>组合模式</strong>
+                <p>有效系统更多依赖清晰、可组合的 workflow 和 agent 模式。</p>
+              </div>
+              <div class="card reveal">
+                <strong>可调试性</strong>
+                <p>框架能加速起步，但也可能遮蔽 prompt、response 和真实控制路径。</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="slide">
+          <div class="slide-content">
+            <div class="kicker-row reveal"><span class="pill">Definitions</span>Anthropic 的关键区分</div>
+            <h2 class="reveal">Workflows 与 Agents 都属于 agentic systems，但控制权不同</h2>
+            <div class="grid-2">
+              <div class="card reveal">
+                <strong>Workflows</strong>
+                <p>LLM 和工具通过预定义代码路径编排，适合可拆解、可预测、需要一致性的任务。</p>
+              </div>
+              <div class="card reveal">
+                <strong>Agents</strong>
+                <p>LLM 动态决定流程和工具使用方式，适合开放式、步骤数难以预判的问题。</p>
+              </div>
+            </div>
+            <div class="flow reveal">
+              <div class="node">预定义路径</div>
+              <div class="arrow">→</div>
+              <div class="node">模型驱动决策</div>
+              <div class="arrow">→</div>
+              <div class="node">更高灵活性与风险</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="slide">
+          <div class="slide-content">
+            <div class="kicker-row reveal"><span class="pill">Decision gate</span>何时使用 agentic systems</div>
+            <h2 class="reveal">复杂度应该由任务收益证明，而不是由技术热度驱动</h2>
+            <div class="grid-2">
+              <div class="stat reveal">
+                <div>
+                  <b>1st</b>
+                  <span>先优化单次 LLM 调用、检索和上下文示例</span>
+                </div>
+              </div>
+              <div class="card reveal">
+                <strong>使用前权衡</strong>
+                <ul>
+                  <li>Agentic systems 往往以更高延迟和成本换取更好任务表现。</li>
+                  <li>Workflow 适合明确任务；agent 适合需要灵活决策的规模化问题。</li>
+                  <li>如果简单 LLM 调用已经足够，就不必构建 agent。</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="slide">
+          <div class="slide-content">
+            <div class="kicker-row reveal"><span class="pill">Frameworks</span>工具选择不是架构替代品</div>
+            <h2 class="reveal">框架能降低起步成本，也可能增加看不见的抽象层</h2>
+            <div class="grid-3">
+              <div class="card reveal">
+                <strong>可简化</strong>
+                <p>调用 LLM、定义和解析工具、串联调用等低层任务更容易开始。</p>
+              </div>
+              <div class="card reveal">
+                <strong>会遮蔽</strong>
+                <p>额外抽象可能让底层 prompt 和 response 更难调试。</p>
+              </div>
+              <div class="card reveal">
+                <strong>建议</strong>
+                <p>优先直接使用 LLM API；如果使用框架，要理解底层代码。</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="slide">
+          <div class="slide-content">
+            <div class="kicker-row reveal"><span class="pill">Building block</span>Augmented LLM</div>
+            <h2 class="reveal">增强型 LLM 是所有模式的基础构件</h2>
+            <div class="visual-card reveal" aria-label="增强型 LLM 能力示意图">
+              <svg viewBox="0 0 760 360" role="img" aria-label="LLM 连接 retrieval tools memory 的结构图">
+                <defs>
+                  <linearGradient id="coreGlow" x1="0" x2="1" y1="0" y2="1">
+                    <stop offset="0%" stop-color="#6ee7ff" stop-opacity="0.8" />
+                    <stop offset="100%" stop-color="#9dffb0" stop-opacity="0.8" />
+                  </linearGradient>
+                </defs>
+                <rect width="760" height="360" rx="28" fill="rgba(255,255,255,0.03)" />
+                <circle cx="380" cy="180" r="78" fill="url(#coreGlow)" opacity="0.22" />
+                <circle cx="380" cy="180" r="58" fill="rgba(110,231,255,0.14)" stroke="#6ee7ff" stroke-width="3" />
+                <text x="380" y="190" text-anchor="middle" fill="#f4f8ff" font-size="30" font-weight="800">LLM</text>
+                <g fill="none" stroke="#6ee7ff" stroke-width="3" opacity="0.8">
+                  <path d="M330 135 C250 80 190 80 130 110" />
+                  <path d="M430 135 C510 80 570 80 630 110" />
+                  <path d="M330 225 C250 280 190 280 130 250" />
+                  <path d="M430 225 C510 280 570 280 630 250" />
+                </g>
+                <g font-size="22" font-weight="800" text-anchor="middle">
+                  <rect x="44" y="76" width="172" height="70" rx="18" fill="rgba(110,231,255,0.10)" stroke="rgba(110,231,255,0.42)" />
+                  <text x="130" y="119" fill="#f4f8ff">Retrieval</text>
+                  <rect x="544" y="76" width="172" height="70" rx="18" fill="rgba(157,255,176,0.10)" stroke="rgba(157,255,176,0.42)" />
+                  <text x="630" y="119" fill="#f4f8ff">Tools</text>
+                  <rect x="44" y="214" width="172" height="70" rx="18" fill="rgba(255,207,112,0.10)" stroke="rgba(255,207,112,0.42)" />
+                  <text x="130" y="257" fill="#f4f8ff">Memory</text>
+                  <rect x="544" y="214" width="172" height="70" rx="18" fill="rgba(110,231,255,0.08)" stroke="rgba(110,231,255,0.34)" />
+                  <text x="630" y="247" fill="#f4f8ff">Documented</text>
+                  <text x="630" y="273" fill="#f4f8ff">Interface</text>
+                </g>
+              </svg>
+              <div class="visual-note">
+                <h3>原文图示要点</h3>
+                <p>增强型 LLM 不是单独模型调用，而是围绕检索、工具、记忆和清晰接口建立的能力组合。</p>
+              </div>
+            </div>
+            <div class="grid-2">
+              <div class="card reveal">
+                <strong>模型主动使用能力</strong>
+                <p>当前模型可以生成搜索查询、选择合适工具，并判断要保留哪些信息。</p>
+              </div>
+              <div class="card reveal">
+                <strong>实现重点</strong>
+                <p>根据具体用例定制能力，并为 LLM 提供简单、文档充分的接口。</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="slide">
+          <div class="slide-content">
+            <div class="kicker-row reveal"><span class="pill">Workflow map</span>从可预测到开放式</div>
+            <h2 class="reveal">五类常见 workflow 覆盖不同任务形态</h2>
+            <div class="grid-3">
+              <div class="card compact reveal"><strong>Prompt chaining</strong><p>把任务拆成连续步骤，每步处理上一步输出。</p></div>
+              <div class="card compact reveal"><strong>Routing</strong><p>先分类，再分发给更专门的后续任务。</p></div>
+              <div class="card compact reveal"><strong>Parallelization</strong><p>并行处理子任务，或用多视角提高置信度。</p></div>
+              <div class="card compact reveal"><strong>Orchestrator-workers</strong><p>由 orchestrator 动态决定子任务和 worker 分工。</p></div>
+              <div class="card compact reveal"><strong>Evaluator-optimizer</strong><p>生成结果，再用明确标准评价并迭代优化。</p></div>
+              <div class="card compact reveal"><strong>Agents</strong><p>用于难以预先硬编码路径的开放式问题。</p></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="slide">
+          <div class="slide-content">
+            <div class="kicker-row reveal"><span class="pill">Fixed paths</span>Prompt chaining 与 routing</div>
+            <h2 class="reveal">当任务能被清晰拆解或分类时，固定路径更可控</h2>
+            <div class="grid-2">
+              <div class="card reveal">
+                <strong>Prompt chaining</strong>
+                <ul>
+                  <li>适合能干净拆成固定子任务的场景。</li>
+                  <li>用延迟换取准确率，让每次 LLM 调用更容易。</li>
+                  <li>示例：先写大纲，再检查标准，最后生成文档。</li>
+                </ul>
+              </div>
+              <div class="card reveal">
+                <strong>Routing</strong>
+                <ul>
+                  <li>适合输入类别明确、不同类别需要不同处理策略的任务。</li>
+                  <li>通过分类实现关注点分离，避免一种 prompt 牺牲另一类输入表现。</li>
+                  <li>示例：把客户问题分到退款、技术支持或通用问答路径。</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="slide">
+          <div class="slide-content">
+            <div class="kicker-row reveal"><span class="pill">Adaptive workflows</span>并行、编排、评估</div>
+            <h2 class="reveal">更复杂的 workflow 应该对应更复杂的不确定性</h2>
+            <div class="grid-3">
+              <div class="card reveal">
+                <strong>Parallelization</strong>
+                <p>当子任务可并行，或需要多种尝试和视角来提高置信度时使用。</p>
+              </div>
+              <div class="card reveal">
+                <strong>Orchestrator-workers</strong>
+                <p>当无法预先判断需要哪些子任务时，由 orchestrator 动态拆解和分配。</p>
+              </div>
+              <div class="card reveal">
+                <strong>Evaluator-optimizer</strong>
+                <p>当有清晰评价标准，且迭代改进能带来可衡量价值时使用。</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="slide">
+          <div class="slide-content">
+            <div class="kicker-row reveal"><span class="pill">Agents</span>开放式问题的自主系统</div>
+            <h2 class="reveal">Agents 适合无法预测步骤数、也无法硬编码路径的问题</h2>
+            <div class="grid-2">
+              <div class="card reveal">
+                <strong>使用前提</strong>
+                <p>任务开放、步骤不确定，并且你能在一定程度上信任模型的决策过程。</p>
+              </div>
+              <div class="card reveal">
+                <strong>风险边界</strong>
+                <p>自主性会带来更高成本和复合错误风险，因此需要沙盒测试与护栏。</p>
+              </div>
+            </div>
+            <p class="quote reveal">“Agents' autonomy makes them ideal for scaling tasks in trusted environments.”</p>
+          </div>
+        </section>
+
+        <section class="slide">
+          <div class="slide-content">
+            <div class="kicker-row reveal"><span class="pill">Practice</span>两个高价值应用域</div>
+            <h2 class="reveal">客户支持与编码任务体现了 agent 的实际价值</h2>
+            <div class="grid-2">
+              <div class="card reveal">
+                <strong>Customer support</strong>
+                <p>Support agents 能结合对话、工具和业务上下文处理多步骤问题，但必须控制权限和错误传播。</p>
+              </div>
+              <div class="card reveal">
+                <strong>Coding agents</strong>
+                <p>软件开发场景天然需要搜索、修改、测试和迭代，agent 能从补全扩展到自主问题解决。</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="slide">
+          <div class="slide-content">
+            <div class="kicker-row reveal"><span class="pill">Takeaway</span>可发布系统的三条原则</div>
+            <h2 class="reveal">从简单、透明、可验证的模式开始</h2>
+            <div class="grid-3">
+              <div class="card reveal">
+                <strong>从简单开始</strong>
+                <p>优先单次 LLM 调用和清晰 workflow，复杂度必须由任务收益证明。</p>
+              </div>
+              <div class="card reveal">
+                <strong>保持透明</strong>
+                <p>理解框架底层行为，避免 prompt、response 和工具调用被抽象层遮蔽。</p>
+              </div>
+              <div class="card reveal">
+                <strong>严格验证</strong>
+                <p>对 agent 进行沙盒测试、加护栏，并针对开放式任务建立评价机制。</p>
+              </div>
+            </div>
+            <p class="source reveal">
+              原文：<a
+                href="https://www.anthropic.com/engineering/building-effective-agents"
+                target="_blank"
+                rel="noopener"
+              >《Building Effective AI Agents \ Anthropic》</a>
+            </p>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <div class="deck-controls-zone" id="controlsZone">
+      <nav class="deck-controls" aria-label="幻灯片控制">
+        <div class="deck-page-controls">
+          <button class="deck-page-btn" id="prevBtn" type="button" aria-label="上一页">‹</button>
+          <span class="deck-page-status" id="pageStatus">1/12</span>
+          <button class="deck-page-btn" id="nextBtn" type="button" aria-label="下一页">›</button>
+        </div>
+        <div class="deck-control-separator"></div>
+        <div class="deck-shortcuts" aria-hidden="true">
+          <span class="shortcut-chip"><span>下一页</span><kbd>Space</kbd><kbd>↓</kbd><kbd>→</kbd></span>
+          <span class="shortcut-chip"><span>上一页</span><kbd>←</kbd><kbd>↑</kbd></span>
+          <span class="shortcut-chip"><span>重置</span><kbd>R</kbd></span>
+        </div>
+      </nav>
+    </div>
+
+    <script>
+      class SlidePresentation {
+        constructor() {
+          this.stage = document.getElementById('deckStage');
+          this.slides = Array.from(document.querySelectorAll('.slide'));
+          this.index = 0;
+          this.prevBtn = document.getElementById('prevBtn');
+          this.nextBtn = document.getElementById('nextBtn');
+          this.pageStatus = document.getElementById('pageStatus');
+          this.controlsZone = document.getElementById('controlsZone');
+          this.hideTimer = null;
+          this.touchStartX = 0;
+          this.touchStartY = 0;
+          this.wheelLocked = false;
+          this.bind();
+          this.scaleStage();
+          this.showSlide(0);
+          this.showControls();
+        }
+
+        bind() {
+          window.addEventListener('resize', () => this.scaleStage());
+          document.addEventListener('keydown', (event) => this.onKey(event));
+          window.addEventListener('wheel', (event) => this.onWheel(event), { passive: true });
+          window.addEventListener('touchstart', (event) => this.onTouchStart(event), { passive: true });
+          window.addEventListener('touchend', (event) => this.onTouchEnd(event), { passive: true });
+          document.addEventListener('mousemove', (event) => {
+            if (window.innerHeight - event.clientY < 120) this.showControls();
+          });
+          this.prevBtn.addEventListener('click', () => this.prev());
+          this.nextBtn.addEventListener('click', () => this.next());
+          this.controlsZone.addEventListener('mouseenter', () => this.showControls());
+          this.controlsZone.addEventListener('mouseleave', () => this.scheduleHideControls());
+        }
+
+        scaleStage() {
+          const factor = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+          const x = (window.innerWidth - 1920 * factor) / 2;
+          const y = (window.innerHeight - 1080 * factor) / 2;
+          this.stage.style.transform = `translate(${x}px, ${y}px) scale(${factor})`;
+        }
+
+        showSlide(target) {
+          const nextIndex = Math.max(0, Math.min(this.slides.length - 1, target));
+          this.slides.forEach((slide, i) => {
+            slide.classList.toggle('active', i === nextIndex);
+            slide.classList.toggle('visible', i === nextIndex);
+          });
+          this.index = nextIndex;
+          this.pageStatus.textContent = `${this.index + 1}/${this.slides.length}`;
+          this.prevBtn.disabled = this.index === 0;
+          this.nextBtn.disabled = this.index === this.slides.length - 1;
+          this.showControls();
+        }
+
+        next() {
+          this.showSlide(this.index + 1);
+        }
+
+        prev() {
+          this.showSlide(this.index - 1);
+        }
+
+        onKey(event) {
+          if (event.altKey || event.ctrlKey || event.metaKey) return;
+          const forward = ['ArrowRight', 'ArrowDown', 'PageDown', ' '];
+          const backward = ['ArrowLeft', 'ArrowUp', 'PageUp'];
+          if (forward.includes(event.key)) {
+            event.preventDefault();
+            this.next();
+          } else if (backward.includes(event.key)) {
+            event.preventDefault();
+            this.prev();
+          } else if (event.key === 'Home' || event.key === 'Escape' || event.key.toLowerCase() === 'r') {
+            event.preventDefault();
+            this.showSlide(0);
+          } else if (event.key === 'End') {
+            event.preventDefault();
+            this.showSlide(this.slides.length - 1);
+          }
+        }
+
+        onWheel(event) {
+          if (this.wheelLocked || Math.abs(event.deltaY) < 20) return;
+          this.wheelLocked = true;
+          if (event.deltaY > 0) this.next();
+          else this.prev();
+          window.setTimeout(() => {
+            this.wheelLocked = false;
+          }, 520);
+        }
+
+        onTouchStart(event) {
+          const touch = event.changedTouches[0];
+          this.touchStartX = touch.clientX;
+          this.touchStartY = touch.clientY;
+        }
+
+        onTouchEnd(event) {
+          const touch = event.changedTouches[0];
+          const dx = touch.clientX - this.touchStartX;
+          const dy = touch.clientY - this.touchStartY;
+          if (Math.abs(dx) < 48 || Math.abs(dx) < Math.abs(dy)) return;
+          if (dx < 0) this.next();
+          else this.prev();
+        }
+
+        showControls() {
+          window.clearTimeout(this.hideTimer);
+          this.controlsZone.classList.add('show-controls');
+          this.scheduleHideControls();
+        }
+
+        scheduleHideControls() {
+          window.clearTimeout(this.hideTimer);
+          this.hideTimer = window.setTimeout(() => {
+            this.controlsZone.classList.remove('show-controls');
+          }, 5000);
+        }
+      }
+
+      window.addEventListener('DOMContentLoaded', () => new SlidePresentation());
+    </script>
+  </body>
+</html>

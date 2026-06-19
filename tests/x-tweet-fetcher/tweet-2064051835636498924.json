@@ -1,0 +1,70 @@
+{
+  "url": "https://x.com/akshay_pachaar/status/2064051835636498924?s=20",
+  "username": "akshay_pachaar",
+  "tweet_id": "2064051835636498924",
+  "tweet": {
+    "text": "",
+    "author": "Akshay 🚀",
+    "screen_name": "akshay_pachaar",
+    "likes": 1226,
+    "retweets": 159,
+    "bookmarks": 2938,
+    "views": 819904,
+    "replies_count": 32,
+    "created_at": "Mon Jun 08 18:28:00 +0000 2026",
+    "is_note_tweet": false,
+    "lang": null,
+    "article": {
+      "title": "Your Agent Harness Should Repair Itself",
+      "preview_text": "When an AI agent fails in production, your observability tool shows you exactly what it did and almost nothing about how to fix it.\nYou get a clean trace of the run, every model call and tool that",
+      "created_at": "2026-06-08T18:28:00.000Z",
+      "full_text": "When an AI agent fails in production, your observability tool shows you exactly what it did and almost nothing about how to fix it.\n\nYou get a clean trace of the run, every model call and tool that fired, how long each step took, and what it cost in tokens.\n\nWhat you don't get is why it broke, the change that would fix it, or any promise the same thing won't happen again next week.\n\nSo you scroll through the trace span by span, form a theory about what went wrong, write a patch by hand, and hope it doesn't break something that was working before.\n\nThen a new model ships with a fresh batch of failure modes, and you run that whole manual loop from the top.\n\nThe real bottleneck isn't your observability. It's everything that has to happen after the trace lands on your screen.\n\n![](https://pbs.twimg.com/media/HKSta5UaAAE4D7S.jpg)\n\nCursor recently shared how much engineering goes into the harness around their agent, the layer of prompts, tools, and checks wrapped around the raw model. A better harness on the same model gives far better results, and that work never really ends.\n\nThis is where every observability platform leaves you. It answers what happened, then hands back why it happened, what to change, and how to keep it from breaking again.\n\nThat gap is the loop most teams are stuck in today. Here's why it keeps reopening, and what it finally takes to close it.\n\nWhy Current Observability Breaks at Scale\n\nMost agent observability platforms deliver a trace and stop.\n\nYou get a span tree, latency numbers, token costs, and a dashboard. What you don't get: why it failed, what to fix, or any guarantee it won't break again.\n\n\"What happened\" → the platform handles this\n\n\"Why it happened\" → manual\n\n\"Here's the fix\" → manual\n\n\"This won't break again\" → manual\n\nThat was a reasonable product in 2023. It's the wrong abstraction for teams running agents in production today.\n\nThe problem compounds itself. Every model upgrade introduces new failure modes. Every new tool adds new edge cases. The harness gets more complex faster than any team can manually track and repair.\n\nHere's the stack that does it.\n\n![](https://pbs.twimg.com/media/HKStt7DbEAAb7oE.jpg)\n\nOpik: AI Observability & Evals For the Agentic Era\n\nOpik is an open-source logging, debugging, and optimization platform for AI agents and LLM applications. Opik is built around the premise that this loop should be automated, not staffed.\n\n![](https://pbs.twimg.com/media/HKSuZYNbwAA-yjh.jpg)\n\nThe Four-Layer Stack\n\nOpik's architecture is one connected workflow.\n\nTrace → Ollie diagnoses → Ollie proposes a fix → fix is applied and verified → Test Suite locks the failure as a regression test → back to Trace\n\n![](https://pbs.twimg.com/media/HKSulwkbYAApCVA.jpg)\n\nHere's each layer.\n\nLayer 1: Tracing\n\nEvery LLM call, tool invocation, and retrieval step is instrumented automatically with a single decorator.\n\n \n\nWorks with LangGraph, CrewAI, and 50+ frameworks out of the box. Every trace records which agent configuration was active for full reproducibility when you need to rerun a failing input later.\n\n![](https://pbs.twimg.com/media/HKSwDwNboAATBy7.jpg)\n\nLayer 2: Ollie\n\nEvery other observability platform stops at \"here's your trace.\" Opik goes from trace to fixed code, powered by Ollie.\n\nOllie is a coding agent built into Opik. One agent, full context.\n\n![](https://pbs.twimg.com/media/HKSwqWkakAAhrBV.jpg)\n\nWithout any code access, Ollie reads span trees, identifies failure modes, and explains the causal chain across every LLM call. Ask it, \"why did the final answer ignore the retrieved context?\" It walks the full span tree and surfaces the root cause.\n\nRun opik connect from your project root, and Ollie upgrades to full code-fix mode:\n\nReads your source files\n\nIdentifies the exact lines responsible\n\nProposes a diff; nothing changes without your explicit approval\n\nOnce you approve, Ollie reruns your agent against the exact inputs from the original failing trace, streams the new trace for side-by-side comparison, and locks the original failure as a regression case in your test suite.\n\nBad trace → root cause → diff → approve → rerun → regression locked\n\n![](https://pbs.twimg.com/media/HKSxAsCbAAEPsH_.jpg)\n\nLayer 3: Test Suites\n\nMost eval workflows: build a labeled dataset, define a numerical metric, compare floats. That model works for researchers. It doesn't match how engineers think about quality.\n\nOpik replaces it with plain-English assertions.\n\n \n\nOpik converts those into LLM-as-a-judge checks under the hood. Clean pass/fail per test case.\n\n![](https://pbs.twimg.com/media/HKSxkDzbYAA0bd3.jpg)\n\nThe part that changes the workflow: every failing trace you debug automatically becomes a new test case. The suite grows from real production failures, not synthetic scenarios someone wrote in advance.\n\nEvery cycle, the harness gets harder to break.\n\nBut even with a growing test suite, you still need a safe place to test changes before they ship. That's what Layer 4 is for.\n\nLayer 4: Agent sandbox\n\nMost playgrounds are prompt playgrounds. You change a system prompt and rerun one LLM call. That answers the wrong question.\n\nThe production question is, what happens to the entire agent graph when I change this.\n\nOpik's Agent Sandbox runs the fully instrumented agent end-to-end inside the UI. Change a prompt, swap a model, add a tool, and watch how the whole system responds across the full spanning tree. Every sandbox run produces a complete Opik trace.\n\nNon-developer stakeholders, PMs, domain experts, and QA can safely test configurations without touching git.\n\nThe Flywheel in Practice\n\nThe layers aren't independent features. They're one loop.\n\nInstrument with @opik.track. Declare an opik.Config. Something fails in production. Ollie reads the trace, reads your source, and proposes a fix. You approve. Ollie reruns the agent in the Sandbox against the original failing input. Fixes passes. Save it as a new Blueprint. The environment pointer promotes to staging. Original failure locked as a regression test.\n\n![](https://pbs.twimg.com/media/HKSz8UVaIAAtf84.jpg)\n\nThe next failure enters the same loop.\n\nEvery cycle, the harness gets harder to break.\n\n​Closing the Loop\n\nObservability that ends at the trace made sense when agents were simple. Once they hit production, the real work is everything after the trace, and that is the part Opik runs for you instead of leaving it on your plate.\n\nThe whole stack ships in the open, Tracing, Ollie, Test Suites, the Agent Sandbox, a 6-algorithm Agent Optimizer, and 50+ framework integrations, with the project past 19.3K stars on GitHub.\n\nIt self-hosts in three commands:\n\n \n\nThe manual loop Cursor describes is the one Opik closes on its own, from a bad trace all the way to a locked regression test.\n\nIt is worth a look if you are running agents in production. \n\nCheck out Comet ML and Opik → \n\n( don't forget to star 🌟)\n\nWhat's the current state of observability in your agent stack, and where does the debugging loop break for your team right now?\n\n \n\nIf you are building an open-source tool that AI engineers would love, reach out. We only cover tools that pass our own test, so we'll try yours first and write about it only if it holds up.\n\nThanks to Comet ML for sponsoring today's issue.",
+      "word_count": 1146,
+      "char_count": 7260,
+      "images": [
+        {
+          "type": "cover",
+          "url": "https://pbs.twimg.com/media/HKT7cxzbcAAzT9w.jpg"
+        },
+        {
+          "type": "image",
+          "url": "https://pbs.twimg.com/media/HKSta5UaAAE4D7S.jpg"
+        },
+        {
+          "type": "image",
+          "url": "https://pbs.twimg.com/media/HKSxAsCbAAEPsH_.jpg"
+        },
+        {
+          "type": "image",
+          "url": "https://pbs.twimg.com/media/HKSxkDzbYAA0bd3.jpg"
+        },
+        {
+          "type": "image",
+          "url": "https://pbs.twimg.com/media/HKSz8UVaIAAtf84.jpg"
+        },
+        {
+          "type": "image",
+          "url": "https://pbs.twimg.com/media/HKSulwkbYAApCVA.jpg"
+        },
+        {
+          "type": "image",
+          "url": "https://pbs.twimg.com/media/HKStt7DbEAAb7oE.jpg"
+        },
+        {
+          "type": "image",
+          "url": "https://pbs.twimg.com/media/HKSwqWkakAAhrBV.jpg"
+        },
+        {
+          "type": "image",
+          "url": "https://pbs.twimg.com/media/HKSuZYNbwAA-yjh.jpg"
+        },
+        {
+          "type": "image",
+          "url": "https://pbs.twimg.com/media/HKSwDwNboAATBy7.jpg"
+        }
+      ],
+      "image_count": 10
+    },
+    "is_article": true
+  }
+}

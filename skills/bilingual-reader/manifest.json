@@ -1,0 +1,15 @@
+{
+  "name": "bilingual-reader",
+  "version": "0.1.0",
+  "category": "Editorial · English source → bilingual close-reading page",
+  "description": "Normalize English source material from URLs, images, documents, files, attachments, or pasted text into Markdown, stop for source review, then generate a polished offline English-Chinese close-reading page with translation, glossary, vocabulary hover states, quiz, and static HTML validation.",
+  "homepage": "https://github.com/chaos-design/skills/tree/main/skills/bilingual-reader",
+  "compat": [
+    "claude-code",
+    "claude-ai",
+    "cursor",
+    "codex-cli",
+    "gemini-cli",
+    "opencode"
+  ]
+}
