@@ -4,9 +4,11 @@
 from __future__ import annotations
 
 import argparse
+import email.utils
 import html
 import json
 import re
+import subprocess
 import sys
 import time
 import urllib.error
@@ -32,6 +34,7 @@ PLATFORM_HOST_HINTS = {
     "bilibili": ("bilibili.com", "b23.tv"),
     "wechat": ("mp.weixin.qq.com",),
 }
+X_TWEET_FETCHER_PLATFORMS = {"x-twitter", "weibo", "zhihu", "xiaohongshu", "bilibili", "wechat"}
 
 LANG_CLASS_RE = re.compile(r"(?:language|lang|brush|highlight-source)[-:]\s*([a-z0-9#+.]+)", re.IGNORECASE)
 LANG_ALIASES = {
@@ -84,6 +87,16 @@ class MarkdownDocument:
     issues: list[str] = field(default_factory=list)
     source_language: str = "unspecified"
     target_language: str = "none"
+    metadata: list[tuple[str, str]] = field(default_factory=list)
+
+
+@dataclass(frozen=True)
+class SourceRoute:
+    """Resolved input type and execution route."""
+
+    kind: str
+    value: str | Path
+    platform: str = ""
 
 
 class TreeBuilder(HTMLParser):
@@ -144,12 +157,6 @@ def delegated_platform(url: str) -> str:
 
 def validate_web_markdown_url(url: str) -> str:
     url = validate_url(url)
-    platform = delegated_platform(url)
-    if platform:
-        raise ValueError(
-            f"{platform} URLs must be handled by url-content-fetcher; "
-            "web-markdown only processes non-specialized URLs with MarkItDown."
-        )
     return url
 
 
@@ -160,6 +167,37 @@ def is_http_url(value: str) -> bool:
 
 def has_url_scheme(value: str) -> bool:
     return bool(urllib.parse.urlparse(value).scheme)
+
+
+def classify_source(args: argparse.Namespace) -> SourceRoute:
+    """Validate input once, then choose the execution route before loading dependencies."""
+    if args.html_file:
+        source_url = validate_url(args.source or getattr(args, "url", "") or "")
+        return SourceRoute("html-file", args.html_file, delegated_platform(source_url))
+    if args.text is not None:
+        if not args.text.strip():
+            raise ValueError("Pasted text is empty.")
+        return SourceRoute("text", args.text)
+    if args.stdin:
+        return SourceRoute("stdin", "stdin")
+
+    source = args.source or getattr(args, "url", "")
+    if not source:
+        raise ValueError("Provide a URL, file path, --text, or --stdin input.")
+    if is_http_url(source):
+        source_url = validate_url(source)
+        platform = delegated_platform(source_url)
+        route = "x-tweet-fetcher" if platform in X_TWEET_FETCHER_PLATFORMS else "generic-url"
+        return SourceRoute(route, source_url, platform)
+    if has_url_scheme(source):
+        raise ValueError("Only absolute http:// and https:// URLs are supported.")
+
+    path = Path(source)
+    if not path.exists():
+        raise FileNotFoundError(f"Input file does not exist: {path}")
+    if not path.is_file():
+        raise ValueError(f"Input path is not a file: {path}")
+    return SourceRoute("file", path)
 
 
 def load_markitdown():
@@ -217,7 +255,9 @@ def wrap_markdown_document(document: MarkdownDocument) -> str:
     if not body:
         raise ValueError("Markdown body is empty after conversion.")
     fetched = fetched_timestamp()
-    markdown = f"# {document.title}\n\n> Source: {document.source}\n> Fetched: {fetched}\n\n{body}\n"
+    metadata = [("Source", document.source), ("Fetched", fetched), *document.metadata]
+    metadata_block = "\n".join(f"> {key}: {value}" for key, value in metadata if value != "")
+    markdown = f"# {document.title}\n\n{metadata_block}\n\n{body}\n"
     validate_markdown(markdown)
     return markdown
 
@@ -267,6 +307,77 @@ def convert_rendered_html_with_markitdown(
         )
 
 
+def convert_rendered_html_with_parser(
+    source_url: str,
+    html_source: str,
+    method: str = "html-parser-fallback",
+    confidence: str = "medium",
+    issues: list[str] | None = None,
+) -> MarkdownDocument:
+    if not re.search(r"<[a-zA-Z][^>]*>", html_source):
+        markdown = snapshot_to_markdown(html_source, source_url)
+    else:
+        root = parse_html(html_source)
+        main = extract_main(root)
+        title = detect_title(root, main, source_url)
+        body = "\n\n".join(children_markdown(main, source_url))
+        if not body:
+            raise ValueError("Markdown body is empty after HTML parser fallback.")
+        return MarkdownDocument(
+            title=title,
+            source=source_url,
+            body=body,
+            method=method,
+            confidence=confidence,
+            issues=issues or [],
+        )
+
+    title = first_markdown_heading(markdown) or source_title_fallback(source_url)
+    body = re.sub(r"^# .+?\n\n(?:> .+\n)+\n", "", markdown, count=1, flags=re.DOTALL).strip()
+    return MarkdownDocument(
+        title=title,
+        source=source_url,
+        body=body,
+        method=method,
+        confidence=confidence,
+        issues=issues or [],
+    )
+
+
+def convert_html_source(source_url: str, html_source: str, port: int = 9377, wait: float = 4.0) -> MarkdownDocument:
+    try:
+        return convert_rendered_html_with_markitdown(source_url, html_source, method="html-file")
+    except Exception as html_markitdown_error:
+        issues = [f"HTML MarkItDown conversion failed: {html_markitdown_error}"]
+        try:
+            rendered_html = fetch_with_camofox(source_url, port, wait)
+        except Exception as camofox_error:
+            issues.append(f"Camofox render failed: {camofox_error}")
+            return convert_rendered_html_with_parser(
+                source_url,
+                html_source,
+                confidence="medium",
+                issues=issues,
+            )
+        try:
+            return convert_rendered_html_with_markitdown(
+                source_url,
+                rendered_html,
+                method="camofox-fallback",
+                confidence="medium",
+                issues=issues,
+            )
+        except Exception as rendered_markitdown_error:
+            issues.append(f"Rendered HTML MarkItDown conversion failed: {rendered_markitdown_error}")
+            return convert_rendered_html_with_parser(
+                source_url,
+                rendered_html,
+                method="camofox-html-parser-fallback",
+                confidence="medium",
+                issues=issues,
+            )
+
+
 def convert_text_with_markitdown(
     text: str,
     source: str = "pasted-notes",
@@ -280,8 +391,207 @@ def convert_text_with_markitdown(
         return convert_markitdown_input(Path(text_file.name), source, method=method)
 
 
+def skill_root() -> Path:
+    return Path(__file__).resolve().parents[2]
+
+
+def x_tweet_fetcher_script(name: str) -> Path:
+    return skill_root() / "x-tweet-fetcher" / "scripts" / name
+
+
+def run_platform_fetcher(command: list[str], timeout: int = 90) -> str:
+    completed = subprocess.run(
+        command,
+        cwd=Path(command[1]).parent if len(command) > 1 else None,
+        capture_output=True,
+        text=True,
+        timeout=timeout,
+        check=False,
+    )
+    if completed.returncode:
+        detail = (completed.stderr or completed.stdout or "unknown error").strip()
+        raise RuntimeError(detail)
+    output = completed.stdout.strip()
+    if not output:
+        raise RuntimeError("Platform fetcher returned empty output.")
+    return output
+
+
+def normalize_source_date(value: str) -> str:
+    if not value:
+        return ""
+    try:
+        parsed = email.utils.parsedate_to_datetime(value)
+        if parsed.tzinfo is None:
+            parsed = parsed.replace(tzinfo=timezone.utc)
+        return parsed.astimezone(timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
+    except (TypeError, ValueError):
+        pass
+    for fmt in ("%Y-%m-%dT%H:%M:%S%z", "%Y-%m-%d %H:%M:%S", "%Y-%m-%d"):
+        try:
+            parsed = datetime.strptime(value.replace("Z", "+0000"), fmt)
+            if parsed.tzinfo is None:
+                parsed = parsed.replace(tzinfo=timezone(timedelta(hours=8)))
+            return parsed.astimezone(timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
+        except ValueError:
+            continue
+    return value
+
+
+def word_count(markdown: str) -> int:
+    return len(re.findall(r"\w+", markdown))
+
+
+def first_sentence_title(text: str, fallback: str) -> str:
+    text = clean_inline(re.sub(r"!\[[^\]]*]\([^)]+\)", "", text))
+    match = re.search(r"^(.{1,80}?)(?:[.!?\n]|$)", text)
+    title = clean_inline(match.group(1)) if match else ""
+    return title or fallback
+
+
+def looks_like_platform_heading(block: str) -> bool:
+    text = clean_inline(block)
+    if not text or text.startswith(("#", "-", ">", "!", "`")):
+        return False
+    if len(text) > 90 or len(text.split()) > 12:
+        return False
+    if re.search(r"[.!?。！？]$", text):
+        return False
+    return bool(re.search(r"[A-Z]", text) or re.search(r"[:：]\s*\S", text))
+
+
+def reconstruct_platform_markdown(body: str) -> str:
+    blocks = re.split(r"\n{2,}", body.strip())
+    rebuilt: list[str] = []
+    for index, block in enumerate(blocks):
+        text = block.strip()
+        if index > 0 and looks_like_platform_heading(text):
+            level = "###" if re.match(r"Layer\s+\d+[:：]", text, re.IGNORECASE) else "##"
+            rebuilt.append(f"{level} {text}")
+        else:
+            rebuilt.append(text)
+    return "\n\n".join(rebuilt)
+
+
+def media_urls_from_tweet(tweet: dict) -> list[str]:
+    urls: list[str] = []
+    media = tweet.get("media") or {}
+    if isinstance(media, dict):
+        for item in media.get("images", []):
+            url = item.get("url") if isinstance(item, dict) else ""
+            if url:
+                urls.append(url)
+        for item in media.get("videos", []):
+            if isinstance(item, dict):
+                url = item.get("url") or item.get("thumbnail")
+                if url:
+                    urls.append(url)
+    article = tweet.get("article") or {}
+    if isinstance(article, dict):
+        for item in article.get("images", []):
+            url = item.get("url") if isinstance(item, dict) else ""
+            if url:
+                urls.append(url)
+    return list(dict.fromkeys(urls))
+
+
+def compose_x_markdown_document(source_url: str, payload: dict) -> MarkdownDocument:
+    tweet = payload.get("tweet") or {}
+    if not tweet:
+        raise RuntimeError("x-tweet-fetcher returned no tweet payload.")
+    article = tweet.get("article") if isinstance(tweet.get("article"), dict) else {}
+    body = (article.get("full_text") if article else "") or tweet.get("text", "")
+    if not body.strip():
+        raise RuntimeError("x-tweet-fetcher returned empty source text.")
+    body = reconstruct_platform_markdown(body)
+    title = article.get("title") if article else ""
+    title = clean_inline(title) or first_sentence_title(body, source_title_fallback(source_url))
+    author = clean_inline(tweet.get("author", ""))
+    handle = clean_inline(tweet.get("screen_name", ""))
+    author_value = f"{author} (`@{handle}`)" if author and handle else author or (f"`@{handle}`" if handle else "")
+    source_date = normalize_source_date(tweet.get("created_at", ""))
+    stats = []
+    for label, field in (("likes", "likes"), ("retweets", "retweets"), ("views", "views"), ("replies", "replies_count")):
+        value = tweet.get(field)
+        if value not in (None, ""):
+            stats.append(f"{label} {value}")
+    media_urls = media_urls_from_tweet(tweet)
+    if media_urls:
+        existing = set(re.findall(r"!\[[^\]]*]\(([^)]+)\)", body))
+        missing = [url for url in media_urls if url not in existing]
+        if missing:
+            body = body.rstrip() + "\n\n---\n\n## Media\n\n" + "\n".join(f"- ![]({url})" for url in missing)
+    metadata = [
+        ("Platform", "X/Twitter"),
+        ("Author", author_value),
+        ("Date", source_date),
+        ("Stats", " · ".join(stats)),
+        ("Word count", str(word_count(body))),
+    ]
+    return MarkdownDocument(
+        title=title,
+        source=source_url,
+        body=body,
+        method="platform-fetcher",
+        confidence="high",
+        metadata=metadata,
+    )
+
+
+def convert_x_platform_url(source_url: str, port: int = 9377) -> MarkdownDocument:
+    script = x_tweet_fetcher_script("fetch_tweet.py")
+    if not script.exists():
+        raise RuntimeError(f"x-tweet-fetcher dependency is missing: {script}")
+    command = [sys.executable, str(script), "--pretty", "--lang", "en"]
+    if re.search(r"/i/article/\d+", source_url):
+        command.extend(["--article", source_url, "--port", str(port)])
+    else:
+        command.extend(["--url", source_url])
+    try:
+        output = run_platform_fetcher(command)
+    except RuntimeError:
+        if "--article" not in command:
+            raise
+        fallback = [sys.executable, str(script), "--pretty", "--lang", "en", "--url", source_url]
+        output = run_platform_fetcher(fallback)
+    payload = json.loads(output)
+    if payload.get("error"):
+        raise RuntimeError(str(payload["error"]))
+    return compose_x_markdown_document(source_url, payload)
+
+
+def convert_china_platform_url(source_url: str, port: int = 9377) -> MarkdownDocument:
+    script = x_tweet_fetcher_script("fetch_china.py")
+    if not script.exists():
+        return convert_markitdown_input(source_url, source_url, is_url=True)
+    output = run_platform_fetcher(
+        [sys.executable, str(script), "--url", source_url, "--markdown", "--port", str(port), "--lang", "en"],
+        timeout=120,
+    )
+    title = first_markdown_heading(output) or source_title_fallback(source_url)
+    return MarkdownDocument(
+        title=title,
+        source=source_url,
+        body=output,
+        method="platform-fetcher",
+        confidence="medium",
+        metadata=[("Platform", delegated_platform(source_url))],
+    )
+
+
+def convert_platform_url(source_url: str, port: int = 9377) -> MarkdownDocument:
+    platform = delegated_platform(source_url)
+    if platform == "x-twitter":
+        return convert_x_platform_url(source_url, port)
+    if platform in {"weibo", "zhihu", "xiaohongshu", "bilibili", "wechat"}:
+        return convert_china_platform_url(source_url, port)
+    return convert_markitdown_input(source_url, source_url, is_url=True)
+
+
 def convert_url_with_markitdown(source_url: str, port: int = 9377, wait: float = 4.0) -> MarkdownDocument:
-    source_url = validate_web_markdown_url(source_url)
+    source_url = validate_url(source_url)
+    if delegated_platform(source_url) in X_TWEET_FETCHER_PLATFORMS:
+        return convert_platform_url(source_url, port)
     try:
         return convert_markitdown_input(source_url, source_url, is_url=True)
     except Exception as markitdown_error:
@@ -289,13 +599,25 @@ def convert_url_with_markitdown(source_url: str, port: int = 9377, wait: float =
             raise
         try:
             rendered_html = fetch_with_camofox(source_url, port, wait)
-            return convert_rendered_html_with_markitdown(
-                source_url,
-                rendered_html,
-                method="camofox-fallback",
-                confidence="medium",
-                issues=[f"Direct MarkItDown URL conversion failed: {markitdown_error}"],
-            )
+            try:
+                return convert_rendered_html_with_markitdown(
+                    source_url,
+                    rendered_html,
+                    method="camofox-fallback",
+                    confidence="medium",
+                    issues=[f"Direct MarkItDown URL conversion failed: {markitdown_error}"],
+                )
+            except Exception as rendered_markitdown_error:
+                return convert_rendered_html_with_parser(
+                    source_url,
+                    rendered_html,
+                    method="camofox-html-parser-fallback",
+                    confidence="medium",
+                    issues=[
+                        f"Direct MarkItDown URL conversion failed: {markitdown_error}",
+                        f"Rendered HTML MarkItDown conversion failed: {rendered_markitdown_error}",
+                    ],
+                )
         except Exception as camofox_error:
             raise RuntimeError(
                 "MarkItDown URL conversion failed and Camofox fallback also failed: "
@@ -312,24 +634,23 @@ def convert_file_with_markitdown(path: Path) -> MarkdownDocument:
 
 
 def convert_source_to_document(args: argparse.Namespace) -> MarkdownDocument:
-    if args.html_file:
-        source_url = validate_web_markdown_url(args.source or getattr(args, "url", "") or "")
-        source = args.html_file.read_text(encoding="utf-8")
-        document = convert_rendered_html_with_markitdown(source_url, source)
-    elif args.text is not None:
-        document = convert_text_with_markitdown(args.text, method="text")
-    elif args.stdin:
+    route = classify_source(args)
+    if route.kind == "html-file":
+        source_url = validate_url(args.source or getattr(args, "url", "") or "")
+        source = Path(route.value).read_text(encoding="utf-8")
+        document = convert_html_source(source_url, source, args.port, args.wait)
+    elif route.kind == "text":
+        document = convert_text_with_markitdown(str(route.value), method="text")
+    elif route.kind == "stdin":
         document = convert_text_with_markitdown(sys.stdin.read(), method="stdin")
+    elif route.kind == "x-tweet-fetcher":
+        document = convert_platform_url(str(route.value), args.port)
+    elif route.kind == "generic-url":
+        document = convert_url_with_markitdown(str(route.value), args.port, args.wait)
+    elif route.kind == "file":
+        document = convert_file_with_markitdown(Path(route.value))
     else:
-        source = args.source or getattr(args, "url", "")
-        if not source:
-            raise ValueError("Provide a URL, file path, --text, or --stdin input.")
-        if is_http_url(source):
-            document = convert_url_with_markitdown(source, args.port, args.wait)
-        elif has_url_scheme(source):
-            raise ValueError("Only absolute http:// and https:// URLs are supported.")
-        else:
-            document = convert_file_with_markitdown(Path(source))
+        raise ValueError(f"Unsupported source route: {route.kind}")
     document.source_language = getattr(args, "source_language", None) or "unspecified"
     document.target_language = getattr(args, "target_language", None) or "none"
     return document
@@ -699,7 +1020,18 @@ def unique_output_path(path: Path) -> Path:
 
 def default_output_path(markdown: str) -> Path:
     title = markdown.splitlines()[0].lstrip("#").strip()
-    return Path("web") / slugify(title)
+    platform_match = re.search(r"^> Platform:\s*(.+)$", markdown, re.MULTILINE)
+    platform = platform_match.group(1).strip().lower() if platform_match else ""
+    platform_folder = {
+        "x/twitter": "x",
+        "x-twitter": "x",
+        "weibo": "weibo",
+        "zhihu": "zhihu",
+        "xiaohongshu": "xiaohongshu",
+        "bilibili": "bilibili",
+        "wechat": "wechat",
+    }.get(platform, "web")
+    return Path(platform_folder) / slugify(title)
 
 
 def write_markdown(markdown: str, output: Path | None) -> Path:

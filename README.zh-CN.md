@@ -21,7 +21,6 @@ npx skills add https://github.com/chaos-design/skills --skill bilingual-reader
 npx skills add https://github.com/chaos-design/skills --skill content-slides
 npx skills add https://github.com/chaos-design/skills --skill frontend-slides
 npx skills add https://github.com/chaos-design/skills --skill geo-flow-map
-npx skills add https://github.com/chaos-design/skills --skill url-content-fetcher
 npx skills add https://github.com/chaos-design/skills --skill web-markdown
 npx skills add https://github.com/chaos-design/skills --skill x-tweet-fetcher
 ```
@@ -44,11 +43,11 @@ npx skills add https://github.com/chaos-design/skills --skill content-slides
 
 如果遇到内容抓取、正文缺失、图片/代码块丢失或后续处理失败，请先检查 `web-markdown` 是否已正确安装，并确认它能为同一输入生成有效 Markdown。
 
-`url-content-fetcher` 在处理 X/Twitter URL 时依赖 `x-tweet-fetcher`：
+`web-markdown` 在处理 X/Twitter 和已支持中文平台 URL 时，会使用 `x-tweet-fetcher` 作为底层桥接：
 
 ```bash
 npx skills add https://github.com/chaos-design/skills --skill x-tweet-fetcher
-npx skills add https://github.com/chaos-design/skills --skill url-content-fetcher
+npx skills add https://github.com/chaos-design/skills --skill web-markdown
 ```
 
 当 Agent 发现必需技能依赖缺失时，应先询问用户是否安装，展示准确的 `npx skills add` 命令，并在依赖可用后再继续执行。如果用户拒绝安装，应停止流程，或仅使用文档明确允许的临时回退方案。
@@ -59,7 +58,6 @@ npx skills add https://github.com/chaos-design/skills --skill url-content-fetche
 - [Content Slides](./skills/content-slides/README.zh-CN.md) ([English](./skills/content-slides/README.md))
 - [Frontend Slides](./skills/frontend-slides/README.zh-CN.md) ([English](./skills/frontend-slides/README.md))
 - [Geo Flow Map](./skills/geo-flow-map/README.zh-CN.md) ([English](./skills/geo-flow-map/README.md))
-- [URL Content Fetcher](./skills/url-content-fetcher/README.zh-CN.md) ([English](./skills/url-content-fetcher/README.md))
 - [Web Markdown](./skills/web-markdown/README.zh-CN.md) ([English](./skills/web-markdown/README.md))
 - [X Tweet Fetcher](./skills/x-tweet-fetcher/README.zh-CN.md) ([English](./skills/x-tweet-fetcher/README.md))
 

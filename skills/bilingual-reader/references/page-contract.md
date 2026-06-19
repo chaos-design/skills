@@ -7,12 +7,13 @@ Load this document only after the user has approved the normalized Markdown.
 Before page generation, the output directory must already contain:
 
 1. `<slug>.md` - the approved normalized Markdown.
+2. `data.json` - generated from the approved Markdown, manually reviewed, and corrected.
 
 Generate by default:
 
 1. `index.html` - a self-contained, human-editable bilingual reading page.
 
-Only generate `data.json` when the user explicitly asks for a separate data artifact. `index.html` must not depend on `data.json`.
+Always generate `data.json` before HTML rendering. `index.html` must not depend on `data.json` at runtime, but it must be rendered from the reviewed `data.json` so translation and summary corrections are preserved.
 
 ## Static HTML Requirements
 
@@ -33,6 +34,27 @@ Only generate `data.json` when the user explicitly asks for a separate data arti
 - Footer source link exactly as `原文：<a href="SOURCE_URL" target="_blank" rel="noopener">《SOURCE_TITLE》</a>`.
 - Anchor navigation through `nav#toc`, with click-to-scroll and active-state tracking.
 
+## Source-Grounded Template Content
+
+- Template descriptions, selection notes, guide copy, summary cards, captions, and visual labels must be organized from the approved Markdown and the selected template metadata only.
+- Do not invent source facts, section titles, examples, metrics, captions, image meanings, or article claims to make a template feel fuller.
+- If the source does not support a descriptive module, omit the module or state the source-backed gap plainly instead of filling it with generic copy.
+
+## Reviewed Data Contract
+
+- Generate `data.json` first and stop before rendering HTML.
+- Review every `zh` and `zh*` field sentence by sentence against the source-backed English text.
+- Review close-reading summaries in `summary`, `framework`, `quiz`, summary sections, captions, and glossary explanations against the approved Markdown.
+- Correct inaccurate translation, misleading terminology, unsupported interpretation, and missing source nuance directly in `data.json`.
+- Render HTML from the corrected `data.json`; do not regenerate data after manual corrections unless the review is repeated.
+
+## Original Image Presentation
+
+- Original-view images must be inserted only from source images present in the approved Markdown or extracted document input.
+- Place images in reading order near the source position they belong to.
+- Render original images centered in a bounded media block, with fixed `width="720"` and `height="405"` attributes or equivalent CSS, and `object-fit: contain`.
+- Do not use unconstrained image dimensions, full natural-size rendering, decorative replacement images, stock images, generated images, or placeholder images.
+
 ## Header Contract
 
 - Left side: one source-document title link opening the original URL with `target="_blank"` and `rel="noopener"`.
@@ -45,9 +67,9 @@ Only generate `data.json` when the user explicitly asks for a separate data arti
 
 After Markdown approval and parser conversion:
 
-1. Read `assets/templates/templates.json`.
-2. If generating one page, inspect only the selected template under `assets/templates/<name>/template.html`.
-3. If validating all indexed templates, use `scripts/static_reader.py` and render each template as `tests/bilingual-reader/<template>/index.html`, plus `tests/bilingual-reader/index.html`.
-4. Do not describe the selected template as a `default` choice.
-5. Do not replace all templates with one generic stylesheet; reuse the selected template's CSS direction.
-
+1. Generate and review `data.json`.
+2. Read `assets/templates/templates.json`.
+3. If generating one page, inspect only the selected template under `assets/templates/<name>/template.html`.
+4. If validating all indexed templates, use `scripts/static_reader.py --data-file <reviewed-data.json>` and render each template as `tests/bilingual-reader/<template>/index.html`, plus `tests/bilingual-reader/index.html`.
+5. Do not describe the selected template as a `default` choice.
+6. Do not replace all templates with one generic stylesheet; reuse the selected template's CSS direction.

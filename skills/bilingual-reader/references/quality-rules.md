@@ -12,16 +12,21 @@ Load this document only after the user has approved the normalized Markdown.
   cannot run in the current environment, stop and report the test as blocked
   or failed instead of generating substitute output.
 - Do not invent source content, source images, captions, metadata, quiz evidence, or glossary terms.
+- Do not invent template descriptions or descriptive page modules. Template-related copy must be derived from the approved Markdown and the selected template metadata, and unsupported details must be omitted or identified as source gaps.
 - Preserve source code blocks as content. Do not translate identifiers, comments, strings, CLI commands, API URLs, config keys, placeholders, indentation, or line breaks.
 - Preserve source tables in the original view as editable HTML `<table>` elements in reading order. Do not translate tables into bilingual rows.
-- Preserve accessible source images in the original view near their source position. Inline image bytes as data URIs when accessible. If an image is referenced but inaccessible, state the gap; do not substitute generated, stock, decorative, or placeholder images.
+- Preserve accessible source images in the original view near their source position. Inline image bytes as data URIs when accessible. Render source images centered in a fixed 720x405 bounded image box with `object-fit: contain`. If an image is referenced but inaccessible, state the gap; do not substitute generated, stock, decorative, or placeholder images.
 - For screenshots or scans, OCR only visible English text in reading order and state uncertainty for unclear regions.
 
 ## Language And Learning Content
 
 - Use Chinese by default for explanations, study notes, labels, quiz feedback, and glossary explanations while preserving source English passages.
 - Translate prose into natural Chinese with full-width punctuation.
+- Every `zh` or `zh*` field under `sections` must contain Chinese translation or Chinese explanation grounded in the corresponding source content. Do not copy English prose into section `zh` fields.
 - Build summary, logic framework, quiz, glossary, and final summary from article evidence.
+- Review `data.json` manually before HTML rendering. Check every translation sentence against the source, correct inaccurate or misleading translation, and keep domain terminology consistent.
+- Verify all close-reading summaries against the approved Markdown. If a summary point, framework node, quiz explanation, glossary note, caption, or final takeaway is not directly supported by the source, delete it or rewrite it from supported source meaning.
+- Do not use plausible but unsupported background knowledge to fill gaps in the article. The close-reading layer may explain the source, but it must not add new claims.
 - Quiz questions must include correct answer, wrong-answer reason, and source evidence.
 - The glossary should use high-value words, collocations, and domain terms from the article.
 - Use CEFR levels `B1`, `B2`, `C1`, `C2`, and `术语`.
@@ -49,6 +54,7 @@ Load this document only after the user has approved the normalized Markdown.
 
 Before delivery, verify that generated HTML contains:
 
+- content rendered from the reviewed `data.json`, not a freshly regenerated unreviewed data object;
 - no user-visible template-name explanation;
 - no user-visible `DOCxxx`, `TPLxxx`, or `DOMxxx` markers;
 - no unreplaced placeholders such as `__DATA_JSON__` or `__THEME_JSON__`;
@@ -57,5 +63,6 @@ Before delivery, verify that generated HTML contains:
 - no module imports;
 - no unresolved runtime data blobs;
 - no invented replacement images;
+- no unconstrained original-view image dimensions;
 - no translated code blocks;
 - no translated table rows.

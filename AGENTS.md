@@ -12,7 +12,6 @@ project.
 |   |-- content-slides/
 |   |-- frontend-slides/
 |   |-- geo-flow-map/
-|   |-- url-content-fetcher/
 |   |-- web-markdown/
 |   `-- x-tweet-fetcher/
 |-- screenshots/

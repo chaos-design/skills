@@ -190,7 +190,7 @@ Convert the content brief into an ordered list of slides. **Match the deck to a 
 **Hard limits regardless of mode:** no scrolling, no overflow, no overlapping panels, no text below comfortable reading size. If a slide's content exceeds the limit, **split it into more slides** rather than shrinking the type.
 
 **Standard deck arc:**
-1. **Title slide** — deck title + subtitle/source credit.
+1. **Title slide** — a theme-specific main title derived from the source article's central topic or thesis, plus an optional subtitle/source credit. Do not use generic titles such as “Presentation Title”, “Article Summary”, “Reading Notes”, “Untitled”, or a filename/URL slug. If the source title is descriptive but not presentation-ready, rewrite it into a faithful, audience-facing title that names the real topic. You may add a concise subtitle or grounded “个人理解/解读” framing line, but it must stay traceable to the source and not introduce unsupported claims.
 2. **Overview / agenda** (optional, for longer decks) — the sections at a glance.
 3. **Content slides** — one per section, split further as needed. Use the slide type that fits the content:
    - statement/quote slide for a punchy line or pulled quote
@@ -253,7 +253,7 @@ Produce a single self-contained HTML file. **Load detailed implementation refere
 
 - Every slide is a `<section class="slide">`, authored at 1920×1080.
 - The active slide uses `.active` and `.visible`; switch with `visibility`/`opacity`/`pointer-events`, never `display:none/block`.
-- Center the title slide visually by default. Other slides should follow the content's natural layout: left-aligned narrative blocks, grids, tables, diagrams, or comparisons as appropriate.
+- Center the title slide visually by default, with the title block placed in the middle of the 1920×1080 canvas rather than near the top edge. Keep the main title, optional subtitle, and source/context line grouped as one centered composition. Other slides should follow the content's natural layout: left-aligned narrative blocks, grids, tables, diagrams, or comparisons as appropriate.
 - Include the `SlidePresentation` controller from the template: fixed-stage scaling, keyboard navigation, bottom previous/next controls, page status, wheel, and touch swipe.
 - Keyboard hints in the bottom control bar must show next-page keys (`Space`, `↓`, `→`) and previous-page keys (`←`, `↑`).
 - Include the bottom control bar outside `.deck-stage`. Slides have no anchor/jump-dot information by default. Do not add top-right page numbers, separate floating counters, right-side anchor navigation, slide-jump dots, or side indexes unless the user explicitly asks for them.
@@ -276,7 +276,7 @@ The first HTML deck is a **review draft**. Do not deliver it as final until the 
 
 | Reviewer role | Review content | Pass standard |
 | --- | --- | --- |
-| Content Owner | Title, source credit, facts, numbers, quotes, terminology, translation quality, slide narrative | Every substantive claim traces back to `source.md`; no invented facts; source meaning is preserved; slide sequence is coherent |
+| Content Owner | Title, source credit, facts, numbers, quotes, terminology, translation quality, slide narrative | The title slide's main title clearly matches the article theme and is not generic; every substantive claim traces back to `source.md`; no invented facts; source meaning is preserved; slide sequence is coherent |
 | Visual Owner | Theme fit, typography, hierarchy, spacing, image use, animation, polish | Deck feels intentionally designed for the source; all slides are readable at presentation size; visuals add meaning; no placeholder or decorative filler |
 | Technical Owner | HTML structure, fixed-stage scaling, navigation, embedded assets, links, accessibility basics | One slide visible at a time; controls work; embedded assets render; source links are correct; no overflow, overlap, or clipped meaningful content |
 | Delivery Owner | Naming, output location, review status, cleanup | File names are descriptive; output location is clear; temporary review/revision artifacts are deleted; only `source.md` and the accepted HTML are delivered |

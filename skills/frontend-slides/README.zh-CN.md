@@ -1,6 +1,6 @@
 # Frontend Slides
 
-Frontend Slides 会把文章、笔记、文档、图片或类 PPT 素材生成基于 deck-stage 的 HTML 演示页。当前模板库对齐参考仓库的 Bold Template Pack，提供 34 个强风格视觉方向。
+Frontend Slides 会把文章、笔记、文档、图片或演示稿式来源材料生成基于 deck-stage 的 HTML 演示页。模板库对齐参考仓库的 Bold Template Pack，提供 34 个表现力明确的视觉方向。
 
 来源：[zarazhangrui/frontend-slides](https://github.com/zarazhangrui/frontend-slides/)
 
@@ -12,12 +12,12 @@ Frontend Slides 会把文章、笔记、文档、图片或类 PPT 素材生成�
 npx skills add https://github.com/chaos-design/skills --skill frontend-slides
 ```
 
-## 功能
+## 能力
 
 - 输出固定 1920×1080 舞台的浏览器可运行 HTML deck。
 - 使用共享的 `<deck-stage width="1920" height="1080">` 运行时，支持缩放、键盘、触控、锚点和打印。
 - 模板参考 Bold Template Pack：34 个视觉模板，每个模板都有 `preview.md`、`design.md` 和 `template.html`。
-- 最终单文件交付时应内联 `assets/runtime/deck-stage.js`。
+- 单文件交付时应内联 `assets/runtime/deck-stage.js`。
 
 ## 使用方式
 
@@ -25,7 +25,28 @@ npx skills add https://github.com/chaos-design/skills --skill frontend-slides
 用 frontend-slides 把这篇文章做成中文演示稿，风格从 bold template pack 里选一个。
 ```
 
-工作流：
+## 完整处理流程
+
+`frontend-slides` 是模板驱动的 deck 创作技能。完整流程覆盖技能安装、运行时与模板配置、来源组织、deck 生成，以及浏览器行为验证。
+
+```mermaid
+flowchart TD
+  A[创建或安装 frontend-slides 技能] --> B[检查 SKILL.md, assets/runtime, references 和 templates]
+  B --> C[配置 deck 目标: 受众, 语言, 密度, 风格和输出路径]
+  C --> D[检查来源材料: 文章, 笔记, 文档, 图片或类 PPT 简报]
+  D --> E[读取模板索引并筛选视觉方向]
+  E --> F[查看候选预览和选中模板设计说明]
+  F --> G[规划幻灯片顺序和内容密度]
+  G --> H[生成包含直接 section 子元素的 deck-stage HTML]
+  H --> I[内联必需运行时资源, 支持单文件交付]
+  I --> J[验证 1920x1080 缩放, 导航, 锚点, 打印和内容边界]
+  J --> K{是否发现问题?}
+  K -- 是 --> L[修订内容, 布局, 模板使用或运行时集成]
+  L --> J
+  K -- 否 --> M[交付可在浏览器运行的最终 HTML deck]
+```
+
+工作流步骤：
 
 1. 读取 `templates/selection-index.json` 或 `templates/templates.json` 进行候选筛选。
 2. 只读取候选模板的 `preview.md`；确认方向后读取选中模板的 `design.md`。

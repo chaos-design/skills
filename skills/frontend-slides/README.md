@@ -1,6 +1,6 @@
 # Frontend Slides
 
-Frontend Slides generates deck-stage HTML presentation pages from articles, notes, documents, images, or PPT-style source content. The template library now follows the reference Bold Template Pack and provides 34 expressive visual directions.
+Frontend Slides generates deck-stage HTML presentation pages from articles, notes, documents, images, or presentation-style source material. The template library follows the reference Bold Template Pack and provides 34 expressive visual directions.
 
 Source: [zarazhangrui/frontend-slides](https://github.com/zarazhangrui/frontend-slides/)
 
@@ -12,12 +12,12 @@ Install this skill directly from the Chaos Design Skills repository:
 npx skills add https://github.com/chaos-design/skills --skill frontend-slides
 ```
 
-## Features
+## Capabilities
 
 - Produces browser-runnable HTML decks authored on a fixed 1920×1080 stage.
 - Uses the shared `<deck-stage width="1920" height="1080">` runtime for scaling, navigation, touch gestures, anchors, and print behavior.
 - References the Bold Template Pack: 34 visual templates, each with `preview.md`, `design.md`, and `template.html`.
-- Final standalone delivery should inline `assets/runtime/deck-stage.js`.
+- Standalone delivery should inline `assets/runtime/deck-stage.js`.
 
 ## Usage
 
@@ -25,7 +25,28 @@ npx skills add https://github.com/chaos-design/skills --skill frontend-slides
 Use frontend-slides to turn this product launch brief into a deck-stage HTML presentation using one of the bold template pack styles.
 ```
 
-Workflow:
+## End-to-End Processing Flow
+
+`frontend-slides` is a template-driven deck authoring skill. A complete run covers skill installation, runtime and template configuration, source shaping, deck generation, and browser behavior verification.
+
+```mermaid
+flowchart TD
+  A[Create or install frontend-slides skill] --> B[Verify SKILL.md, assets/runtime, references, and templates]
+  B --> C[Configure deck target: audience, language, density, style, output path]
+  C --> D[Inspect source material: article, notes, document, image, or PPT-style brief]
+  D --> E[Read template index and shortlist visual directions]
+  E --> F[Review shortlisted previews and selected design guide]
+  F --> G[Plan slide sequence and content density]
+  G --> H[Generate deck-stage HTML with direct section children]
+  H --> I[Inline required runtime assets for standalone delivery]
+  I --> J[Verify 1920 by 1080 scaling, navigation, anchors, print mode, and content fit]
+  J --> K{Issues found?}
+  K -- Yes --> L[Revise content, layout, template usage, or runtime integration]
+  L --> J
+  K -- No --> M[Deliver final browser-runnable HTML deck]
+```
+
+Workflow steps:
 
 1. Read `templates/selection-index.json` or `templates/templates.json` to shortlist candidates.
 2. Read only shortlisted `preview.md` files; after choosing a direction, read the selected template's `design.md`.

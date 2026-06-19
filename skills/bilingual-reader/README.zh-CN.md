@@ -1,21 +1,21 @@
 # Bilingual Reader
 
-Bilingual Reader 是一个用于生成离线中英对照精读网页的 SKILL。它接收来自链接、图片、文档文件、本地文件路径、附件或粘贴文本的英文内容，先依赖 [Web Markdown](../web-markdown/README.zh-CN.md) 转换为标准 Markdown，再生成可直接从 `file://` 打开的自包含精读页面，适合英语学习、文章精读、词汇讲解和双语资料归档。
+Bilingual Reader 是用于生成离线中英对照精读网页的编码智能体技能。它接收来自链接、图片、文档文件、本地文件路径、附件或粘贴文本的英文内容，使用 [Web Markdown](../web-markdown/README.zh-CN.md) 完成 Markdown 来源标准化，再生成可直接从 `file://` 打开的自包含精读页面，适合英语学习、文章精读、词汇讲解和双语资料归档。
 
 GitHub：<https://github.com/chaos-design/skills>
 
 [English](./README.md)
 
-## 功能介绍
+## 能力
 
-- 标准工作流：原始输入 → `web-markdown` 转换为 Markdown → `bilingual-reader` 处理 Markdown、翻译并构建学习内容 → 输出自包含 HTML。
-- 生成中英对照精读页面，包含 Hero、摘要、逐段原文对照、原文图片、词汇表和页脚来源。
+- 标准工作流：原始输入 → `web-markdown` 执行来源标准化 → `bilingual-reader` 结构化、翻译并扩展 Markdown → 输出自包含 HTML。
+- 生成中英对照精读页面，包含首屏、忠实于来源的摘要、逐段原文/译文对照、原文图片、词汇表和页脚来源。
 - 支持链接、截图或扫描图片、PDF、DOCX、Markdown、HTML、纯文本、本地文件、附件和粘贴文本等输入来源（以 Agent 平台可访问能力为准）。
 - 原文 tab 会直接保留可访问的原始图片：网页或文档按阅读顺序插入，截图或 OCR 输入会在原文开头展示源图参考；可取得图片字节时会内联到最终 HTML，保证 `file://` 可用。
 - 支持 CEFR 词汇分级：`B1`、`B2`、`C1`、`C2`、`术语`。
 - 支持 hover 词义提示、IPA、词性、例句、中文释义和浏览器原生朗读。
-- 内置多套索引化视觉模板，模型会根据文章语气、内容密度、用户意图和语言需求自行选择。
-- 最终 HTML 内联全部数据、CSS 和 JavaScript，无 CDN、无外部字体、无本地服务依赖。
+- 内置多套索引化视觉模板，模型会根据文章语气、内容密度、用户意图和语言学习需求进行选择。
+- 最终 HTML 内联全部数据、CSS 和 JavaScript，无 CDN、无外部字体、无本地服务依赖，可离线执行。
 
 ## 模板图库
 
@@ -237,6 +237,43 @@ git clone https://github.com/chaos-design/skills.git
 cd skills
 ```
 
+## 完整处理流程
+
+`bilingual-reader` 是依赖感知型精读页面生成技能。完整流程从技能安装与依赖配置开始，随后完成来源标准化、`data.json` 人工评审、模板渲染和最终质量保证。
+
+```mermaid
+flowchart TD
+  A[创建或安装 bilingual-reader 技能] --> B[安装必需依赖 web-markdown]
+  B --> C[检查技能文件: SKILL.md, references, assets, templates, scripts]
+  C --> D[配置输出目录, 模板偏好, 语言和来源输入]
+  D --> E{输入类型}
+  E -- URL, PDF, DOCX, 文件, 图片或粘贴文本 --> F[使用 web-markdown 标准化来源]
+  E -- 已有 Markdown --> G[直接使用标准化 Markdown]
+  F --> Q[拦截边界失败: 空输入, 非法 URL, 元数据错误, 不安全媒体, 超长内容]
+  G --> Q
+  Q --> H[仅生成 data.json]
+  H --> I[人工评审: 翻译质量, 摘要忠实度, 词汇表, 图片, 元数据]
+  I --> J{评审是否通过?}
+  J -- 否 --> K[修订 data.json, 不得编造来源内容]
+  K --> I
+  J -- 是 --> L[选择索引视觉模板]
+  L --> M[渲染自包含双语 HTML]
+  M --> N[执行质量保证: 中文字段, 来源图片, tooltip, 离线资源]
+  N --> O{检查是否通过?}
+  O -- 否 --> K
+  O -- 是 --> P[交付 data.json 和最终 HTML]
+```
+
+1. 创建或安装技能，并确保 `SKILL.md`、`references/`、`assets/`、模板、运行时 CSS、运行时 JavaScript 和脚本位于同一个技能根目录。
+2. 将 `web-markdown` 安装在 `bilingual-reader` 旁边；它是 URL、文档、图片和粘贴内容的必需来源标准化依赖。
+3. 配置运行参数：来源、输出目录、可选模板偏好、目标阅读语言，以及是否允许覆盖已有生成文件。
+4. 将原始来源标准化为 Markdown，保留标题、来源元数据、正文顺序、图片、链接、表格和代码块。
+5. 在生成前拦截不安全边界输入：空内容或过短内容、不支持的控制字符、非法 `Source` 或 `Fetched` 元数据、未闭合代码围栏、格式错误表格、不支持的图片来源、超大 HTML/Markdown/JSON、重复测验选项、非法词汇表正则，以及互斥 CLI 参数组合。
+6. 先生成 `data.json` 并暂停进入人工评审。评审者确认中文翻译、摘要忠实度、词汇条目、来源图片和元数据后，才能渲染最终 HTML。
+7. 使用已通过评审的数据和选中的模板渲染页面，并内联所有数据、CSS 和 JavaScript。
+8. 校验最终产物的中文字段、图片尺寸、来源归因、tooltip 行为、发音能力、重复 ID、`file://` 离线运行，以及不存在禁用运行时资源。
+9. 同时交付 `data.json` 和最终 HTML；不能只把 HTML 视为完整交付物。
+
 ## 使用方法
 
 向支持 SKILL 的 Agent 提出类似请求：
@@ -249,10 +286,11 @@ Agent 会执行以下流程：
 
 1. 获取链接、读取文档或文件、从图片中识别文本，或使用粘贴文本中的英文内容。
 2. 调用 `web-markdown` 将原始输入转换为标准 Markdown，保留标题、来源信息、正文、图片、链接、表格和代码块。
-3. 按阅读顺序从 Markdown 中提取标题、来源信息和正文段落。
-4. 翻译、组织学习内容，并从 `assets/templates/<name>/template.html` 中选择一个索引模板。
-5. 将内容、主题、运行时 CSS 和 JS 内联到最终 HTML。
-6. 校验生成结果中不存在外部脚本、外部样式、`fetch()`、模块导入或未替换占位符。
+3. 如果 Markdown 为空、过短、超长、元数据非法、含不支持控制字符、表格损坏、图片来源不受支持，或代码围栏未闭合，则以清晰错误停止。
+4. 按阅读顺序从 Markdown 中提取标题、来源信息和正文段落。
+5. 翻译、组织学习内容，并从 `assets/templates/<name>/template.html` 中选择一个索引模板。
+6. 将内容、主题、运行时 CSS 和 JS 内联到最终 HTML。
+7. 校验生成结果中不存在外部脚本、外部样式、`fetch()`、模块导入、重复 ID、非法词汇表运行时规则或未替换占位符。
 
 支持的输入来源：
 
@@ -272,8 +310,8 @@ Agent 会执行以下流程：
 
 ```text
 .
-├── SKILL.md                    # Trae 技能入口，包含触发条件、工作流和质量规则
-├── prompt.md                   # 可移植执行说明，适合不同 Agent 平台读取
+├── SKILL.md                    # 技能入口，包含触发条件、工作流和质量规则
+├── prompt.md                   # 平台中立的执行说明，适合不同 Agent 平台读取
 ├── references/
 │   └── data-schema.md          # data.json 的字段契约和内容规则
 ├── assets/

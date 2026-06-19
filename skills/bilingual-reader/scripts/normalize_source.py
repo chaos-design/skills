@@ -15,6 +15,9 @@ SKILL_DIR = SCRIPT_DIR.parent
 REPO_ROOT = SKILL_DIR.parent.parent
 WEB_MARKDOWN_PATH = SKILL_DIR.parent / "web-markdown" / "scripts" / "web_markdown.py"
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "tests" / "bilingual-reader"
+MAX_HTML_BYTES = 10 * 1024 * 1024
+MAX_MARKDOWN_CHARS = 2_000_000
+MIN_MARKDOWN_CHARS = 400
 
 
 def load_web_markdown():
@@ -39,8 +42,53 @@ def safe_output_name(name: str | None, markdown: str, web_markdown) -> str:
         if candidate.is_absolute() or candidate.name != name or candidate.suffix.lower() != ".md":
             raise ValueError("--output-name must be a plain Markdown filename, for example article.md")
         return candidate.name
-    title = markdown.splitlines()[0].lstrip("#").strip()
-    return web_markdown.slugify(title)
+    title = markdown.splitlines()[0].lstrip("#").strip() if markdown.splitlines() else "article"
+    filename = web_markdown.slugify(title) or "article.md"
+    return filename if filename.lower().endswith(".md") else f"{filename}.md"
+
+
+def validate_camofox_options(port: int, wait: float) -> None:
+    """Validate browser capture parameters before opening Camofox."""
+
+    if not 1 <= port <= 65535:
+        raise ValueError("--port must be between 1 and 65535.")
+    if wait < 0 or wait > 60:
+        raise ValueError("--wait must be between 0 and 60 seconds.")
+
+
+def read_html_file(path: Path) -> str:
+    """Read a local HTML capture after size and type checks."""
+
+    html_path = Path(path).expanduser().resolve()
+    if not html_path.exists():
+        raise FileNotFoundError(f"--html-file does not exist: {html_path}")
+    if not html_path.is_file():
+        raise ValueError(f"--html-file must be a regular file: {html_path}")
+    size = html_path.stat().st_size
+    if size == 0:
+        raise ValueError("--html-file is empty.")
+    if size > MAX_HTML_BYTES:
+        raise ValueError(f"--html-file is too large: {size} bytes, max {MAX_HTML_BYTES}.")
+    text = html_path.read_text(encoding="utf-8")
+    if not text.strip():
+        raise ValueError("--html-file has no readable HTML text.")
+    return text
+
+
+def validate_markdown_output(markdown: str) -> None:
+    """Ensure HTML conversion produced a usable Markdown source."""
+
+    text = markdown.strip()
+    if not text:
+        raise ValueError("Converted Markdown is empty.")
+    if len(text) > MAX_MARKDOWN_CHARS:
+        raise ValueError(f"Converted Markdown is too large: {len(text)} characters.")
+    if len(text) < MIN_MARKDOWN_CHARS:
+        raise ValueError("Converted Markdown is too short; source extraction is likely incomplete.")
+    if not re.search(r"^#\s+\S+", text, re.MULTILINE):
+        raise ValueError("Converted Markdown is missing an H1 title.")
+    if not re.search(r"^>\s*Source:\s*\S+", text, re.MULTILINE | re.IGNORECASE):
+        raise ValueError("Converted Markdown is missing Source metadata.")
 
 
 def normalize_url_to_markdown(
@@ -53,13 +101,15 @@ def normalize_url_to_markdown(
 ) -> Path:
     """Convert a URL to Markdown under the bilingual-reader target directory."""
 
+    validate_camofox_options(port, wait)
     web_markdown = load_web_markdown()
     source_url = web_markdown.validate_url(url)
     if html_file:
-        source = html_file.read_text(encoding="utf-8")
+        source = read_html_file(html_file)
     else:
         source = web_markdown.fetch_with_camofox(source_url, port=port, wait=wait)
     markdown = web_markdown.html_to_markdown(source, source_url)
+    validate_markdown_output(markdown)
     target_dir = Path(output_dir).expanduser().resolve()
     target_name = safe_output_name(output_name, markdown, web_markdown)
     target = web_markdown.unique_output_path(target_dir / target_name)

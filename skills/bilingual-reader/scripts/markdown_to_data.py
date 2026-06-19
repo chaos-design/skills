@@ -9,6 +9,7 @@ use the Agent/LLM layer after the full source article has been parsed.
 from __future__ import annotations
 
 import argparse
+from datetime import datetime
 import json
 import re
 import sys
@@ -21,11 +22,26 @@ DEV_MARKER_RE = re.compile(r"\b(?:DOC|TPL|DOM)\d+\b")
 PLACEHOLDER_RE = re.compile(r"__(?:[A-Z][A-Z0-9_]*|DATA_JSON|THEME_JSON)__")
 SOURCE_RE = re.compile(r"^>\s*Source:\s*(\S+)\s*$", re.IGNORECASE)
 FETCHED_RE = re.compile(r"^>\s*Fetched:\s*(.+?)\s*$", re.IGNORECASE)
+FETCHED_AT_RE = re.compile(r"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$")
 HEADING_RE = re.compile(r"^(#{1,6})\s+(.+?)\s*$")
 IMAGE_RE = re.compile(r"^!\[([^\]]*)\]\(([^)\s]+)(?:\s+\"([^\"]*)\")?\)\s*$")
 FENCE_RE = re.compile(r"^```([A-Za-z0-9_+.-]*)\s*$")
 TABLE_SEPARATOR_RE = re.compile(r"^\s*\|?\s*:?-{3,}:?\s*(?:\|\s*:?-{3,}:?\s*)+\|?\s*$")
 GLOSSARY_KEY_RE = re.compile(r"[^a-z0-9]+")
+CHINESE_TEXT_RE = re.compile(r"[\u3400-\u9fff]")
+CONTROL_CHAR_RE = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
+SOURCE_URL_RE = re.compile(r"^https?://[^\s\"'<>]+$", re.IGNORECASE)
+MAX_MARKDOWN_CHARS = 2_000_000
+MAX_TABLE_ROWS = 200
+MAX_TABLE_COLUMNS = 20
+MAX_TABLE_CELL_CHARS = 2_000
+MAX_CODE_BLOCK_CHARS = 200_000
+IRREGULAR_INFLECTIONS = {
+    "be": ("am", "are", "is", "was", "were", "been", "being"),
+    "do": ("does", "did", "done", "doing"),
+    "go": ("goes", "went", "gone", "going"),
+    "have": ("has", "had", "having"),
+}
 
 BOILERPLATE_PHRASES = (
     "introduction what is an agent? when should you build an agent? agent design foundations guardrails conclusion",
@@ -96,6 +112,7 @@ def strip_inline_markdown(value: str) -> str:
 def parse_markdown(markdown: str) -> Article:
     """Parse web-markdown output into article blocks."""
 
+    validate_raw_markdown(markdown)
     lines = markdown.splitlines()
     metadata = extract_metadata(lines)
     blocks = parse_blocks(lines)
@@ -105,16 +122,31 @@ def parse_markdown(markdown: str) -> Article:
     return article
 
 
+def validate_raw_markdown(markdown: str) -> None:
+    """Reject inputs that cannot be safely parsed into reader data."""
+
+    if not isinstance(markdown, str):
+        raise ConversionError("Markdown input must be text.")
+    if not markdown.strip():
+        raise ConversionError("Markdown input is empty.")
+    if len(markdown) > MAX_MARKDOWN_CHARS:
+        raise ConversionError(f"Markdown input is too large: {len(markdown)} characters.")
+    if CONTROL_CHAR_RE.search(markdown):
+        raise ConversionError("Markdown input contains unsupported control characters.")
+
+
 def extract_metadata(lines: list[str]) -> Metadata:
     """Extract title, source URL, and fetch timestamp."""
 
     title = ""
     source_url = ""
     fetched_at = ""
+    h1_count = 0
     for line in lines:
-        if not title:
-            match = HEADING_RE.match(line)
-            if match and len(match.group(1)) == 1:
+        match = HEADING_RE.match(line)
+        if match and len(match.group(1)) == 1:
+            h1_count += 1
+            if not title:
                 title = strip_inline_markdown(match.group(2))
         source_match = SOURCE_RE.match(line)
         fetched_match = FETCHED_RE.match(line)
@@ -126,7 +158,23 @@ def extract_metadata(lines: list[str]) -> Metadata:
         raise ConversionError("Markdown title is missing.")
     if not source_url:
         raise ConversionError("Source URL metadata is missing.")
+    validate_metadata(source_url, fetched_at)
     return Metadata(title=title, source_url=source_url, fetched_at=fetched_at)
+
+
+def validate_metadata(source_url: str, fetched_at: str) -> None:
+    """Validate source metadata before article parsing continues."""
+
+    if not SOURCE_URL_RE.fullmatch(source_url):
+        raise ConversionError("Source URL metadata must be an http(s) URL.")
+    if not fetched_at:
+        raise ConversionError("Fetched timestamp metadata is missing.")
+    if not FETCHED_AT_RE.fullmatch(fetched_at):
+        raise ConversionError("Fetched timestamp must use YYYY-MM-DD HH:mm:ss.")
+    try:
+        datetime.strptime(fetched_at, "%Y-%m-%d %H:%M:%S")
+    except ValueError as exc:
+        raise ConversionError("Fetched timestamp is not a valid calendar time.") from exc
 
 
 def parse_blocks(lines: list[str]) -> list[Block]:
@@ -160,6 +208,7 @@ def parse_next_block(lines: list[str], index: int, blocks: list[Block]) -> int:
         return index + 1
     image = IMAGE_RE.match(line)
     if image:
+        validate_image_src(image.group(2))
         blocks.append(Block(type="image", alt=clean_text(image.group(1)), src=image.group(2), caption=clean_text(image.group(3) or "")))
         return index + 1
     if looks_like_table(lines, index):
@@ -177,7 +226,10 @@ def parse_code_block(lines: list[str], index: int, language: str, blocks: list[B
         cursor += 1
     if cursor >= len(lines):
         raise ConversionError("Unclosed fenced code block.")
-    blocks.append(Block(type="code", language=language, code="\n".join(code_lines)))
+    code = "\n".join(code_lines)
+    if len(code) > MAX_CODE_BLOCK_CHARS:
+        raise ConversionError("Code block is too large for stable rendering.")
+    blocks.append(Block(type="code", language=language, code=code))
     return cursor + 1
 
 
@@ -197,7 +249,9 @@ def parse_table_block(lines: list[str], index: int, blocks: list[Block]) -> int:
             table_lines.append(lines[cursor])
         cursor += 1
     rows = [parse_table_row(line) for line in table_lines]
-    blocks.append(Block(type="table", rows=[row for row in rows if row]))
+    rows = [row for row in rows if row]
+    validate_table_rows(rows)
+    blocks.append(Block(type="table", rows=rows))
     return cursor
 
 
@@ -206,6 +260,36 @@ def parse_table_row(line: str) -> list[str]:
 
     value = line.strip().strip("|")
     return [strip_inline_markdown(cell) for cell in value.split("|")]
+
+
+def validate_table_rows(rows: list[list[str]]) -> None:
+    """Validate Markdown table shape before rendering."""
+
+    if not rows:
+        raise ConversionError("Markdown table is empty.")
+    if len(rows) > MAX_TABLE_ROWS:
+        raise ConversionError("Markdown table has too many rows.")
+    width = len(rows[0])
+    if width == 0 or width > MAX_TABLE_COLUMNS:
+        raise ConversionError("Markdown table has an unsupported column count.")
+    for row in rows:
+        if len(row) != width:
+            raise ConversionError("Markdown table rows must have a consistent column count.")
+        if any(len(cell) > MAX_TABLE_CELL_CHARS for cell in row):
+            raise ConversionError("Markdown table cell is too long for stable rendering.")
+
+
+def validate_image_src(src: str) -> None:
+    """Validate image references accepted by the original-source view."""
+
+    if not src.strip():
+        raise ConversionError("Markdown image source is empty.")
+    if src.startswith("data:image/"):
+        if ";base64," not in src or len(src) > 3_000_000:
+            raise ConversionError("Markdown image data URI is invalid or too large.")
+        return
+    if not src.startswith(("http://", "https://")):
+        raise ConversionError("Markdown image source must be http(s) or data:image.")
 
 
 def parse_paragraph(lines: list[str], index: int, blocks: list[Block]) -> int:
@@ -470,7 +554,7 @@ def build_glossary_contract(entries: list[dict[str, str]]) -> dict[str, object]:
             "eg": str(entry.get("collocationExample", "")),
             "egzh": str(entry.get("exampleZh", "")),
         }
-        autowrap.append([autowrap_pattern(word), "i", key])
+        autowrap.append([autowrap_pattern(word, str(entry.get("pos", ""))), "i", key])
     return {"entries": entries, "dict": dictionary, "autowrap": autowrap}
 
 
@@ -487,17 +571,52 @@ def glossary_key(word: str, used_keys: set[str]) -> str:
     return key
 
 
-def autowrap_pattern(word: str) -> str:
+def autowrap_pattern(word: str, pos: str = "") -> str:
     """Create a whole-word regex source for runtime autowrap."""
 
-    escaped = re.escape(word)
     if re.fullmatch(r"[A-Za-z]+", word):
-        if len(word) > 2 and not word.casefold().endswith("s"):
-            escaped += "s?"
-        return rf"\b{escaped}\b"
+        variants = inflected_word_forms(word, pos)
+        escaped_variants = sorted((re.escape(item) for item in variants), key=len, reverse=True)
+        return rf"\b(?:{'|'.join(escaped_variants)})\b"
+    escaped = re.escape(word)
     if re.match(r"^[A-Za-z0-9]", word) and re.search(r"[A-Za-z0-9]$", word):
         return rf"\b{escaped}\b"
     return escaped
+
+
+def inflected_word_forms(word: str, pos: str = "") -> set[str]:
+    """Return common inflected forms for one English glossary word."""
+
+    lowered = word.casefold()
+    normalized_pos = pos.casefold()
+    forms = {word}
+    irregular = IRREGULAR_INFLECTIONS.get(lowered)
+    if irregular:
+        forms.update(irregular)
+        return forms
+    if len(lowered) <= 2:
+        return forms
+    is_adjective_or_adverb = "adj" in normalized_pos or "adv" in normalized_pos
+    is_verb = not normalized_pos.strip() or bool(re.search(r"(^|[/,;\s])v(?:\.|/|$)", normalized_pos))
+    if not is_verb and is_adjective_or_adverb:
+        return forms
+    if lowered.endswith("y") and len(lowered) > 1 and lowered[-2] not in "aeiou":
+        forms.add(f"{word[:-1]}ies")
+        if is_verb:
+            forms.update({f"{word[:-1]}ied", f"{word[:-1]}ying"})
+    elif lowered.endswith(("s", "x", "z", "ch", "sh")):
+        forms.add(f"{word}es")
+        if is_verb:
+            forms.update({f"{word}ed", f"{word}ing"})
+    elif lowered.endswith("e") and not lowered.endswith(("ee", "ye", "oe")):
+        forms.add(f"{word}s")
+        if is_verb:
+            forms.update({f"{word}d", f"{word[:-1]}ing"})
+    else:
+        forms.add(f"{word}s")
+        if is_verb:
+            forms.update({f"{word}ed", f"{word}ing"})
+    return forms
 
 
 def build_hero(article: Article, translate: Translator) -> dict[str, str]:
@@ -786,25 +905,78 @@ def first_text_block(blocks: list[Block]) -> str:
 def validate_learning_data(data: dict[str, object]) -> None:
     """Validate template data before rendering."""
 
-    if not data["sections"]:
+    if not isinstance(data, dict):
+        raise ConversionError("Template data must be an object.")
+    required = ("metadata", "article", "hero", "summary", "framework", "sections", "quiz", "original", "glossary", "footer")
+    missing = [key for key in required if key not in data]
+    if missing:
+        raise ConversionError(f"Template data is missing fields: {', '.join(missing)}.")
+    validate_metadata_object(data.get("metadata", {}), "metadata")
+    validate_metadata_object(data.get("article", {}), "article")
+    validate_footer_data(data.get("footer", {}))
+    validate_hero_data(data.get("hero", {}))
+    if not data.get("sections"):
         raise ConversionError("Template data has no bilingual sections.")
     validate_article_context(data.get("article", {}))
     validate_summary_data(data.get("summary", {}))
     validate_framework_data(data.get("framework", {}))
     validate_quiz_data(data.get("quiz", []))
-    for section in data["sections"]:
-        for row in section.get("rows", []):
-            validate_bilingual_row(row)
+    validate_sections_data(data["sections"])
     for row in iter_original_rows(data):
         if row.get("type") == "bilingual":
             validate_bilingual_row(row)
         if row.get("type") in {"code", "image", "table"} and ("zh" in row or "en" in row):
             raise ConversionError("Media and table rows must not participate in bilingual comparison.")
+        if row.get("type") == "image":
+            validate_image_src(str(row.get("src", "")))
+        if row.get("type") == "table":
+            validate_table_rows([[str(cell) for cell in table_row] for table_row in row.get("rows", [])])
     for entry in data.get("glossary", {}).get("entries", []):
         validate_glossary_entry(entry)
     glossary = data.get("glossary", {})
     if glossary.get("entries") and (not glossary.get("dict") or not glossary.get("autowrap")):
         raise ConversionError("Glossary runtime dict/autowrap data is missing.")
+    validate_glossary_runtime(glossary)
+
+
+def validate_metadata_object(metadata: object, path: str) -> None:
+    """Validate source metadata objects in data.json."""
+
+    if not isinstance(metadata, dict):
+        raise ConversionError(f"{path} must be an object.")
+    title = str(metadata.get("title", "")).strip()
+    source_url = str(metadata.get("sourceUrl", "")).strip()
+    if not title:
+        raise ConversionError(f"{path}.title is missing.")
+    if source_url and not SOURCE_URL_RE.fullmatch(source_url):
+        raise ConversionError(f"{path}.sourceUrl must be an http(s) URL.")
+    fetched_at = str(metadata.get("fetchedAt", "")).strip()
+    if fetched_at:
+        validate_metadata(source_url or "https://example.invalid", fetched_at)
+
+
+def validate_footer_data(footer: object) -> None:
+    """Validate footer source attribution."""
+
+    if not isinstance(footer, dict):
+        raise ConversionError("Footer data must be an object.")
+    source_url = str(footer.get("sourceUrl", "")).strip()
+    source_text = str(footer.get("sourceText", "")).strip()
+    if not source_url or not SOURCE_URL_RE.fullmatch(source_url):
+        raise ConversionError("Footer sourceUrl must be an http(s) URL.")
+    if not source_text:
+        raise ConversionError("Footer sourceText is missing.")
+
+
+def validate_hero_data(hero: object) -> None:
+    """Validate hero fields required by every template."""
+
+    if not isinstance(hero, dict):
+        raise ConversionError("Hero data must be an object.")
+    for key in ("title", "en", "zh"):
+        if not str(hero.get(key, "")).strip():
+            raise ConversionError(f"Hero field is missing: {key}.")
+    validate_chinese_text(hero.get("zh", ""), "hero.zh")
 
 
 def validate_article_context(context: object) -> None:
@@ -856,34 +1028,114 @@ def validate_quiz_data(quiz: object) -> None:
         answer = item.get("answer")
         if not item.get("question") or not isinstance(options, list) or len(options) < 3:
             raise ConversionError("Quiz item must include a question and at least three options.")
+        cleaned_options = [clean_text(str(option)) for option in options]
+        if len(set(cleaned_options)) != len(cleaned_options):
+            raise ConversionError("Quiz options must not contain duplicates.")
         if not isinstance(answer, int) or answer < 0 or answer >= len(options):
             raise ConversionError("Quiz answer index is invalid.")
         if not item.get("explain") or not item.get("wrongReason"):
             raise ConversionError("Quiz item must include explanation and wrong reason.")
 
 
+def validate_sections_data(sections: object) -> None:
+    """Validate summary-view sections and their Chinese fields."""
+
+    if not isinstance(sections, list):
+        raise ConversionError("Template sections must be a list.")
+    for section in sections:
+        if not isinstance(section, dict):
+            raise ConversionError("Each template section must be an object.")
+        rows = section.get("rows", [])
+        if not isinstance(rows, list) or not rows:
+            raise ConversionError("Each template section must include rows.")
+        for row in rows:
+            validate_bilingual_row(row)
+        validate_section_chinese_fields(section)
+
+
+def validate_section_chinese_fields(value: object, path: str = "sections[]") -> None:
+    """Ensure section fields named zh/zh* contain Chinese text."""
+
+    if isinstance(value, dict):
+        for key, child in value.items():
+            child_path = f"{path}.{key}"
+            if (key == "zh" or key.startswith("zh")) and isinstance(child, str):
+                validate_chinese_text(child, child_path)
+            validate_section_chinese_fields(child, child_path)
+    elif isinstance(value, list):
+        for index, child in enumerate(value):
+            validate_section_chinese_fields(child, f"{path}[{index}]")
+
+
 def validate_bilingual_row(row: dict[str, object]) -> None:
     """Validate that bilingual prose keeps both source and Chinese text."""
 
+    if not isinstance(row, dict):
+        raise ConversionError("Bilingual row must be an object.")
     if not str(row.get("en", "")).strip() or not str(row.get("zh", "")).strip():
         raise ConversionError("Bilingual rows must include both English and Chinese text.")
+    validate_chinese_text(row.get("zh", ""), "sections[].rows[].zh")
+
+
+def validate_chinese_text(value: object, path: str) -> None:
+    """Validate that a Chinese field is actually translated into Chinese."""
+
+    text = str(value or "").strip()
+    if text and not CHINESE_TEXT_RE.search(text):
+        raise ConversionError(f"{path} must contain Chinese translation text.")
 
 
 def validate_glossary_entry(entry: dict[str, str]) -> None:
     """Validate one enriched glossary item."""
 
+    if not isinstance(entry, dict):
+        raise ConversionError("Glossary entry must be an object.")
     required = ("word", "ipa", "definitionZh", "collocationExample")
     missing = [key for key in required if not str(entry.get(key, "")).strip()]
     if missing:
         raise ConversionError(f"Glossary entry is missing required fields: {', '.join(missing)}.")
+    validate_chinese_text(entry.get("definitionZh", ""), "glossary.entries[].definitionZh")
+
+
+def validate_glossary_runtime(glossary: object) -> None:
+    """Validate runtime glossary dictionary and autowrap references."""
+
+    if not isinstance(glossary, dict):
+        raise ConversionError("Glossary data must be an object.")
+    dictionary = glossary.get("dict", {})
+    autowrap = glossary.get("autowrap", [])
+    if dictionary and not isinstance(dictionary, dict):
+        raise ConversionError("Glossary dict must be an object.")
+    if autowrap and not isinstance(autowrap, list):
+        raise ConversionError("Glossary autowrap must be a list.")
+    for index, item in enumerate(autowrap if isinstance(autowrap, list) else []):
+        if not isinstance(item, list) or len(item) != 3:
+            raise ConversionError("Glossary autowrap item must be [pattern, flags, key].")
+        pattern, _, key = item
+        if str(key) not in dictionary:
+            raise ConversionError(f"Glossary autowrap key is missing from dict: {key}.")
+        try:
+            re.compile(str(pattern))
+        except re.error as exc:
+            raise ConversionError(f"Glossary autowrap regex is invalid at index {index}.") from exc
 
 
 def iter_original_rows(data: dict[str, object]) -> Iterable[dict[str, object]]:
     """Yield rows from the original-view data structure."""
 
     original = data.get("original", {})
-    for group in original.get("groups", []):
-        yield from group.get("rows", [])
+    if not isinstance(original, dict):
+        raise ConversionError("Original data must be an object.")
+    groups = original.get("groups", [])
+    if not isinstance(groups, list):
+        raise ConversionError("Original groups must be a list.")
+    for group in groups:
+        if not isinstance(group, dict):
+            raise ConversionError("Original group must be an object.")
+        rows = group.get("rows", [])
+        if not isinstance(rows, list):
+            raise ConversionError("Original group rows must be a list.")
+        yield from rows
 
 
 def identity_translator(text: str) -> str:

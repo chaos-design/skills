@@ -7,11 +7,13 @@
   "usage": {
     "selection": "Read this index first to choose a visual direction from metadata without loading every template.",
     "final_generation": "After selecting a template, use it as visual guidance and generate a static, human-editable index.html with content written directly into the DOM.",
-    "never": "Do not bulk-read assets/templates/*/template.html. Do not modify template source for single-article content."
+    "never": "Do not bulk-read assets/templates/*/template.html. Do not modify template source for single-article content. Do not invent article-specific template descriptions."
   },
   "template_policy": {
     "rendering_model": "single offline HTML document",
     "content_model": "article content belongs directly in the final HTML DOM; optional data.json must not be required for rendering",
+    "description_model": "When describing why a template was chosen or filling descriptive page modules, use only the approved source Markdown and this template metadata. Do not fabricate claims, sections, examples, captions, metrics, images, or article details that are not present in the source.",
+    "source_image_model": "Original-view images must come from the approved source only, appear in reading order, render centered, and use a bounded 720x405 image box with object-fit: contain instead of unconstrained dimensions.",
     "static_interactions": [
       "theme switching",
       "view switching",
@@ -42,7 +44,7 @@
       "formality": "medium-high",
       "density": "medium-high",
       "scheme": "dark",
-      "layout": "wide dashboard with hero metrics and neon glass cards",
+      "layout": "wide stat-free dashboard hero and neon glass reading cards",
       "best_for": "Technology explainers, AI product reading notes, market analysis, research digests, and articles that benefit from a sharp analytical dashboard frame.",
       "avoid_for": "Quiet literary essays, classical content, or dense legal text where glassy visual energy would distract from the reading."
     },

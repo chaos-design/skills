@@ -1,21 +1,21 @@
 # Bilingual Reader
 
-Bilingual Reader is a coding-agent SKILL for generating offline English-Chinese close-reading pages. It accepts English source material from links, images, document files, local file paths, attachments, or pasted text, depends on [Web Markdown](../web-markdown/README.md) to normalize that input into standard Markdown first, and then produces a self-contained close-reading page that opens directly from `file://`.
+Bilingual Reader is a coding-agent skill for generating offline English-Chinese close-reading pages. It accepts English source material from links, images, document files, local file paths, attachments, or pasted text; uses [Web Markdown](../web-markdown/README.md) for source normalization into Markdown; and produces a self-contained close-reading page that opens directly from `file://`.
 
 GitHub: <https://github.com/chaos-design/skills>
 
 [中文](./README.zh-CN.md)
 
-## Features
+## Capabilities
 
-- Standard workflow: raw input -> `web-markdown` converts it to Markdown -> `bilingual-reader` processes the Markdown, translates it, and builds the study content -> self-contained HTML output.
-- Generates bilingual close-reading pages with hero, summary, paragraph-aligned original view, original source images, glossary, and source footer.
+- Standard workflow: raw input -> `web-markdown` performs source normalization -> `bilingual-reader` structures, translates, and enriches the Markdown -> self-contained HTML output.
+- Generates bilingual close-reading pages with a hero section, source-faithful summary, paragraph-aligned original/translated content, original source images, glossary, and source footer.
 - Accepts web links, screenshots or scanned images, PDFs, DOCX files, Markdown, HTML, plain text, local files, attachments, and pasted text when the Agent platform can access them.
 - Preserves accessible original images directly in the original tab: web/document images are inserted in reading order, screenshot or OCR inputs show the source image at the top for reference, and accessible image bytes are inlined so the final HTML still works from `file://`.
 - Supports CEFR vocabulary groups: `B1`, `B2`, `C1`, `C2`, and `Term`.
 - Provides hover vocabulary tooltips, IPA, part of speech, definitions, examples, Chinese translations, and browser-native pronunciation.
-- Includes indexed visual templates selected by the model from article tone, density, and user intent.
-- Produces final HTML with all data, CSS, and JavaScript inlined. No CDN, remote font, local server, `fetch()`, or module import is required.
+- Includes indexed visual templates selected from article tone, content density, user intent, and language-learning needs.
+- Produces final HTML with all data, CSS, and JavaScript inlined. No CDN, remote font, local server, `fetch()`, or module import is required for offline execution.
 
 ## Template Gallery
 
@@ -237,6 +237,43 @@ git clone https://github.com/chaos-design/skills.git
 cd skills
 ```
 
+## End-to-End Processing Flow
+
+`bilingual-reader` is a dependency-aware close-reading generation skill. A complete run starts with skill installation and dependency configuration, then proceeds through source normalization, human review of `data.json`, template rendering, and final quality assurance.
+
+```mermaid
+flowchart TD
+  A[Create or install bilingual-reader skill] --> B[Install required web-markdown dependency]
+  B --> C[Verify skill files: SKILL.md, references, assets, templates, scripts]
+  C --> D[Configure output folder, template preference, language, and source input]
+  D --> E{Input type}
+  E -- URL, PDF, DOCX, file, image, or pasted text --> F[Normalize source with web-markdown]
+  E -- Existing Markdown --> G[Use Markdown as normalized source]
+  F --> Q[Reject boundary failures: empty input, invalid URL, malformed metadata, unsafe media, oversize content]
+  G --> Q
+  Q --> H[Generate data.json only]
+  H --> I[Human review: translation quality, summary fidelity, glossary, images, metadata]
+  I --> J{Review approved?}
+  J -- No --> K[Revise data.json without inventing source content]
+  K --> I
+  J -- Yes --> L[Select indexed visual template]
+  L --> M[Render self-contained bilingual HTML]
+  M --> N[Run quality assurance: CJK fields, source images, tooltips, offline assets]
+  N --> O{Checks pass?}
+  O -- No --> K
+  O -- Yes --> P[Deliver data.json and final HTML]
+```
+
+1. Create or install the skill so `SKILL.md`, `references/`, `assets/`, templates, runtime CSS, runtime JavaScript, and scripts stay in the same skill root.
+2. Install `web-markdown` next to `bilingual-reader`; it is the required source-normalization dependency for URLs, documents, images, and pasted content.
+3. Configure the run by confirming the source, output folder, optional template preference, target reading language, and whether existing generated files may be overwritten.
+4. Normalize raw source into Markdown while preserving title, source metadata, body order, images, links, tables, and code blocks.
+5. Reject unsafe boundary inputs before generation: empty or tiny sources, unsupported control characters, invalid `Source` or `Fetched` metadata, unclosed code fences, malformed tables, unsupported image sources, oversize HTML/Markdown/JSON, duplicate quiz options, invalid glossary regex, and incompatible CLI options.
+6. Generate `data.json` first and stop for human review. The reviewer checks Chinese translations, summary fidelity, glossary entries, source images, and metadata before any final HTML is rendered.
+7. Render the approved data into a selected template with all data, CSS, and JavaScript inlined.
+8. Validate the final artifact for CJK translation fields, image sizing, source attribution, tooltip behavior, pronunciation support, duplicate IDs, offline `file://` execution, and absence of forbidden runtime resources.
+9. Deliver both `data.json` and the final HTML. Do not treat the HTML alone as a complete deliverable.
+
 ## Usage
 
 Ask a SKILL-aware agent:
@@ -249,10 +286,11 @@ The agent will:
 
 1. Fetch a URL, read a document or file, extract text from an image, or use pasted source text.
 2. Invoke `web-markdown` to convert the raw input into standard Markdown while preserving the title, source metadata, body text, images, links, tables, and code blocks.
-3. Extract the title, source metadata, and body paragraphs from the Markdown in reading order.
-4. Translate and structure the study content, then select one indexed template under `assets/templates/<name>/template.html`.
-5. Inline content, theme values, runtime CSS, and runtime JavaScript into the final HTML.
-6. Validate that the generated page has no external scripts, external stylesheets, `fetch()`, module imports, or unreplaced placeholders.
+3. Stop with a clear error if the Markdown is empty, too short, too large, has invalid metadata, contains unsupported control characters, has broken tables, uses unsupported image references, or leaves code fences unclosed.
+4. Extract the title, source metadata, and body paragraphs from the Markdown in reading order.
+5. Translate and structure the study content, then select one indexed template under `assets/templates/<name>/template.html`.
+6. Inline content, theme values, runtime CSS, and runtime JavaScript into the final HTML.
+7. Validate that the generated page has no external scripts, external stylesheets, `fetch()`, module imports, duplicate IDs, invalid glossary runtime rules, or unreplaced placeholders.
 
 Supported input sources:
 

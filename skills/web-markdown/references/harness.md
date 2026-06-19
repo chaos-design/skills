@@ -26,22 +26,22 @@ Reject:
 - Login-only, paywalled, private, or access-controlled content unless the user
   provides an accessible source.
 
-Before calling MarkItDown for any URL, check whether it belongs to a specialized
-social/content platform. If the host is X/Twitter, Weibo, Zhihu, Xiaohongshu,
-Bilibili, or a WeChat Articles domain such as `mp.weixin.qq.com`, stop this
-workflow and use `url-content-fetcher` instead. This routing rule applies even
-when the requested output format is Markdown.
+Classify the resource type before loading conversion dependencies or checking
+file extensions. This preflight decision owns the rest of the workflow:
 
-If `url-content-fetcher` is not installed or cannot be discovered, do not fall
-back to `web-markdown`. Stop before fetching and show:
-
-```bash
-npx skills add https://github.com/chaos-design/skills --skill url-content-fetcher
-```
+| Resource type | Route |
+| --- | --- |
+| X/Twitter, Weibo, Zhihu, Xiaohongshu, Bilibili, or WeChat Article URL | `x-tweet-fetcher` bridge |
+| Generic HTTP(S) URL | MarkItDown URL conversion, then Camofox rendered HTML fallback only if needed |
+| Existing local file | MarkItDown file conversion |
+| `--html-file` | MarkItDown HTML conversion, then Camofox/rendered HTML parser fallback if needed |
+| `--text` or `--stdin` | MarkItDown text conversion |
 
 Capture the intended output mode:
 
-- One-off mode: write `web/<slug>.md` unless the user provides `--output`.
+- One-off mode: write `web/<slug>.md` for generic sources, or
+  `<platform>/<slug>.md` for platform fetcher sources, unless the user provides
+  `--output`.
 - Workspace mode: write durable extraction artifacts under:
 
 ```text
@@ -72,7 +72,7 @@ Classify confidence before conversion:
 
 Only complex or low-confidence sources should create `review/source-review.md`.
 
-### 1.3 Phase 2 - Convert With MarkItDown
+### 1.3 Phase 2 - Convert With The Selected Route
 
 MarkItDown must be installed with document/image extras:
 
@@ -88,9 +88,11 @@ python3 skills/web-markdown/scripts/web_markdown.py --text "Pasted notes..."
 pbpaste | python3 skills/web-markdown/scripts/web_markdown.py --stdin
 ```
 
-The script converts URL, PDF, DOCX, Markdown, plain text, screenshot/image, and
-pasted-note inputs through MarkItDown, then wraps the result in the standard
-source metadata and output contract.
+For X/Twitter, Weibo, Zhihu, Xiaohongshu, Bilibili, and WeChat Article URLs,
+the script bridges to local `x-tweet-fetcher` scripts and normalizes the fetched
+payload into Markdown. For generic URLs, PDF, DOCX, Markdown, plain text,
+screenshot/image, HTML files, and pasted-note inputs, it uses MarkItDown first
+and wraps the result in the standard source metadata and output contract.
 
 Use optional notes when a workspace or confidence record is needed:
 
@@ -109,11 +111,12 @@ conversion fails and the URL needs rendered HTML fallback.
 curl http://localhost:9377/health
 ```
 
-For URL fallback, the script opens a Camofox tab, waits for JavaScript rendering,
-retrieves the rendered page content, closes the tab, and sends the rendered HTML
-through MarkItDown. If the tab cannot be opened or no rendered content can be
-read, stop and surface the exact error together with the original MarkItDown URL
-conversion error.
+For URL and HTML fallback, the script opens a Camofox tab, waits for JavaScript
+rendering, retrieves the rendered page content, closes the tab, and sends the
+rendered HTML through MarkItDown. If rendered HTML still cannot be converted by
+MarkItDown, use the built-in HTML parser fallback and record both issues in the
+notes. If the tab cannot be opened or no rendered content can be read, surface
+the exact error together with the original MarkItDown conversion error.
 
 ### 1.5 Phase 2c - Extract The Main Content Area
 
@@ -171,7 +174,7 @@ Write extraction notes when:
 - Source Language: <detected-or-user-provided-source-language>
 - Target Language: <requested-translation-language-or-none>
 - Translated Source: <path-to-original.lang.md-or-none>
-- Method: <markitdown-direct|markitdown-file|camofox-fallback|html-file|text|stdin>
+- Method: <platform-fetcher|markitdown-direct|markitdown-file|camofox-fallback|html-file|html-parser-fallback|camofox-html-parser-fallback|text|stdin>
 - Confidence: <high|medium|low>
 - Issues: <none-or-list>
 - Validation: <pass|fail>
@@ -212,6 +215,12 @@ For low-confidence sources, compare the Markdown against the original source or
 rendered view when available. If a reviewer/subagent is available, write
 `review/source-review.md`; otherwise note the fallback in `extraction-notes.md`.
 
+After validation and any required review pass, and before writing the final
+Markdown output, call `AskUserQuestion` to ask whether the user wants to modify
+or regenerate the Markdown. If the user requests changes, apply them and rerun
+validation/review. Write output only after the user confirms no changes are
+needed.
+
 ### 1.9 Phase 5 - Repair
 
 Repair only the smallest affected slice:
@@ -225,9 +234,9 @@ Repair only the smallest affected slice:
 
 After repair, rerun validation.
 
-### 1.10 Phase 6 - Report
+### 1.10 Phase 6 - Confirm And Report
 
-After a successful write, report:
+After user confirmation and a successful write, report:
 
 ```text
 Saved web/<slug>.md - <word_count> words - <source> - confidence <level>
@@ -278,10 +287,11 @@ the file stem. For pasted text, use `Pasted Notes`.
 | Condition | Action |
 | --- | --- |
 | Source is neither HTTP(S), an existing local file, `--text`, nor `--stdin` | Reject and stop. |
-| URL is X/Twitter, Weibo, Zhihu, Xiaohongshu, Bilibili, or WeChat Articles | Stop this workflow and use `url-content-fetcher`. If it is missing, show only `npx skills add https://github.com/chaos-design/skills --skill url-content-fetcher`; do not mention `x-tweet-fetcher` here. |
+| URL is X/Twitter, Weibo, Zhihu, Xiaohongshu, Bilibili, or WeChat Articles | Use the `x-tweet-fetcher` bridge inside `web-markdown`; if the bridge dependency is unavailable, surface the exact missing dependency path or fetcher error. |
+| Generic URL direct conversion fails | Try Camofox rendered HTML fallback. |
+| Rendered HTML MarkItDown conversion fails | Use the built-in HTML parser fallback and record the MarkItDown error. |
 | MarkItDown is not installed | Stop and show `pip install 'markitdown[all]'`. |
 | MarkItDown cannot convert a local file, screenshot, or pasted text | Surface the MarkItDown error and stop. |
-| Direct MarkItDown URL conversion fails | Try Camofox rendered HTML fallback. |
 | Camofox is not reachable during URL fallback | Ask the user to start Camofox and report the original MarkItDown error too. |
 | Camofox cannot open the tab | Surface the Camofox error and stop. |
 | Rendered content cannot be read | Surface the content retrieval error and stop. |

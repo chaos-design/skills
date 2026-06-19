@@ -2,9 +2,9 @@
 
 [中文](./README.zh-CN.md)
 
-Content Slides converts existing source material into a self-contained 16:9 HTML slide deck. Use it when the user provides URLs, PDFs, DOCX files, Markdown files, plain text, screenshots, or pasted notes and asks to make slides, a presentation, a frontend slide deck, or an HTML deck. It depends on [Web Markdown](../web-markdown/README.md) to convert raw input into standard Markdown before the deck generation step.
+Content Slides converts existing source material into a self-contained 16:9 HTML slide deck. Use it when the user provides URLs, PDFs, DOCX files, Markdown files, plain text, screenshots, or pasted notes and asks for slides, a presentation, a frontend slide deck, or an HTML deck. It depends on [Web Markdown](../web-markdown/README.md) for source normalization into Markdown before deck generation.
 
-Content Slides is the conversion-first skill: the source already exists, and the skill extracts, restructures, designs, verifies, and delivers one runnable HTML deck file. For reusable deck-stage templates and the larger visual template gallery, see [Frontend Slides](../frontend-slides/README.md).
+Content Slides is a conversion-first skill: the source already exists, and the skill extracts, restructures, designs, validates, and delivers one browser-runnable HTML deck. For reusable deck-stage templates and the larger visual template gallery, see [Frontend Slides](../frontend-slides/README.md).
 
 ## Install
 
@@ -19,14 +19,14 @@ npx skills add https://github.com/chaos-design/skills --skill content-slides
 
 When an agent discovers that `web-markdown` is missing, it should ask the user before installing it, show the command above, and continue only after the dependency is available.
 
-## Features
+## Capabilities
 
-- Standard workflow: raw input -> `web-markdown` converts it to Markdown -> `content-slides` extracts a content brief and generates the HTML deck.
+- Standard workflow: raw input -> `web-markdown` performs source normalization -> `content-slides` extracts a content brief and generates the HTML deck.
 - Accepts URLs, PDFs, DOCX files, Markdown files, plain text, screenshots, and pasted notes when the Agent platform can access them.
-- Final output keeps only `source.md` and one browser-runnable HTML deck authored on a fixed 1920×1080 stage.
+- Final output contains only `source.md` and one browser-runnable HTML deck authored on a fixed 1920×1080 stage.
 - Defaults to Simplified Chinese slide content unless the user requests another language.
 - Uses keyboard, wheel, touch, and compact bottom previous/next controls. Slides include no anchor or jump-dot information by default; side anchors are opt-in only.
-- Includes a fallback helper script for content extraction.
+- Includes a fallback helper script for source extraction when the primary normalization path is unavailable.
 
 ## Screenshot
 
@@ -54,17 +54,69 @@ The source can be a URL, PDF, DOCX file, Markdown file, plain text, screenshot, 
 
 ### Workflow
 
-1. Detect the input type: URL, PDF, DOCX file, Markdown file, plain text, screenshot, or pasted notes.
-2. Invoke `web-markdown` to normalize the raw input into Markdown while preserving title, source, body text, images, links, tables, and code blocks.
-3. Ask the user whether the generated Markdown is acceptable or needs modification. Do not continue until the user confirms.
-4. Extract a clean content brief from the standard Markdown: title, source, sections, key facts, quotes, stats, and usable images.
-5. Choose a density mode:
+The skill follows the same review-gated workflow defined in `SKILL.md`. The first HTML deck is always a draft; it is not final until Markdown confirmation, review, revision, and final acceptance all pass.
+
+```mermaid
+flowchart TD
+  A[Create or install content-slides skill] --> A1[Install required web-markdown dependency]
+  A1 --> A2[Verify SKILL.md, references, scripts, and slide template assets]
+  A2 --> A3[Configure language, audience, density, visual style, and output path]
+  A3 --> B[User request with URL, PDF, DOCX, Markdown, text, screenshot, or notes]
+  B -- No, empty or ambiguous --> B1[Ask one short clarification question and wait]
+  B -- Yes --> C{web-markdown available?}
+  C -- No --> C1[Ask before installing dependency; stop if declined]
+  C -- Yes --> D[Normalize raw source to source.md]
+  D --> E{Markdown complete and source-faithful?}
+  E -- No, empty or missing key content --> E1[Troubleshoot extraction, rerun web-markdown, or use fallback helper]
+  E1 --> D
+  E -- Yes --> F[Markdown confirmation gate]
+  F --> G{User decision}
+  G -- Modify or regenerate --> D
+  G -- Stop or new input --> Z[Stop and wait for updated source]
+  G -- Continue --> H[Extract content brief: title, source, sections, facts, quotes, stats, visuals]
+  H --> I{Facts traceable and source structure usable?}
+  I -- No --> I1[Repair extraction or report blocker; do not invent missing facts]
+  I1 --> H
+  I -- Yes --> J[Build slide plan: title slide, optional agenda, content slides, closing]
+  J --> K[Choose density mode and visual system]
+  K --> L[Generate self-contained HTML on fixed 1920x1080 stage]
+  L --> M[Human review gate: content, visual, technical, delivery]
+  M --> N{P0 or P1 issue?}
+  N -- Yes --> O[Revision loop; fix concrete issues and re-review]
+  O --> M
+  N -- No --> P[Final acceptance checks]
+  P --> Q{Overflow, broken navigation, missing source credit, or leftover temp files?}
+  Q -- Yes --> O
+  Q -- No --> R[Deliver only source.md and final HTML]
+```
+
+1. Detect the input type and output constraints: URL, PDF, DOCX file, Markdown file, plain text, screenshot, pasted notes, target language, audience, density, and output location.
+2. Normalize the raw input with `web-markdown`, preserving title, source, body text, images, links, tables, and code blocks. Use `scripts/extract_content.py` only as a fallback when the dependency or source type blocks the default path.
+3. Pause at the Markdown confirmation gate. Ask whether to continue, modify/regenerate Markdown, or stop with new input. Do not build the content brief, slide plan, or HTML before confirmation.
+4. Extract a compact content brief: source title, deck name, source URL/path, sections, key facts, quotes, stats, tables, code, and usable visual assets.
+5. Build the slide plan with a source-related title slide, optional agenda, content slides, visual mapping, and closing/source attribution.
+6. Choose the density mode:
    - **Low density / speaker-led** for talks, keynotes, and pitches.
    - **High density / reading-first** for reports, articles, and async handouts.
-6. Pick one visual style from `references/style-presets.md` and keep it consistent.
-7. Generate one self-contained HTML file on a fixed 1920×1080 stage.
-8. Verify one-slide-at-a-time visibility, 16:9 scaling, navigation, animation, embedded image rendering, and overflow.
-9. Delete temporary review, revision, metadata, scratch, screenshot, or planning artifacts before finishing.
+7. Pick one visual style from `references/style-presets.md`, choose motion only when useful, and keep the theme readable and consistent.
+8. Generate one self-contained HTML file on a fixed 1920×1080 stage using `references/html-template.md` and `references/viewport-base.css`.
+9. Run the human review gate across `source.md`, the slide plan, and the rendered draft: content fidelity, visual quality, technical behavior, and delivery readiness.
+10. Fix every P0/P1 issue through the revision loop, then rerun the affected checks. Cap normal repair loops at three rounds; if blockers remain, report them instead of delivering.
+11. Final acceptance verifies one-slide-at-a-time visibility, 16:9 scaling, navigation, source links, no overflow/overlap/clipping, and cleanup.
+12. Delete temporary review, revision, metadata, scratch, screenshot, or planning artifacts before finishing.
+
+### Boundary cases
+
+- **Empty or ambiguous input** — ask one concise clarification question and stop until the user provides a usable source.
+- **Missing `web-markdown`** — ask before installing it; if unavailable or declined, explain that reliable source normalization is blocked.
+- **Failed Markdown extraction** — do not continue with partial content. Repair extraction, rerun `web-markdown`, or use the fallback helper for supported local files.
+- **User rejects generated Markdown** — modify or regenerate Markdown, then ask for confirmation again before continuing.
+- **Only screenshot provided** — treat visible screenshot content as the source; transcribe observable text/data and avoid inventing hidden context.
+- **Notes plus screenshots** — use notes as the main narrative and screenshots only as evidence or visual assets.
+- **Thin sections or missing visuals** — make tighter slides; do not add stock images, fake charts, invented citations, or decorative filler.
+- **Slide overflow or unreadable content** — split into more slides rather than shrinking text below a comfortable size.
+- **P0/P1 review findings** — block delivery until fixed and re-reviewed.
+- **Temporary artifacts** — do not keep review reports, metadata, screenshots, scratch files, or slide plans in the final output folder.
 
 ### Output
 

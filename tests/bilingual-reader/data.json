@@ -1521,6 +1521,15 @@
         "exampleZh": "支持脚本可以被转化为 Agent 指令。"
       },
       {
+        "word": "process",
+        "level": "B1",
+        "ipa": "/ˈprɑːses/",
+        "pos": "v./n.",
+        "definitionZh": "处理；流程。",
+        "collocationExample": "The agent can process a home insurance claim.",
+        "exampleZh": "Agent 可以处理家庭保险理赔。"
+      },
+      {
         "word": "approach",
         "level": "B1",
         "ipa": "/əˈproʊtʃ/",
@@ -1917,6 +1926,15 @@
         "exampleZh": "工作流是一系列步骤。"
       },
       {
+        "word": "resolve",
+        "level": "B2",
+        "ipa": "/rɪˈzɑːlv/",
+        "pos": "v.",
+        "definitionZh": "解决；处理完成。",
+        "collocationExample": "A workflow may resolve a customer service issue.",
+        "exampleZh": "工作流可以解决客服问题。"
+      },
+      {
         "word": "integrate",
         "level": "B2",
         "ipa": "/ˈɪntɪɡreɪt/",
@@ -2043,6 +2061,15 @@
         "exampleZh": "LLM Agent 可以识别可疑活动。"
       },
       {
+        "word": "interpret",
+        "level": "C1",
+        "ipa": "/ɪnˈtɜːrprət/",
+        "pos": "v.",
+        "definitionZh": "解释；理解含义。",
+        "collocationExample": "Agents can interpret natural language.",
+        "exampleZh": "Agent 可以解释自然语言。"
+      },
+      {
         "word": "standardized",
         "level": "C1",
         "ipa": "/ˈstændərdaɪzd/",
@@ -2086,6 +2113,15 @@
         "definitionZh": "不相关的；无关的。",
         "collocationExample": "Off-topic input can be flagged as irrelevant.",
         "exampleZh": "离题输入可被标记为不相关。"
+      },
+      {
+        "word": "breach",
+        "level": "C1",
+        "ipa": "/briːtʃ/",
+        "pos": "v./n.",
+        "definitionZh": "违反；突破限制。",
+        "collocationExample": "Guardrails trigger exceptions if constraints are breached.",
+        "exampleZh": "约束被违反时护栏会触发异常。"
       },
       {
         "word": "oversight",
@@ -2304,6 +2340,15 @@
         "def": "支持；帮助系统或用户完成工作。",
         "eg": "Support scripts can be converted into agent instructions.",
         "egzh": "支持脚本可以被转化为 Agent 指令。"
+      },
+      "process": {
+        "w": "process",
+        "ipa": "/ˈprɑːses/",
+        "pos": "v./n.",
+        "level": "B1",
+        "def": "处理；流程。",
+        "eg": "The agent can process a home insurance claim.",
+        "egzh": "Agent 可以处理家庭保险理赔。"
       },
       "approach": {
         "w": "approach",
@@ -2701,6 +2746,15 @@
         "eg": "A workflow is a sequence of steps.",
         "egzh": "工作流是一系列步骤。"
       },
+      "resolve": {
+        "w": "resolve",
+        "ipa": "/rɪˈzɑːlv/",
+        "pos": "v.",
+        "level": "B2",
+        "def": "解决；处理完成。",
+        "eg": "A workflow may resolve a customer service issue.",
+        "egzh": "工作流可以解决客服问题。"
+      },
       "integrate": {
         "w": "integrate",
         "ipa": "/ˈɪntɪɡreɪt/",
@@ -2827,6 +2881,15 @@
         "eg": "An LLM agent can identify suspicious activity.",
         "egzh": "LLM Agent 可以识别可疑活动。"
       },
+      "interpret": {
+        "w": "interpret",
+        "ipa": "/ɪnˈtɜːrprət/",
+        "pos": "v.",
+        "level": "C1",
+        "def": "解释；理解含义。",
+        "eg": "Agents can interpret natural language.",
+        "egzh": "Agent 可以解释自然语言。"
+      },
       "standardized": {
         "w": "standardized",
         "ipa": "/ˈstændərdaɪzd/",
@@ -2871,6 +2934,15 @@
         "def": "不相关的；无关的。",
         "eg": "Off-topic input can be flagged as irrelevant.",
         "egzh": "离题输入可被标记为不相关。"
+      },
+      "breach": {
+        "w": "breach",
+        "ipa": "/briːtʃ/",
+        "pos": "v./n.",
+        "level": "C1",
+        "def": "违反；突破限制。",
+        "eg": "Guardrails trigger exceptions if constraints are breached.",
+        "egzh": "约束被违反时护栏会触发异常。"
       },
       "oversight": {
         "w": "oversight",
@@ -3073,337 +3145,357 @@
     },
     "autowrap": [
       [
-        "\\bpracticals?\\b",
+        "\\b(?:practical)\\b",
         "i",
         "practical"
       ],
       [
-        "\\bsupports?\\b",
+        "\\b(?:supporting|supported|supports|support)\\b",
         "i",
         "support"
       ],
       [
-        "\\bapproachs?\\b",
+        "\\b(?:processing|processes|processed|process)\\b",
+        "i",
+        "process"
+      ],
+      [
+        "\\b(?:approaches|approach)\\b",
         "i",
         "approach"
       ],
       [
-        "\\bcapables?\\b",
+        "\\b(?:capable)\\b",
         "i",
         "capable"
       ],
       [
-        "\\bcomplexs?\\b",
+        "\\b(?:complex)\\b",
         "i",
         "complex"
       ],
       [
-        "\\bconventionals?\\b",
+        "\\b(?:conventional)\\b",
         "i",
         "conventional"
       ],
       [
-        "\\bautomates?\\b",
+        "\\b(?:automating|automated|automates|automate)\\b",
         "i",
         "automate"
       ],
       [
-        "\\bworkflows?\\b",
+        "\\b(?:workflows|workflow)\\b",
         "i",
         "workflow"
       ],
       [
-        "\\bindependentlys?\\b",
+        "\\b(?:independently)\\b",
         "i",
         "independently"
       ],
       [
-        "\\breliables?\\b",
+        "\\b(?:reliable)\\b",
         "i",
         "reliable"
       ],
       [
-        "\\bcontexts?\\b",
+        "\\b(?:contexts|context)\\b",
         "i",
         "context"
       ],
       [
-        "\\bcriterias?\\b",
+        "\\b(?:criterias|criteria)\\b",
         "i",
         "criteria"
       ],
       [
-        "\\bapprovals?\\b",
+        "\\b(?:approvals|approval)\\b",
         "i",
         "approval"
       ],
       [
-        "\\bbaselines?\\b",
+        "\\b(?:baselines|baseline)\\b",
         "i",
         "baseline"
       ],
       [
-        "\\blatencys?\\b",
+        "\\b(?:latencies|latency)\\b",
         "i",
         "latency"
       ],
       [
-        "\\bdeployments?\\b",
+        "\\b(?:deployments|deployment)\\b",
         "i",
         "deployment"
       ],
       [
-        "\\bevaluations?\\b",
+        "\\b(?:evaluations|evaluation)\\b",
         "i",
         "evaluation"
       ],
       [
-        "\\bcapabilitys?\\b",
+        "\\b(?:capabilities|capability)\\b",
         "i",
         "capability"
       ],
       [
-        "\\bambiguous\\b",
+        "\\b(?:ambiguous)\\b",
         "i",
         "ambiguous"
       ],
       [
-        "\\bdeterministics?\\b",
+        "\\b(?:deterministic)\\b",
         "i",
         "deterministic"
       ],
       [
-        "\\borchestrations?\\b",
+        "\\b(?:orchestrations|orchestration)\\b",
         "i",
         "orchestration"
       ],
       [
-        "\\bproactivelys?\\b",
+        "\\b(?:proactively)\\b",
         "i",
         "proactively"
       ],
       [
-        "\\bintricates?\\b",
+        "\\b(?:intricate)\\b",
         "i",
         "intricate"
       ],
       [
-        "\\bunstructureds?\\b",
+        "\\b(?:unstructured)\\b",
         "i",
         "unstructured"
       ],
       [
-        "\\bretrieves?\\b",
+        "\\b(?:retrieving|retrieved|retrieves|retrieve)\\b",
         "i",
         "retrieve"
       ],
       [
-        "\\bscalabilitys?\\b",
+        "\\b(?:scalabilities|scalability)\\b",
         "i",
         "scalability"
       ],
       [
-        "\\brelevances?\\b",
+        "\\b(?:relevances|relevance)\\b",
         "i",
         "relevance"
       ],
       [
-        "\\bauthentications?\\b",
+        "\\b(?:authentications|authentication)\\b",
         "i",
         "authentication"
       ],
       [
-        "\\bauthorizations?\\b",
+        "\\b(?:authorizations|authorization)\\b",
         "i",
         "authorization"
       ],
       [
-        "\\bcomposables?\\b",
+        "\\b(?:composable)\\b",
         "i",
         "composable"
       ],
       [
-        "\\bresilients?\\b",
+        "\\b(?:resilient)\\b",
         "i",
         "resilient"
       ],
       [
-        "\\bnuanceds?\\b",
+        "\\b(?:nuanced)\\b",
         "i",
         "nuanced"
       ],
       [
-        "\\bunwieldys?\\b",
+        "\\b(?:unwieldy)\\b",
         "i",
         "unwieldy"
       ],
       [
-        "\\bbrittles?\\b",
+        "\\b(?:brittle)\\b",
         "i",
         "brittle"
       ],
       [
-        "\\bcumbersomes?\\b",
+        "\\b(?:cumbersome)\\b",
         "i",
         "cumbersome"
       ],
       [
-        "\\breputationals?\\b",
+        "\\b(?:reputational)\\b",
         "i",
         "reputational"
       ],
       [
-        "\\birreversibles?\\b",
+        "\\b(?:irreversible)\\b",
         "i",
         "irreversible"
       ],
       [
-        "\\badvances?\\b",
+        "\\b(?:advancing|advanced|advances|advance)\\b",
         "i",
         "advance"
       ],
       [
-        "\\bcategorys?\\b",
+        "\\b(?:categories|category)\\b",
         "i",
         "category"
       ],
       [
-        "\\bidentifys?\\b",
+        "\\b(?:identifying|identifies|identified|identify)\\b",
         "i",
         "identify"
       ],
       [
-        "\\bpatterns?\\b",
+        "\\b(?:patterns|pattern)\\b",
         "i",
         "pattern"
       ],
       [
-        "\\bdecisions?\\b",
+        "\\b(?:decisions|decision)\\b",
         "i",
         "decision"
       ],
       [
-        "\\bexternals?\\b",
+        "\\b(?:external)\\b",
         "i",
         "external"
       ],
       [
-        "\\bstreamlines?\\b",
+        "\\b(?:streamlining|streamlined|streamlines|streamline)\\b",
         "i",
         "streamline"
       ],
       [
-        "\\bexecutes?\\b",
+        "\\b(?:executing|executes|executed|execute)\\b",
         "i",
         "execute"
       ],
       [
-        "\\bsequences?\\b",
+        "\\b(?:sequences|sequence)\\b",
         "i",
         "sequence"
       ],
       [
-        "\\bintegrates?\\b",
+        "\\b(?:resolving|resolved|resolves|resolve)\\b",
+        "i",
+        "resolve"
+      ],
+      [
+        "\\b(?:integrating|integrated|integrates|integrate)\\b",
         "i",
         "integrate"
       ],
       [
-        "\\bindependences?\\b",
+        "\\b(?:independences|independence)\\b",
         "i",
         "independence"
       ],
       [
-        "\\bleverages?\\b",
+        "\\b(?:leveraging|leveraged|leverages|leverage)\\b",
         "i",
         "leverage"
       ],
       [
-        "\\bdynamicallys?\\b",
+        "\\b(?:dynamically)\\b",
         "i",
         "dynamically"
       ],
       [
-        "\\bappropriates?\\b",
+        "\\b(?:appropriate)\\b",
         "i",
         "appropriate"
       ],
       [
-        "\\bvalidates?\\b",
+        "\\b(?:validating|validates|validated|validate)\\b",
         "i",
         "validate"
       ],
       [
-        "\\bsufficients?\\b",
+        "\\b(?:sufficient)\\b",
         "i",
         "sufficient"
       ],
       [
-        "\\boptimizes?\\b",
+        "\\b(?:optimizing|optimized|optimizes|optimize)\\b",
         "i",
         "optimize"
       ],
       [
-        "\\bmaintains?\\b",
+        "\\b(?:maintaining|maintained|maintains|maintain)\\b",
         "i",
         "maintain"
       ],
       [
-        "\\bclassifications?\\b",
+        "\\b(?:classifications|classification)\\b",
         "i",
         "classification"
       ],
       [
-        "\\bretrievals?\\b",
+        "\\b(?:retrievals|retrieval)\\b",
         "i",
         "retrieval"
       ],
       [
-        "\\bautonomous\\b",
+        "\\b(?:autonomous)\\b",
         "i",
         "autonomous"
       ],
       [
-        "\\bfrictions?\\b",
+        "\\b(?:frictions|friction)\\b",
         "i",
         "friction"
       ],
       [
-        "\\bsuspicious\\b",
+        "\\b(?:suspicious)\\b",
         "i",
         "suspicious"
       ],
       [
-        "\\bstandardizeds?\\b",
+        "\\b(?:interpreting|interpreted|interprets|interpret)\\b",
+        "i",
+        "interpret"
+      ],
+      [
+        "\\b(?:standardized)\\b",
         "i",
         "standardized"
       ],
       [
-        "\\bdiscoverabilitys?\\b",
+        "\\b(?:discoverabilities|discoverability)\\b",
         "i",
         "discoverability"
       ],
       [
-        "\\bconditionals?\\b",
+        "\\b(?:conditional)\\b",
         "i",
         "conditional"
       ],
       [
-        "\\bdelegates?\\b",
+        "\\b(?:delegating|delegated|delegates|delegate)\\b",
         "i",
         "delegate"
       ],
       [
-        "\\birrelevants?\\b",
+        "\\b(?:irrelevant)\\b",
         "i",
         "irrelevant"
       ],
       [
-        "\\boversights?\\b",
+        "\\b(?:breaching|breaches|breached|breach)\\b",
+        "i",
+        "breach"
+      ],
+      [
+        "\\b(?:oversights|oversight)\\b",
         "i",
         "oversight"
       ],
       [
-        "\\badaptabilitys?\\b",
+        "\\b(?:adaptabilities|adaptability)\\b",
         "i",
         "adaptability"
       ],
@@ -3413,12 +3505,12 @@
         "all_or_nothing"
       ],
       [
-        "\\bLLMs?\\b",
+        "\\b(?:LLMs|LLM)\\b",
         "i",
         "llm"
       ],
       [
-        "\\bagents?\\b",
+        "\\b(?:agents|agent)\\b",
         "i",
         "agent"
       ],
@@ -3428,37 +3520,37 @@
         "agents_sdk"
       ],
       [
-        "\\bAPIs?\\b",
+        "\\b(?:APIs|API)\\b",
         "i",
         "api"
       ],
       [
-        "\\bCRMs?\\b",
+        "\\b(?:CRMs|CRM)\\b",
         "i",
         "crm"
       ],
       [
-        "\\bPDFs?\\b",
+        "\\b(?:PDFs|PDF)\\b",
         "i",
         "pdf"
       ],
       [
-        "\\bwebs?\\b",
+        "\\b(?:webs|web)\\b",
         "i",
         "web"
       ],
       [
-        "\\bdatabases?\\b",
+        "\\b(?:databases|database)\\b",
         "i",
         "database"
       ],
       [
-        "\\bprompts?\\b",
+        "\\b(?:prompts|prompt)\\b",
         "i",
         "prompt"
       ],
       [
-        "\\bjailbreaks?\\b",
+        "\\b(?:jailbreaks|jailbreak)\\b",
         "i",
         "jailbreak"
       ],
@@ -3468,7 +3560,7 @@
         "moderation_api"
       ],
       [
-        "\\bclassifiers?\\b",
+        "\\b(?:classifiers|classifier)\\b",
         "i",
         "classifier"
       ],
@@ -3478,17 +3570,17 @@
         "computer_use_models"
       ],
       [
-        "\\bgraphs?\\b",
+        "\\b(?:graphs|graph)\\b",
         "i",
         "graph"
       ],
       [
-        "\\bnodes?\\b",
+        "\\b(?:nodes|node)\\b",
         "i",
         "node"
       ],
       [
-        "\\bedges?\\b",
+        "\\b(?:edges|edge)\\b",
         "i",
         "edge"
       ],

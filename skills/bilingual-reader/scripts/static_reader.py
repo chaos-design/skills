@@ -14,10 +14,10 @@ from pathlib import Path
 from urllib.request import Request, urlopen
 
 try:
-    from markdown_to_data import Article, build_learning_data, parse_markdown
+    from markdown_to_data import Article, autowrap_pattern, build_learning_data, parse_markdown, validate_learning_data
 except ImportError:
     sys.path.insert(0, str(Path(__file__).resolve().parent))
-    from markdown_to_data import Article, build_learning_data, parse_markdown
+    from markdown_to_data import Article, autowrap_pattern, build_learning_data, parse_markdown, validate_learning_data
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -27,6 +27,7 @@ TEMPLATE_INDEX = TEMPLATE_ROOT / "templates.json"
 BASE_TEMPLATE = ROOT / "assets" / "template.html"
 HIGHLIGHT_JS_CSS = "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css"
 HIGHLIGHT_JS_SCRIPT = "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"
+MAX_JSON_BYTES = 20 * 1024 * 1024
 
 
 TRANSLATION_HINTS = {
@@ -318,13 +319,7 @@ def article_text_for_glossary(article: Article) -> str:
 def word_occurs_in_source(word: str, source_text: str) -> bool:
     """Check whether a glossary word genuinely occurs in the article."""
 
-    escaped = re.escape(word)
-    if re.fullmatch(r"[A-Za-z]+", word):
-        if len(word) > 2 and not word.casefold().endswith("s"):
-            escaped += "s?"
-        pattern = rf"\b{escaped}\b"
-    else:
-        pattern = rf"\b{escaped}\b"
+    pattern = autowrap_pattern(word)
     return bool(re.search(pattern, source_text, re.IGNORECASE))
 
 
@@ -443,8 +438,62 @@ def inline_image(url: str, image_cache: dict[str, str], enabled: bool) -> str:
 def build_data(markdown_file: Path) -> dict[str, object]:
     """Build preview data from normalized Markdown."""
 
-    article = parse_markdown(markdown_file.read_text(encoding="utf-8"))
+    source_path = validate_input_file(markdown_file, "Markdown source")
+    article = parse_markdown(source_path.read_text(encoding="utf-8"))
     return build_data_from_article(article)
+
+
+def load_reviewed_data(data_file: Path) -> dict[str, object]:
+    """Load a human-reviewed data.json file and validate its contract."""
+
+    source_path = validate_input_file(data_file, "Reviewed data file", max_bytes=MAX_JSON_BYTES)
+    try:
+        data = json.loads(source_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"Reviewed data file is not valid JSON: {exc}") from exc
+    if not isinstance(data, dict):
+        raise ValueError("Reviewed data file must contain a JSON object.")
+    validate_learning_data(data)
+    return data
+
+
+def validate_input_file(path: Path | None, label: str, max_bytes: int = MAX_JSON_BYTES) -> Path:
+    """Validate a required input file path before reading it."""
+
+    if path is None:
+        raise ValueError(f"{label} is required.")
+    source_path = Path(path).expanduser().resolve()
+    if not source_path.exists():
+        raise FileNotFoundError(f"{label} does not exist: {source_path}")
+    if not source_path.is_file():
+        raise ValueError(f"{label} must be a regular file: {source_path}")
+    size = source_path.stat().st_size
+    if size == 0:
+        raise ValueError(f"{label} is empty.")
+    if size > max_bytes:
+        raise ValueError(f"{label} is too large: {size} bytes.")
+    return source_path
+
+
+def validate_generation_options(
+    markdown_file: Path | None,
+    output_dir: Path,
+    template_name: str | None,
+    data_file: Path | None,
+    data_only: bool,
+) -> None:
+    """Validate CLI option combinations before writing artifacts."""
+
+    if data_file and markdown_file:
+        raise ValueError("Use either --data-file or markdown_file, not both.")
+    if data_file and data_only:
+        raise ValueError("--data-only is only valid when generating data from Markdown.")
+    if not data_file and not markdown_file:
+        raise ValueError("Either markdown_file or --data-file is required.")
+    if output_dir.exists() and not output_dir.is_dir():
+        raise ValueError(f"--output-dir must be a directory: {output_dir}")
+    if template_name == "":
+        raise ValueError("--template must not be empty.")
 
 
 def build_data_from_article(article: Article) -> dict[str, object]:
@@ -883,7 +932,7 @@ def render_original_row(row: dict[str, object], mode: str, images: dict[str, str
         caption = media_caption(row)
         return f"""
       <figure class="source-figure og-media">
-        <img src="{escape(source)}" alt="{escape(row.get("alt", ""))}" loading="lazy">
+        <img src="{escape(source)}" alt="{escape(row.get("alt", ""))}" width="720" height="405" loading="lazy" decoding="async">
         <figcaption>{escape(caption)} · <a href="{escape(row["src"])}" target="_blank" rel="noopener">原始图片链接</a></figcaption>
       </figure>"""
     if row_type == "code":
@@ -1134,7 +1183,7 @@ def static_overrides() -> str:
   .og-row .en,.og-row .zh{min-width:0;padding:18px 22px}.og-row .en{color:var(--en);border-right:1px solid var(--border);font-size:15px;line-height:1.85}.og-row .zh{color:var(--zh);background:color-mix(in srgb,var(--panel2) 72%,transparent);font-size:15px;line-height:1.85}
   #originalSection .w{color:#4169ff;text-decoration:none!important;cursor:text!important}#originalSection .w::after{right:-5px;top:.05em;width:4px;height:4px;background:#9b6bff;box-shadow:0 0 0 2px rgba(142,91,255,.16)}#originalSection .w:hover{color:#8e55ff;text-decoration:none!important;cursor:text!important}
   .source-figure{max-width:min(880px,92%);margin:24px auto;padding:14px;border:1px solid color-mix(in srgb,var(--accent2) 28%,var(--border));border-radius:var(--radius);background:var(--panel);overflow:hidden;text-align:center}
-  .source-figure img{display:block;width:auto;max-width:100%;height:auto;margin:0 auto;border-radius:calc(var(--radius) - 4px);background:#fff}.source-figure figcaption{margin-top:10px;color:var(--muted);font-size:13px;line-height:1.55}.source-figure a{color:var(--accent2)}
+  .source-figure img{display:block;width:min(720px,100%);height:405px;max-width:100%;margin:0 auto;border-radius:calc(var(--radius) - 4px);background:#fff;object-fit:contain}.source-figure figcaption{margin-top:10px;color:var(--muted);font-size:13px;line-height:1.55}.source-figure a{color:var(--accent2)}
   .og-table-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;border:0;background:transparent;box-shadow:none;overflow:visible}.og-table-row .og-table-cell{overflow:auto;border:1px solid color-mix(in srgb,var(--accent2) 22%,var(--border));border-radius:calc(var(--radius) + 2px);background:var(--panel);box-shadow:0 10px 26px rgba(0,0,0,.08)}.og-table-row .en{border-right:1px solid color-mix(in srgb,var(--accent2) 22%,var(--border))}.og-cell-label{margin-bottom:10px;color:var(--accent2);font-size:11px;font-weight:900;letter-spacing:.14em;text-transform:uppercase}.source-table-wrap{margin:18px 0;padding:12px;border:1px solid color-mix(in srgb,var(--accent) 28%,var(--border));border-radius:var(--radius);background:var(--panel);overflow:auto}
   .source-table{width:100%;min-width:max-content;border-collapse:collapse;table-layout:auto;color:var(--text);font-size:14px;line-height:1.55}.source-table th,.source-table td{max-width:260px;padding:10px 12px;border:1px solid var(--border);vertical-align:top;text-align:left;white-space:normal;overflow-wrap:anywhere;word-break:normal}.source-table th{min-width:120px;background:color-mix(in srgb,var(--accent2) 14%,var(--panel2));color:var(--accent2);font-weight:800}.source-table td{background:color-mix(in srgb,var(--panel2) 52%,transparent)}
   pre{overflow:auto;padding:16px 18px;border:1px solid var(--border);border-radius:var(--radius);background:#05070b;color:#d7fbe8;line-height:1.55}code{font-family:"SF Mono",Consolas,monospace}
@@ -1159,11 +1208,13 @@ def static_overrides() -> str:
     """
 
 
-def render_script() -> str:
+def render_script(data: dict[str, object]) -> str:
     """Render minimal local interactions."""
 
-    return """
+    autowrap = data.get("glossary", {}).get("autowrap", [])
+    script = """
   <script>
+    const autowrapRules = __AUTOWRAP_RULES__;
     const body = document.body;
     const progress = document.getElementById('progress');
     const glossary = document.getElementById('glossary');
@@ -1294,13 +1345,14 @@ def render_script() -> str:
     });
     const esc = (value) => String(value || '').replace(/[&<>"']/g, (ch) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
     const isWordPart = (ch) => !!ch && /[A-Za-z0-9'’_-]/.test(ch);
-    function wordPattern(word) {
-        const specials = new Set(['\\\\', '^', '$', '.', '*', '+', '?', '(', ')', '[', ']', '{', '}', '|']);
-        const escaped = Array.from(String(word || '')).map((ch) => specials.has(ch) ? '\\\\' + ch : ch).join('');
-      if (/^[A-Za-z]+$/.test(word)) return new RegExp('\\\\b' + escaped + (word.endsWith('s') ? '' : 's?') + '\\\\b', 'i');
-      return new RegExp('\\\\b' + escaped + '\\\\b', 'i');
+    function safePattern(pattern, flags) {
+      try {
+        return new RegExp(pattern, flags || 'i');
+      } catch {
+        return null;
+      }
     }
-    function wrapFirst(root, key, word) {
+    function wrapFirst(root, key, re) {
       const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
         acceptNode(node) {
           const parent = node.parentElement;
@@ -1308,9 +1360,9 @@ def render_script() -> str:
             ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
         }
       });
-      const re = wordPattern(word);
       let node;
       while ((node = walker.nextNode())) {
+        re.lastIndex = 0;
         const match = re.exec(node.nodeValue);
         if (!match) continue;
         const start = match.index;
@@ -1333,9 +1385,12 @@ def render_script() -> str:
       return false;
     }
     const hoverRoots = document.querySelectorAll('.core-source,.study-row .en,.evidence .ev-part.src,.stop-en,.cell.en,#originalSection .og-row .en');
-    Object.keys(dict).forEach((key) => {
+    autowrapRules.forEach(([pattern, flags, key]) => {
+      if (!dict[key]) return;
+      const re = safePattern(pattern, flags);
+      if (!re) return;
       for (const root of hoverRoots) {
-        if (wrapFirst(root, key, dict[key].w)) break;
+        if (wrapFirst(root, key, re)) break;
       }
     });
     function speak(word, event) {
@@ -1378,6 +1433,7 @@ def render_script() -> str:
     });
     window.dispatchEvent(new Event('scroll'));
   </script>"""
+    return script.replace("__AUTOWRAP_RULES__", script_json(autowrap))
 
 
 def render_toc(data: dict[str, object]) -> str:
@@ -1466,7 +1522,7 @@ def render_page(
   </div>
   <footer>原文：<a href="{escape(footer["sourceUrl"])}" target="_blank" rel="noopener">《{escape(footer["sourceText"])}》</a></footer>
 {render_code_sdk_script()}
-{render_script()}
+{render_script(data)}
 </body>
 </html>
 """
@@ -1515,18 +1571,32 @@ def selected_templates(template_name: str | None) -> list[dict[str, object]]:
 
 
 def generate_previews(
-    markdown_file: Path,
+    markdown_file: Path | None,
     output_dir: Path,
     inline_images: bool = True,
     template_name: str | None = "compact-study",
+    data_file: Path | None = None,
+    data_only: bool = False,
 ) -> None:
-    """Generate preview pages for one template by default."""
+    """Generate data and preview pages for one template by default."""
 
-    data = build_data(markdown_file)
-    templates = selected_templates(template_name)
+    output_dir = Path(output_dir).expanduser().resolve()
+    validate_generation_options(markdown_file, output_dir, template_name, data_file, data_only)
+    if data_file:
+        data = load_reviewed_data(data_file)
+    elif markdown_file:
+        data = build_data(markdown_file)
+    else:
+        raise ValueError("Either markdown_file or --data-file is required.")
     image_cache: dict[str, str] = {}
     output_dir.mkdir(parents=True, exist_ok=True)
-    (output_dir / "data.json").write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    data_output = output_dir / "data.json"
+    if not data_file or data_output.resolve() != Path(data_file).expanduser().resolve():
+        data_output.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    if data_only:
+        print("generated=data.json review_required=1")
+        return
+    templates = selected_templates(template_name)
     for template in templates:
         name = str(template["name"])
         page_dir = output_dir / name
@@ -1541,11 +1611,13 @@ def build_parser() -> argparse.ArgumentParser:
     """Build CLI parser."""
 
     parser = argparse.ArgumentParser(description="Render static bilingual-reader preview pages.")
-    parser.add_argument("markdown_file", type=Path, help="Normalized Markdown source.")
+    parser.add_argument("markdown_file", type=Path, nargs="?", help="Normalized Markdown source.")
     parser.add_argument("--output-dir", type=Path, required=True, help="Directory for generated previews.")
     parser.add_argument("--template", default="compact-study", help="Template name to render; defaults to compact-study.")
     parser.add_argument("--all-templates", action="store_true", help="Render every available template.")
     parser.add_argument("--no-inline-images", action="store_true", help="Keep source image URLs instead of data URIs.")
+    parser.add_argument("--data-only", action="store_true", help="Write data.json for human review without rendering HTML.")
+    parser.add_argument("--data-file", type=Path, help="Reviewed data.json to validate and render instead of parsing Markdown.")
     return parser
 
 
@@ -1554,8 +1626,17 @@ def main(argv: list[str] | None = None) -> int:
 
     args = build_parser().parse_args(argv)
     try:
+        if args.all_templates and args.template != "compact-study":
+            raise ValueError("--all-templates cannot be combined with --template.")
         template_name = None if args.all_templates else args.template
-        generate_previews(args.markdown_file, args.output_dir, inline_images=not args.no_inline_images, template_name=template_name)
+        generate_previews(
+            args.markdown_file,
+            args.output_dir,
+            inline_images=not args.no_inline_images,
+            template_name=template_name,
+            data_file=args.data_file,
+            data_only=args.data_only,
+        )
     except Exception as exc:
         print(f"static_reader failed: {exc}", file=sys.stderr)
         return 1

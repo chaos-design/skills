@@ -18,7 +18,6 @@ npx skills add https://github.com/chaos-design/skills --skill bilingual-reader
 npx skills add https://github.com/chaos-design/skills --skill content-slides
 npx skills add https://github.com/chaos-design/skills --skill frontend-slides
 npx skills add https://github.com/chaos-design/skills --skill geo-flow-map
-npx skills add https://github.com/chaos-design/skills --skill url-content-fetcher
 npx skills add https://github.com/chaos-design/skills --skill web-markdown
 npx skills add https://github.com/chaos-design/skills --skill x-tweet-fetcher
 ```
@@ -41,11 +40,12 @@ npx skills add https://github.com/chaos-design/skills --skill content-slides
 
 If content fetching, extracted text, images, code blocks, or downstream processing fails, first verify that `web-markdown` is installed correctly and can produce valid Markdown for the same input.
 
-`url-content-fetcher` depends on `x-tweet-fetcher` for X/Twitter URLs:
+`web-markdown` uses `x-tweet-fetcher` as its low-level bridge for X/Twitter and
+supported Chinese platform URLs:
 
 ```bash
 npx skills add https://github.com/chaos-design/skills --skill x-tweet-fetcher
-npx skills add https://github.com/chaos-design/skills --skill url-content-fetcher
+npx skills add https://github.com/chaos-design/skills --skill web-markdown
 ```
 
 When an agent finds a required skill dependency missing, it should ask the user before installing it, show the exact `npx skills add` command, and continue only after the dependency is available. If the user declines, the skill should either stop or use only the documented temporary fallback.
@@ -56,7 +56,6 @@ When an agent finds a required skill dependency missing, it should ask the user 
 - [Content Slides](./skills/content-slides/README.md) ([中文](./skills/content-slides/README.zh-CN.md))
 - [Frontend Slides](./skills/frontend-slides/README.md) ([中文](./skills/frontend-slides/README.zh-CN.md))
 - [Geo Flow Map](./skills/geo-flow-map/README.md) ([中文](./skills/geo-flow-map/README.zh-CN.md))
-- [URL Content Fetcher](./skills/url-content-fetcher/README.md) ([中文](./skills/url-content-fetcher/README.zh-CN.md))
 - [Web Markdown](./skills/web-markdown/README.md) ([中文](./skills/web-markdown/README.zh-CN.md))
 - [X Tweet Fetcher](./skills/x-tweet-fetcher/README.md) ([中文](./skills/x-tweet-fetcher/README.zh-CN.md))
 

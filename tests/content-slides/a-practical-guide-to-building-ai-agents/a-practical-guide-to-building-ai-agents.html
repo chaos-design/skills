@@ -30,6 +30,7 @@
         --kbd-bar-bg: rgba(12, 16, 24, 0.78);
         --kbd-text: rgba(255, 255, 255, 0.9);
         --kbd-bg: rgba(255, 255, 255, 0.16);
+        --kbd-border: rgba(255, 255, 255, 0.28);
         --kbd-separator: rgba(255, 255, 255, 0.18);
         --kbd-key-text: #fff;
         --link-color: var(--accent);
@@ -181,8 +182,27 @@
         display: flex;
         flex-direction: column;
         justify-content: center;
-        align-items: flex-start;
+        align-items: center;
         padding: var(--slide-padding);
+        text-align: center;
+      }
+      .title-block {
+        width: min(1320px, 100%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 26px;
+        margin-inline: auto;
+      }
+      .title-slide h1 {
+        max-width: 1180px;
+      }
+      .title-slide .lead {
+        max-width: 1060px;
+      }
+      .title-slide .source {
+        max-width: 980px;
       }
       .slide h1,
       .slide h2,
@@ -359,7 +379,10 @@
         transition:
           opacity 0.42s var(--ease-out-expo),
           transform 0.48s var(--ease-out-expo),
-          filter 0.42s var(--ease-out-expo);
+          filter 0.42s var(--ease-out-expo),
+          background 0.22s ease,
+          border-color 0.22s ease,
+          color 0.22s ease;
         width: max-content;
         max-width: min(92vw, 720px);
       }
@@ -423,6 +446,7 @@
         text-align: center;
         border-radius: 7px;
         background: var(--kbd-bg);
+        border: 1px solid var(--kbd-border);
         color: var(--kbd-key-text);
         line-height: 1;
       }
@@ -431,25 +455,27 @@
   <body>
     <div class="deck-viewport">
       <main class="deck-stage" id="deckStage">
-        <section class="slide title-slide active visible">
-          <p class="eyebrow reveal">OpenAI Guide · 阅读型简报</p>
-          <h1 class="reveal">构建 AI Agents 实用指南</h1>
-          <p class="lead reveal">
-            面向产品与工程团队：什么时候值得构建
-            Agent，如何选择模型、定义工具、写清指令，并用编排与护栏控制风险。
-          </p>
-          <p class="source reveal">
-            原文：
-            <a
-              href="https://openai.com/business/guides-and-resources/a-practical-guide-to-building-ai-agents/"
-              target="_blank"
-              rel="noopener"
-            >
-              《A Practical Guide to Building AI Agents》
-            </a>
-          </p>
+        <section class="slide title-slide active visible" data-chrome="light">
+          <div class="title-block">
+            <p class="eyebrow reveal">OpenAI Guide · 阅读型简报</p>
+            <h1 class="reveal">构建 AI Agents 实用指南</h1>
+            <p class="lead reveal">
+              面向产品与工程团队：什么时候值得构建
+              Agent，如何选择模型、定义工具、写清指令，并用编排与护栏控制风险。
+            </p>
+            <p class="source reveal">
+              原文：
+              <a
+                href="https://openai.com/business/guides-and-resources/a-practical-guide-to-building-ai-agents/"
+                target="_blank"
+                rel="noopener"
+              >
+                《A Practical Guide to Building AI Agents》
+              </a>
+            </p>
+          </div>
         </section>
-        <section class="slide">
+        <section class="slide" data-chrome="light">
           <div class="slide-content">
             <p class="eyebrow reveal">目录 / 与原页面同步</p>
             <h2 class="reveal">这份页面按官方文章结构展开，而不是只保留摘要</h2>
@@ -936,6 +962,7 @@ def save_results(output):
           this.current = 0;
           this.stage = document.getElementById('deckStage');
           this.controlsZone = document.querySelector('.deck-controls-zone');
+          this.controlsBar = document.querySelector('.deck-controls');
           this.prevButton = document.getElementById('prevSlide');
           this.nextButton = document.getElementById('nextSlide');
           this.currentSlideLabel = document.getElementById('currentSlide');
@@ -1055,12 +1082,55 @@ def save_results(output):
         prev() {
           this.showSlide(this.current - 1);
         }
+        syncChromeToSlide(slide) {
+          if (!this.controlsBar || !slide) return;
+          const presets = {
+            dark: {
+              '--control-accent': 'var(--accent)',
+              '--chrome-border': 'rgba(255, 255, 255, 0.22)',
+              '--kbd-bar-bg': 'rgba(8, 12, 20, 0.82)',
+              '--kbd-text': 'rgba(255, 255, 255, 0.92)',
+              '--kbd-bg': 'rgba(255, 255, 255, 0.16)',
+              '--kbd-border': 'rgba(255, 255, 255, 0.28)',
+              '--kbd-separator': 'rgba(255, 255, 255, 0.18)',
+              '--kbd-key-text': '#ffffff',
+            },
+            light: {
+              '--control-accent': 'var(--accent)',
+              '--chrome-border': 'rgba(17, 24, 39, 0.16)',
+              '--kbd-bar-bg': 'rgba(255, 255, 255, 0.88)',
+              '--kbd-text': 'rgba(17, 24, 39, 0.82)',
+              '--kbd-bg': 'rgba(17, 24, 39, 0.08)',
+              '--kbd-border': 'rgba(17, 24, 39, 0.16)',
+              '--kbd-separator': 'rgba(17, 24, 39, 0.14)',
+              '--kbd-key-text': 'rgba(17, 24, 39, 0.9)',
+            },
+          };
+          const mode = (slide.dataset.chrome || '').toLowerCase();
+          const preset = presets[mode] || {};
+          const attrs = {
+            '--control-accent': slide.getAttribute('data-control-accent'),
+            '--chrome-border': slide.getAttribute('data-chrome-border'),
+            '--kbd-bar-bg': slide.getAttribute('data-kbd-bar-bg'),
+            '--kbd-text': slide.getAttribute('data-kbd-text'),
+            '--kbd-bg': slide.getAttribute('data-kbd-bg'),
+            '--kbd-border': slide.getAttribute('data-kbd-border'),
+            '--kbd-separator': slide.getAttribute('data-kbd-separator'),
+            '--kbd-key-text': slide.getAttribute('data-kbd-key-text'),
+          };
+          Object.keys(attrs).forEach(name => {
+            const value = attrs[name] || preset[name];
+            if (value) this.controlsBar.style.setProperty(name, value);
+            else this.controlsBar.style.removeProperty(name);
+          });
+        }
         showSlide(index) {
           this.current = Math.max(0, Math.min(index, this.slides.length - 1));
           this.slides.forEach((slide, i) => {
             slide.classList.toggle('active', i === this.current);
             slide.classList.toggle('visible', i === this.current);
           });
+          this.syncChromeToSlide(this.slides[this.current]);
           this.currentSlideLabel.textContent = String(this.current + 1);
           this.prevButton.disabled = this.current === 0;
           this.nextButton.disabled = this.current === this.slides.length - 1;

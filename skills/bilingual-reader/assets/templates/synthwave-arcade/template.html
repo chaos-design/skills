@@ -381,7 +381,7 @@ function hydrateQuiz(){
 function renderOriginalRow(r){
   if(r.type==='image'){
     const cap=r.caption?`<figcaption>${esc(r.caption)}</figcaption>`:'';
-    return `<figure class="og-media"><img src="${esc(r.src||'')}" alt="${esc(r.alt||'')}" loading="lazy">${cap}</figure>`;
+    return `<figure class="og-media"><img src="${esc(r.src||'')}" alt="${esc(r.alt||'')}" width="720" height="405" loading="lazy" decoding="async" style="display:block;width:min(720px,100%);height:405px;object-fit:contain;margin:0 auto;">${cap}</figure>`;
   }
   return `<div class="og-row"><div class="en">${esc(r.en)}</div><div class="zh">${esc(r.zh)}</div></div>`;
 }

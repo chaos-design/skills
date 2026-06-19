@@ -1,12 +1,37 @@
-# Optional DATA Schema — `data.json`
+# DATA Schema — `data.json`
 
-Use this schema only when the user explicitly asks for a separate `data.json` companion file.
-The default deliverable is a static, human-editable `index.html` whose article content is written
-directly into the HTML DOM. A generated page must not depend on `data.json`,
-`window.BILINGUAL_READER_DATA`, or any other JavaScript data object to render content.
+Use this schema for the mandatory `data.json` artifact generated after Markdown approval and before
+HTML rendering. The final deliverable is still a static, human-editable `index.html` whose article
+content is written directly into the HTML DOM. A generated page must not depend on `data.json`,
+`window.BILINGUAL_READER_DATA`, or any other JavaScript data object at runtime.
 
 All Chinese descriptions MUST use full-width Chinese punctuation（，。；：「」），English fields use
-ASCII punctuation.
+ASCII punctuation. Every `zh` or `zh*` field under `sections` MUST be translated into natural
+Chinese from the corresponding source-backed English content; never copy the English source text
+into a `zh` field.
+
+## Mandatory Human Review
+
+After `data.json` is generated, review and correct it before rendering HTML:
+
+- Check every translation field (`zh` and `zh*`) sentence by sentence against its corresponding English source.
+- Correct mistranslations, omissions, terminology drift, unnatural professional phrasing, and any wording that could mislead readers.
+- Check close-reading summaries in `summary`, `framework`, `quiz`, summary-type `sections`, captions, and glossary explanations against the approved Markdown.
+- Delete or rewrite unsupported interpretations, fabricated claims, invented causal links, over-generalized conclusions, and quiz explanations that are not traceable to the source.
+- Render final HTML from the reviewed `data.json`; do not regenerate unreviewed data after corrections.
+
+## Boundary Validation
+
+The parser and renderer must fail with a clear error before producing artifacts when input is unsafe or incomplete:
+
+- Markdown must be non-empty, under the parser size limit, free of unsupported control characters, and include exactly one H1 title.
+- `Source` metadata must be an `http(s)` URL, and `Fetched` must be a real `YYYY-MM-DD HH:mm:ss` timestamp.
+- Fenced code blocks must be closed and stay under the code-block size limit.
+- Tables must have at least one row, a consistent column count, no more than 20 columns, no more than 200 rows, and no oversized cells.
+- Images in Markdown and `data.json` original rows must use `http(s)` or valid `data:image` sources.
+- Reviewed `data.json` must include all top-level contract fields before rendering: `metadata`, `article`, `hero`, `summary`, `framework`, `sections`, `quiz`, `original`, `glossary`, and `footer`.
+- Quiz options must be unique, answers must be in bounds, Chinese fields must contain Chinese text, and glossary `autowrap` regex entries must compile and point to existing `glossary.dict` keys.
+- CLI usage must choose either Markdown input or `--data-file`; `--data-only` is only valid when generating data from Markdown.
 
 > HTML is allowed inside text fields (e.g. `<b>`, `<br>`). To mark a hover word **inside a
 > summary `rows[].en` cell**, wrap it manually:
@@ -178,6 +203,10 @@ comes from or directly explains the article.
   Do not use `k`/`v`, `ico`, or any extra fields. Use `icon: ""` when no icon is needed.
 - **Summary hover words** (`sections[].rows[].en`): wrap manually with the `<span class="w"
   data-k="KEY">…<span class="tip"></span></span>` pattern. `KEY` must exist in `dict`.
+- **Section Chinese fields**: every `sections[].rows[].zh`, `sections[].cards[].zh`,
+  `sections[].box.zhQuote`, and nested `sections[].box.principles[].zh` value must be Chinese
+  translation or Chinese explanation grounded in the source. Do not leave English prose in these
+  fields.
 - **Hover markup integrity**: manual hover markup must be complete and non-nested. Do not emit
   partial spans, duplicate `.tip` elements, or overlapping `.w` spans. Templates and runtime code
   must never apply string-based autowrap to HTML that already contains `.w`; autowrap should only
@@ -186,14 +215,23 @@ comes from or directly explains the article.
   Do not highlight stems inside longer words or truncate plurals, hyphenated compounds, or
   possessives. Use explicit lexical boundaries in regexes, such as `\\bagents?\\b`,
   `\\bhigh-impact\\b`, or `\\bhuman intervention\\b`.
+- **Inflection matching**: glossary autowrap rules for single English words must match common
+  inflected forms in the original text, not only the lemma. Include plural / third-person singular,
+  past tense, past participle, and present participle forms where applicable. Irregular words must
+  use explicit variants, for example `have` should match `have`, `has`, `had`, and `having`.
+  Use the glossary `pos` field to avoid fabricated forms: verbs can expand to tense/participle
+  variants, nouns and terms can expand to plural variants, and adjectives/adverbs should not be
+  expanded into fake verb forms.
 - **Original hover words**: do NOT wrap manually. Add regex rules to `autowrap`; the page wraps
   the first matching cell only, keeping the text clean.
 - **Original source images**: when the source includes meaningful accessible images, add them
   directly to `original.groups[].rows` as `{ "type": "image", "src": string, "alt": string,
   "caption": string }` near their source reading-order position. For screenshots, scans, or OCR
   image inputs, put the source image at the top of the original view before paragraph rows. Prefer
-  inline `data:` image URLs when bytes are accessible so the final page works from `file://`. If an
-  image is referenced but inaccessible, state the gap instead of inventing a replacement.
+  inline `data:` image URLs when bytes are accessible so the final page works from `file://`. Render
+  original images centered in a fixed 720x405 bounded image box with `object-fit: contain`; never
+  emit unconstrained natural image dimensions. If an image is referenced but inaccessible, state the
+  gap instead of inventing a replacement.
 - **Escaping in JSON**: backslashes in regex need doubling (`\\b`), quotes inside text need `\"`.
 - **CEFR grading**: build the glossary from the article content and learner needs. Aim for a spread
   across B1→C2 plus a `术语` (domain terms) group. 40–60 words is a good target for a medium

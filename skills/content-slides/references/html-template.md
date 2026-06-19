@@ -52,6 +52,25 @@ Reference architecture for generating the slide deck. Every deck uses a fixed 16
             padding: var(--slide-padding);
             text-align: center;
         }
+        .title-block {
+            width: min(1320px, 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 28px;
+            margin-inline: auto;
+        }
+        .title-slide h1 {
+            max-width: 1200px;
+        }
+        .title-slide .subtitle {
+            max-width: 980px;
+            font-size: var(--subtitle-size);
+            line-height: 1.28;
+            color: var(--text-secondary, rgba(255, 255, 255, 0.78));
+            text-wrap: balance;
+        }
 
         /* Headings need breathing room because the global reset removes margins.
            The small vertical padding prevents tall Latin/CJK glyphs from clipping
@@ -137,7 +156,8 @@ Reference architecture for generating the slide deck. Every deck uses a fixed 16
             font: 700 13px var(--font-body); color: var(--kbd-text, rgba(255,255,255,0.88));
             opacity: 0;
             filter: blur(5px);
-            transition: opacity 0.42s var(--ease-out-expo), transform 0.48s var(--ease-out-expo), filter 0.42s var(--ease-out-expo);
+            transition: opacity 0.42s var(--ease-out-expo), transform 0.48s var(--ease-out-expo), filter 0.42s var(--ease-out-expo),
+                        background 0.22s ease, border-color 0.22s ease, color 0.22s ease;
             width: max-content; max-width: min(92vw, 720px);
             will-change: opacity, transform, filter;
         }
@@ -194,7 +214,8 @@ Reference architecture for generating the slide deck. Every deck uses a fixed 16
             font: 500 11px var(--font-body);
             min-width: 24px; padding: 4px 7px; text-align: center;
             border-radius: 7px; background: var(--kbd-bg, rgba(255,255,255,0.16));
-            border: 0; box-shadow: inset 0 1px 0 rgba(255,255,255,0.14), 0 1px 3px rgba(0,0,0,0.16);
+            border: 1px solid var(--kbd-border, rgba(255,255,255,0.28));
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.14), 0 1px 3px rgba(0,0,0,0.16);
             color: var(--kbd-key-text, #fff); line-height: 1;
         }
         .shortcut-chip:hover kbd { background: color-mix(in srgb, var(--kbd-bg, rgba(255,255,255,0.16)) 72%, #fff); }
@@ -205,13 +226,15 @@ Reference architecture for generating the slide deck. Every deck uses a fixed 16
         <main class="deck-stage" id="deckStage">
 
             <!-- Title slide -->
-            <section class="slide title-slide active">
-                <h1 class="reveal">Presentation Title</h1>
-                <p class="reveal">Subtitle · Source / author</p>
+            <section class="slide title-slide active" data-chrome="dark">
+                <div class="title-block">
+                    <h1 class="reveal">Article-theme main title</h1>
+                    <p class="subtitle reveal">Optional subtitle or grounded personal framing · Source / author</p>
+                </div>
             </section>
 
             <!-- Content slide -->
-            <section class="slide">
+            <section class="slide" data-chrome="light">
                 <div class="slide-content">
                     <h2 class="reveal">Slide Title</h2>
                     <ul>
@@ -308,13 +331,37 @@ Put everything stylistic in `:root` so the look changes in one place. Sizes are 
 }
 ```
 
+When a deck mixes light and dark slides, set chrome on each slide so keyboard hints follow the
+current slide instead of staying on a fixed deck-wide palette:
+
+```html
+<section class="slide" data-chrome="dark">...</section>
+<section class="slide" data-chrome="light">...</section>
+```
+
+Use `data-chrome="dark"` for dark slide backgrounds and `data-chrome="light"` for bright slide
+backgrounds. For custom palettes, override the active slide's chrome tokens with data attributes:
+
+```html
+<section
+    class="slide"
+    data-kbd-bar-bg="rgba(8, 12, 20, 0.84)"
+    data-kbd-text="rgba(255, 255, 255, 0.92)"
+    data-kbd-key-text="#ffffff"
+>
+    ...
+</section>
+```
+
+Never leave the bottom controls on a fixed light or fixed dark palette when slides vary by theme.
+
 ---
 
 ## 3. Slide Layout Patterns
 
 Pick the layout that fits the content. All are authored at 1920×1080.
 
-- **Title** — `h1` (`--title-size`) + subtitle/source. Left- or center-aligned.
+- **Title** — `h1` (`--title-size`) + optional subtitle/source inside a centered `.title-block`. The first slide's main title must be related to the article's actual theme or central thesis, not a generic deck label, filename, or raw URL slug. If helpful, add a subtitle or concise grounded personal framing line, but keep it faithful to the source. Place the title block in the middle of the stage by default.
 - **Bullet list** — `h2` heading + `<ul>` of `.reveal` items. Keep to density-mode limits (≤3 low, ≤8 high).
 - **Statement / quote** — one large centered line; use for a punchy idea or pulled quote with attribution.
 - **Two-column** — `display:grid; grid-template-columns: 1fr 1fr` for text + image, or compare/contrast.
@@ -449,12 +496,56 @@ class SlidePresentation {
     next() { this.showSlide(this.current + 1); }
     prev() { this.showSlide(this.current - 1); }
 
+    syncChromeToSlide(slide) {
+        if (!this.controlsBar || !slide) return;
+        const presets = {
+            dark: {
+                '--control-accent': 'var(--accent)',
+                '--chrome-border': 'rgba(255, 255, 255, 0.22)',
+                '--kbd-bar-bg': 'rgba(8, 12, 20, 0.82)',
+                '--kbd-text': 'rgba(255, 255, 255, 0.92)',
+                '--kbd-bg': 'rgba(255, 255, 255, 0.16)',
+                '--kbd-border': 'rgba(255, 255, 255, 0.28)',
+                '--kbd-separator': 'rgba(255, 255, 255, 0.18)',
+                '--kbd-key-text': '#ffffff'
+            },
+            light: {
+                '--control-accent': 'var(--accent)',
+                '--chrome-border': 'rgba(17, 24, 39, 0.16)',
+                '--kbd-bar-bg': 'rgba(255, 255, 255, 0.88)',
+                '--kbd-text': 'rgba(17, 24, 39, 0.82)',
+                '--kbd-bg': 'rgba(17, 24, 39, 0.08)',
+                '--kbd-border': 'rgba(17, 24, 39, 0.16)',
+                '--kbd-separator': 'rgba(17, 24, 39, 0.14)',
+                '--kbd-key-text': 'rgba(17, 24, 39, 0.9)'
+            }
+        };
+        const mode = (slide.dataset.chrome || '').toLowerCase();
+        const preset = presets[mode] || {};
+        const attrs = {
+            '--control-accent': slide.getAttribute('data-control-accent'),
+            '--chrome-border': slide.getAttribute('data-chrome-border'),
+            '--kbd-bar-bg': slide.getAttribute('data-kbd-bar-bg'),
+            '--kbd-text': slide.getAttribute('data-kbd-text'),
+            '--kbd-bg': slide.getAttribute('data-kbd-bg'),
+            '--kbd-border': slide.getAttribute('data-kbd-border'),
+            '--kbd-separator': slide.getAttribute('data-kbd-separator'),
+            '--kbd-key-text': slide.getAttribute('data-kbd-key-text')
+        };
+        Object.keys(attrs).forEach((name) => {
+            const value = attrs[name] || preset[name];
+            if (value) this.controlsBar.style.setProperty(name, value);
+            else this.controlsBar.style.removeProperty(name);
+        });
+    }
+
     showSlide(index) {
         this.current = Math.max(0, Math.min(index, this.slides.length - 1));
         this.slides.forEach((slide, i) => {
             slide.classList.toggle('active', i === this.current);
             slide.classList.toggle('visible', i === this.current);
         });
+        this.syncChromeToSlide(this.slides[this.current]);
         if (this.currentSlideLabel) this.currentSlideLabel.textContent = String(this.current + 1);
         if (this.prevButton) this.prevButton.disabled = this.current === 0;
         if (this.nextButton) this.nextButton.disabled = this.current === this.slides.length - 1;
@@ -464,9 +555,9 @@ class SlidePresentation {
 document.addEventListener('DOMContentLoaded', () => new SlidePresentation());
 ```
 
-Required behaviors recap: keyboard (arrows/space/PageUp-Down/Home/End/R reset), touch swipe, mouse wheel (throttled), compact bottom previous/next buttons, current/total page status, a bottom control bar that reveals only from the bottom hover zone and hides after a short delay, and one-transform stage scaling that re-runs on resize. Keyboard hints must show `Space`, `↓`, `→` for next and `←`, `↑` for previous. Do not add large floating previous/next buttons on the slide canvas, do not add top-right page numbers or separate right-bottom page indicators outside the control bar, and do not add right-side anchor dots or any other anchor/jump-dot information by default. Keep all chrome OUTSIDE `.deck-stage` so it stays crisp and isn't scaled with the slides. If the user explicitly requests side anchor navigation, add it as an opt-in extension and derive its colors from the chosen theme variables, not copied fixed template colors.
+Required behaviors recap: keyboard (arrows/space/PageUp-Down/Home/End/R reset), touch swipe, mouse wheel (throttled), compact bottom previous/next buttons, current/total page status, a bottom control bar that reveals only from the bottom hover zone and hides after a short delay, and one-transform stage scaling that re-runs on resize. Keyboard hints must show `Space`, `↓`, `→` for next and `←`, `↑` for previous. The bottom controls and shortcut hints must synchronize to the currently active slide's theme through `data-chrome="dark|light"` or per-slide `data-kbd-*` overrides; verify both light and dark slides keep readable label text, key text, key backgrounds, separators, and borders. Do not add large floating previous/next buttons on the slide canvas, do not add top-right page numbers or separate right-bottom page indicators outside the control bar, and do not add right-side anchor dots or any other anchor/jump-dot information by default. Keep all chrome OUTSIDE `.deck-stage` so it stays crisp and isn't scaled with the slides. If the user explicitly requests side anchor navigation, add it as an opt-in extension and derive its colors from the active slide's chrome variables, not copied fixed template colors.
 
-**On light-theme presets**, keep the same rule: derive chrome from that preset's palette. If the style needs stronger contrast, override all related variables together using existing theme variables so the controls, hints, and links stay visible against a bright background, e.g.:
+**On light-theme presets**, keep the same rule: derive chrome from that preset's palette. If the whole deck is light, define root chrome variables. If only some slides are light, prefer per-slide `data-chrome="light"` or `data-kbd-*` overrides so the controls, hints, and links stay visible against the active background, e.g.:
 ```css
 :root {
     --control-accent: var(--accent);

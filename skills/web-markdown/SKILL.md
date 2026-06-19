@@ -3,10 +3,9 @@ name: web-markdown
 description: >
   Converts URLs, PDFs, DOCX files, Markdown files, plain text, screenshots, and
   pasted notes into faithful Markdown archives using Microsoft MarkItDown, with
-  Camofox as a rendered URL fallback and an auditable extraction harness. Invoke
-  when users ask to fetch, archive, preserve, or convert web/document content
-  into Markdown, except specialized social/content platforms handled by
-  url-content-fetcher.
+  platform-aware URL fetcher bridging, Camofox as a rendered URL fallback, and
+  an auditable extraction harness. Invoke when users ask to fetch, archive,
+  preserve, or convert web/document/social/content URLs into Markdown.
 ---
 
 # Web Markdown
@@ -28,17 +27,16 @@ Markdown output.
 
 ```
 Phase 0  Intake
-         Decide whether web-markdown applies, reject unsafe inputs, route
-         social/content platforms to url-content-fetcher, and choose one-off
-         or workspace mode.
+         Validate safety, classify the resource type first, and choose the
+         execution route before checking conversion dependencies.
   🔽
 Phase 1  Source -> Markdown
-         Capture original source reference, run MarkItDown, and for URLs use
-         Camofox rendered fallback only after direct conversion fails.
+         Route X/Twitter, Weibo, Zhihu, Xiaohongshu, Bilibili, and WeChat to
+         x-tweet-fetcher. Route generic URLs/files/text/HTML to MarkItDown,
+         with Camofox only as generic URL or HTML fallback.
   🔽
-Phase 2  Persist
-         Write web/<slug>.md by default or source/original.md in workspace mode.
-         Never overwrite; use numeric suffixes.
+Phase 2  Prepare
+         Derive the target path and notes path. Do not write final output yet.
   🔽
 Phase 3  Extraction Notes
          Write source/extraction-notes.md only when requested, when fallback or
@@ -50,11 +48,14 @@ Phase 4  Validation
          code fences, images, links, source language, and notes accuracy.
   🔽
 Phase 5  Review / Repair
-         Complex or low-confidence sources may use a reviewer/subagent and
-         write review/source-review.md. Repair minimal slices and rerun
-         validation.
+         Use review only for low confidence, failed validation, translated
+         source copies, or explicit user request. Repair minimal slices.
   🔽
-Phase 6  Delivery
+Phase 6  User Confirmation
+         After validation/review passes and before writing output, call
+         AskUserQuestion to ask whether the user wants modifications.
+  🔽
+Phase 7  Delivery
          Report Markdown path, word count, source, confidence, notes path when
          present, and any residual risk.
 ```
@@ -78,13 +79,12 @@ complex, low-confidence, or user-requested review cases.
 
 ## Boundary Check
 
-Do not use this skill for X/Twitter, Weibo, Zhihu, Xiaohongshu, Bilibili, or
-WeChat Articles. Route those URLs to `url-content-fetcher`; that skill owns any
-internal `x-tweet-fetcher` setup for X/Twitter.
-
-```bash
-npx skills add https://github.com/chaos-design/skills --skill url-content-fetcher
-```
+Use this skill directly for generic web URLs and platform-specific social or
+content URLs, including X/Twitter, Weibo, Zhihu, Xiaohongshu, Bilibili, and
+WeChat Articles. Platform routing is a preflight rule: once the URL host is
+classified as one of those platforms, call the local `x-tweet-fetcher` scripts
+before checking MarkItDown or Camofox. Only generic URLs, files, and pasted text
+continue to MarkItDown.
 
 Reject shell commands, JavaScript/data URLs, directories, embedded credentials,
 login-only content, paywalls, and private workspaces unless the user provides an
@@ -93,17 +93,26 @@ editorial notes unless the user separately asks after faithful extraction.
 
 ## Workflow
 
-1. Intake: confirm this skill applies, reject unsafe inputs, and choose one-off
-   mode (`web/<slug>.md`) or workspace mode (`source/original.md` plus optional
-   `source/original.<lang>.md` and `source/extraction-notes.md`).
-2. Convert: use MarkItDown first. For URLs, use Camofox-rendered HTML only when
-   direct conversion fails or misses JavaScript-rendered content.
-3. Persist: write UTF-8 Markdown without overwriting existing files; append
-   `-2`, `-3`, etc. when needed.
+1. Intake: confirm this skill applies, reject unsafe inputs, classify the input
+   as platform URL, generic URL, local file, rendered HTML, text, or stdin, and
+   choose one-off mode (`web/<slug>.md`) or workspace mode.
+2. Convert: for X/Twitter, Weibo, Zhihu, Xiaohongshu, Bilibili, and WeChat,
+   route to `x-tweet-fetcher`. For generic URLs, files, pasted text, stdin, and
+   `--html-file`, use MarkItDown first. If MarkItDown fails for generic URL or
+   HTML, try Camofox-rendered HTML and then the built-in HTML parser fallback.
+3. Prepare output: derive the target path without overwriting existing files;
+   append `-2`, `-3`, etc. when needed.
 4. Validate: check title, source metadata, non-empty body, balanced code fences,
    source order, images, links, language preservation, and notes accuracy.
-5. Repair: fix minimal slices and rerun validation before reporting success.
-6. Deliver: report Markdown path, word count, source, confidence, and notes path
+5. Review/repair: review only when confidence is low, validation fails, a
+   translated source copy is produced, or the user asks. Fix minimal slices and
+   rerun validation before reporting success.
+6. Confirm: after validation/review passes and before final output, call
+   `AskUserQuestion` with the question "是否需要修改生成的 Markdown？". If the
+   user chooses modify/regenerate, apply the requested change and rerun
+   validation/review. Continue only when the user confirms no changes are
+   needed.
+7. Deliver: write UTF-8 Markdown, then report Markdown path, word count, source, confidence, and notes path
    when present.
 
 Create `review/source-review.md` only for complex, low-confidence, or
@@ -140,9 +149,10 @@ python3 skills/web-markdown/scripts/web_markdown.py \
   --notes-output source/extraction-notes.md
 ```
 
-Supported inputs: HTTP(S) URL, PDF, DOCX, Markdown, text file, screenshot/image,
-PPTX, XLS/XLSX, CSV, JSON, XML, EPUB, ZIP, `--text`, `--stdin`, and
-`--html-file` for local verification.
+Supported inputs: HTTP(S) URL, X/Twitter, Weibo, Zhihu, Xiaohongshu, Bilibili,
+WeChat Articles, PDF, DOCX, Markdown, text file, screenshot/image, PPTX,
+XLS/XLSX, CSV, JSON, XML, EPUB, ZIP, `--text`, `--stdin`, and `--html-file` for
+local verification.
 
 ## Runtime Requirements
 
@@ -187,7 +197,7 @@ Extraction notes, when written, must include:
 - Source Language: <source-language>
 - Target Language: <target-language-or-none>
 - Translated Source: <path-or-none>
-- Method: <markitdown-direct|markitdown-file|camofox-fallback|html-file|text|stdin>
+- Method: <platform-fetcher|markitdown-direct|markitdown-file|camofox-fallback|html-file|html-parser-fallback|camofox-html-parser-fallback|text|stdin>
 - Confidence: <high|medium|low>
 - Issues: <none-or-list>
 - Validation: <pass|fail>

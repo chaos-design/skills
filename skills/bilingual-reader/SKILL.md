@@ -60,12 +60,13 @@ Phase 8  Delivery
 
 ## Hard Gates
 
-- Output directory resolution is mandatory before any file generation or filesystem inspection. If the user explicitly specifies an output directory, use that directory for the Markdown, HTML, and `data.json`; do not inspect the broader filesystem to choose or discover another location.
+- Output directory resolution is mandatory before any file generation or filesystem inspection. If the user explicitly specifies an output directory, use that directory for the Markdown, `data.json`, and HTML; do not inspect the broader filesystem to choose or discover another location.
 - Markdown review is mandatory. After generating `<slug>.md`, call `AskUserQuestion` and stop.
 - Before writing a generated Markdown file, inspect the target directory for an existing related `.md` file. If one exists, call `AskUserQuestion` to ask whether to overwrite it, create a new filename, or cancel.
 - A normal chat message is not a substitute for `AskUserQuestion`.
 - If the user says the Markdown has issues, fix or regenerate only the Markdown, then ask again with `AskUserQuestion`.
-- Do not parse, translate, select templates, generate HTML, or generate `data.json` until the user explicitly approves the Markdown.
+- Do not parse, translate, select templates, generate `data.json`, or generate HTML until the user explicitly approves the Markdown.
+- `data.json` review is mandatory after Markdown approval. Generate `data.json` first, review and correct it before rendering HTML, and use the reviewed data for final page generation.
 - Use progressive disclosure. Load only the files required for the current stage.
 
 ## Dependency
@@ -87,11 +88,12 @@ Load resources in this order only:
 1. Start: `SKILL.md`, then `references/progressive-workflow.md`.
 2. Normalize source: `scripts/normalize_source.py`, plus `../web-markdown/SKILL.md`, `../web-markdown/references/harness.md`, and `../web-markdown/scripts/web_markdown.py` only if needed.
 3. Markdown review and revision loop: generated `.md` file only, plus source-normalization files needed to fix it.
-4. Approved Markdown: `scripts/markdown_to_data.py`, `references/page-contract.md`, and `references/quality-rules.md`.
-5. Template selection: `assets/templates/templates.json`.
-6. Single-template page: only the selected `assets/templates/<name>/template.html` plus required runtime assets.
-7. All-template previews: `scripts/static_reader.py`, `assets/templates/templates.json`, and each indexed template as it is rendered.
-8. Data artifact: `references/data-schema.md` after Markdown approval, before generating `data.json`.
+4. Approved Markdown: `scripts/markdown_to_data.py`, `references/data-schema.md`, `references/page-contract.md`, and `references/quality-rules.md`.
+5. Data artifact: generate `data.json`, then review and correct it before HTML rendering.
+6. Template selection: `assets/templates/templates.json`.
+7. Single-template page: only the selected `assets/templates/<name>/template.html` plus required runtime assets.
+8. All-template previews: `scripts/static_reader.py`, `assets/templates/templates.json`, and each indexed template as it is rendered.
+9. Final artifact review: `references/review-rules.md` and `scripts/review_artifacts.py`.
 
 ## Workflow
 
@@ -102,11 +104,15 @@ Load resources in this order only:
 5. Immediately call `AskUserQuestion` with the Markdown path and ask whether the Markdown is acceptable.
 6. If the user requests changes, revise or regenerate only the Markdown in the same output directory and repeat step 5.
 7. After explicit approval, parse the Markdown into article data.
-8. Generate Chinese translation, learning structure, glossary, quiz, final static HTML, and `data.json` in the same output directory.
-9. Validate the output against `references/page-contract.md` and `references/quality-rules.md`.
+8. Generate Chinese translation, learning structure, glossary, quiz, and `data.json` in the same output directory.
+9. Review `data.json` manually before HTML rendering: check every translation sentence, correct inaccurate or misleading wording, verify all close-reading summaries against the approved Markdown, and remove or rewrite unsupported claims.
+10. Render the final static HTML from the reviewed `data.json`.
+11. Validate the output against `references/page-contract.md`, `references/quality-rules.md`, and `references/review-rules.md`.
+12. Run `scripts/review_artifacts.py` on the approved Markdown, reviewed `data.json`, and generated HTML before delivery.
 
 ## Output
 
 - Always produce the review Markdown file before page generation.
-- Produce `index.html` and `data.json` after Markdown approval.
-- Keep the approved Markdown, generated HTML, and `data.json` in the same resolved output directory.
+- Produce `data.json` after Markdown approval and before HTML rendering.
+- Produce `index.html` only after `data.json` has passed manual translation and summary review.
+- Keep the approved Markdown, reviewed `data.json`, and generated HTML in the same resolved output directory.

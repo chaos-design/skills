@@ -2,12 +2,13 @@
 """
 China Platform Fetcher - Fetch posts from Chinese platforms.
 
-Supported: Weibo, Bilibili, CSDN, WeChat (微信公众号), Xiaohongshu (小红书).
+Supported: Weibo, Zhihu, Bilibili, CSDN, WeChat (微信公众号), Xiaohongshu (小红书).
 Uses Camofox for server-side rendering, or direct HTTP for public pages.
 Supports automatic platform detection and multiple output formats.
 """
 
 import json
+import html
 import re
 import sys
 import argparse
@@ -105,12 +106,23 @@ def parse_wan_number(text: str) -> int:
         return 0
 
 
+def clean_text(text: str) -> str:
+    """Normalize extracted HTML, JSON, or browser snapshot text."""
+    if not text:
+        return ""
+    text = html.unescape(text)
+    text = re.sub(r"\\[nrtt]", " ", text)
+    text = re.sub(r"\s+", " ", text)
+    return text.strip()
+
+
 # ---------------------------------------------------------------------------
 # Platform patterns and identification
 # ---------------------------------------------------------------------------
 
 PLATFORM_PATTERNS = {
     'weibo': r'weibo\.(com|cn)',
+    'zhihu': r'zhihu\.com|zhuanlan\.zhihu\.com',
     'bilibili': r'bilibili\.com|b23\.tv',
     'csdn': r'blog\.csdn\.net|csdn\.net',
     'weixin': r'mp\.weixin\.qq\.com',
@@ -434,6 +446,134 @@ class WeiboParser(PlatformParser):
             lines.append(data["content"])
 
         return "\n".join(lines)
+
+
+# ---------------------------------------------------------------------------
+# Zhihu parser
+# ---------------------------------------------------------------------------
+
+class ZhihuParser(PlatformParser):
+    """Parser for public Zhihu answers and Zhuanlan articles."""
+
+    name = "zhihu"
+
+    def can_handle(self, url: str) -> bool:
+        return bool(re.search(r'zhihu\.com|zhuanlan\.zhihu\.com', url, re.IGNORECASE))
+
+    def fetch(self, url: str, port: int = 9377) -> Dict[str, Any]:
+        html_source = self._fetch_html(url)
+        if not html_source and check_camofox(port):
+            snapshot = camofox_fetch_page(url, f"zhihu-{int(time.time())}", wait=8, port=port)
+            if snapshot:
+                return self._parse_snapshot(snapshot, url)
+        if not html_source:
+            return {"url": url, "platform": "zhihu", "error": "无法获取知乎页面内容"}
+        return self._parse_html(html_source, url)
+
+    def _fetch_html(self, url: str) -> str:
+        try:
+            request = urllib.request.Request(
+                url,
+                headers={
+                    "User-Agent": "Mozilla/5.0",
+                    "Accept": "text/html,application/xhtml+xml",
+                },
+            )
+            with urllib.request.urlopen(request, timeout=20) as response:
+                return response.read().decode("utf-8", errors="replace")
+        except Exception:
+            return ""
+
+    def _parse_html(self, source: str, url: str) -> Dict[str, Any]:
+        title = self._first_meta(source, ("og:title", "twitter:title")) or self._title_tag(source)
+        description = self._first_meta(source, ("description", "og:description", "twitter:description"))
+        author = self._first_meta(source, ("author", "article:author"))
+        published_at = self._first_json_value(source, "datePublished") or self._first_json_value(source, "created")
+        content = self._json_article_body(source) or description
+        images = self._image_urls(source)
+        return {
+            "url": url,
+            "platform": "zhihu",
+            "title": clean_text(title) or "知乎内容",
+            "author": clean_text(author),
+            "published_at": clean_text(published_at),
+            "content": clean_text(content),
+            "images": images,
+        }
+
+    def _parse_snapshot(self, snapshot: str, url: str) -> Dict[str, Any]:
+        lines = [clean_text(line) for line in snapshot.splitlines()]
+        lines = [line for line in lines if line and not line.startswith(("button ", "navigation "))]
+        title = ""
+        body_lines = []
+        for line in lines:
+            heading = re.search(r'heading "(.+?)"', line)
+            text = re.sub(r"^(?:text|paragraph):\s*", "", line)
+            if heading and not title:
+                title = heading.group(1)
+                continue
+            if len(text) > 20:
+                body_lines.append(text)
+        return {
+            "url": url,
+            "platform": "zhihu",
+            "title": title or "知乎内容",
+            "author": "",
+            "published_at": "",
+            "content": "\n\n".join(body_lines[:80]),
+            "images": [],
+        }
+
+    def _first_meta(self, source: str, names: tuple) -> str:
+        for name in names:
+            pattern = (
+                rf'<meta[^>]+(?:name|property)=["\']{re.escape(name)}["\'][^>]+content=["\']([^"\']+)["\']'
+                rf'|<meta[^>]+content=["\']([^"\']+)["\'][^>]+(?:name|property)=["\']{re.escape(name)}["\']'
+            )
+            match = re.search(pattern, source, re.IGNORECASE)
+            if match:
+                return match.group(1) or match.group(2) or ""
+        return ""
+
+    def _title_tag(self, source: str) -> str:
+        match = re.search(r"<title[^>]*>(.*?)</title>", source, re.IGNORECASE | re.DOTALL)
+        return clean_text(match.group(1)) if match else ""
+
+    def _first_json_value(self, source: str, key: str) -> str:
+        match = re.search(rf'"{re.escape(key)}"\s*:\s*"([^"]+)"', source)
+        return match.group(1) if match else ""
+
+    def _json_article_body(self, source: str) -> str:
+        candidates = re.findall(r'"(?:articleBody|content|excerpt)"\s*:\s*"((?:\\.|[^"\\])*)"', source)
+        for candidate in candidates:
+            try:
+                text = json.loads(f'"{candidate}"')
+            except json.JSONDecodeError:
+                text = candidate
+            text = clean_text(re.sub(r"<[^>]+>", " ", text))
+            if len(text) > 80:
+                return text
+        return ""
+
+    def _image_urls(self, source: str) -> List[str]:
+        urls = re.findall(r'https?://[^"\']+\.(?:jpg|jpeg|png|webp)', source, re.IGNORECASE)
+        return list(dict.fromkeys(urls))[:20]
+
+    def to_markdown(self, data: Dict[str, Any]) -> str:
+        parts = [f"# {data.get('title') or '知乎内容'}\n"]
+        if data.get("author"):
+            parts.append(f"**作者**: {data['author']}")
+        if data.get("published_at"):
+            parts.append(f"**发布时间**: {data['published_at']}")
+        if data.get("content"):
+            parts.append(f"\n## 内容\n\n{data['content']}")
+        images = data.get("images", [])
+        if images:
+            parts.append(f"\n## 图片 ({len(images)})\n")
+            for index, image_url in enumerate(images, 1):
+                parts.append(f"![图片{index}]({image_url})")
+        parts.append(f"\n---\n*来源: {data.get('url', '')}*")
+        return "\n".join(parts)
 
 
 # ---------------------------------------------------------------------------
@@ -1645,6 +1785,7 @@ class XiaohongshuParser(PlatformParser):
 
 PARSERS = [
     WeiboParser(),
+    ZhihuParser(),
     BilibiliParser(),
     CSDNParser(),
     WeixinParser(),
@@ -1690,7 +1831,7 @@ def main():
 
     parser = argparse.ArgumentParser(
         description=(
-            "Fetch posts from Chinese platforms (Weibo, Bilibili, CSDN, Xiaohongshu).\n"
+            "Fetch posts from Chinese platforms (Weibo, Zhihu, Bilibili, CSDN, Xiaohongshu).\n"
             "  --url <URL>    Platform URL to fetch\n"
             "  --pretty      Pretty print JSON\n"
             "  --text-only   Human-readable output\n"
