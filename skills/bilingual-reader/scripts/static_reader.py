@@ -1128,7 +1128,7 @@ def render_glossary_item(key: str, entry: dict[str, str]) -> str:
     return f"""
       <div class="gloss-item" data-k="{escape(key)}" data-word="{escape(entry.get("w", ""))}">
         <div class="grow"><span class="gw word">{escape(entry.get("w", ""))}</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">{escape(entry.get("ipa", ""))}</span><span class="gpos pos">{escape(entry.get("pos", ""))}</span><span class="lv">{escape(entry.get("level", ""))}</span></div>
+        <div class="gsub sub"><span class="gipa ipa">{escape(entry.get("ipa", ""))}</span><span class="gpos pos">{escape(entry.get("pos", ""))}</span></div>
         <div class="gdef def">{escape(entry.get("def", ""))}</div>
         <div class="geg eg">🗣 {escape(entry.get("eg", ""))}<span class="egzh">{escape(entry.get("egzh", ""))}</span></div>
       </div>"""
@@ -1188,7 +1188,10 @@ def static_overrides() -> str:
   .source-table{width:100%;min-width:max-content;border-collapse:collapse;table-layout:auto;color:var(--text);font-size:14px;line-height:1.55}.source-table th,.source-table td{max-width:260px;padding:10px 12px;border:1px solid var(--border);vertical-align:top;text-align:left;white-space:normal;overflow-wrap:anywhere;word-break:normal}.source-table th{min-width:120px;background:color-mix(in srgb,var(--accent2) 14%,var(--panel2));color:var(--accent2);font-weight:800}.source-table td{background:color-mix(in srgb,var(--panel2) 52%,transparent)}
   pre{overflow:auto;padding:16px 18px;border:1px solid var(--border);border-radius:var(--radius);background:#05070b;color:#d7fbe8;line-height:1.55}code{font-family:"SF Mono",Consolas,monospace}
   #glossary{display:none}#glossary.show{display:block}body.gloss-open #glossary{display:block}body.gloss-open .wrap{width:100vw;max-width:none;margin:0;padding:28px 56px 80px 24px}
-  .gloss-grid-inner{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+  .gloss-group{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .gloss-group .gg-count{display:inline-flex;align-items:center;margin-left:6px;padding:2px 9px;border:1px solid color-mix(in srgb,var(--accent2) 24%,var(--border));border-radius:999px;background:color-mix(in srgb,var(--accent2) 10%,transparent);color:var(--muted);font-size:12px;font-weight:800;line-height:1.4}
+  .gloss-grid-inner{--gloss-card-min:240px;--gloss-card-max:340px;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,var(--gloss-card-min)),var(--gloss-card-max)));justify-content:start;gap:12px}
+  .gloss-item{width:100%;min-width:0;max-width:var(--gloss-card-max)}
   .quiz-list{display:grid;gap:14px}.quiz .fb strong{color:var(--accent)}.quiz .fb .why{display:block;margin-top:4px;color:var(--muted)}
   .vquiz{display:grid;gap:18px}
   .vq-group{padding:16px 18px;border:1px solid var(--border);border-radius:var(--radius);background:var(--panel)}
@@ -1408,6 +1411,61 @@ def render_script(data: dict[str, object]) -> str:
       tip.style.left = Math.max(8, Math.min(rect.left, innerWidth - 310)) + 'px';
       tip.style.top = Math.max(8, rect.bottom + 6) + 'px';
     }
+    function ensureImageLightbox() {
+      let lightbox = document.getElementById('imageLightbox');
+      if (lightbox) return lightbox;
+      lightbox = document.createElement('div');
+      lightbox.className = 'image-lightbox';
+      lightbox.id = 'imageLightbox';
+      lightbox.hidden = true;
+      lightbox.setAttribute('role', 'dialog');
+      lightbox.setAttribute('aria-modal', 'true');
+      lightbox.setAttribute('aria-label', '图片放大视图');
+      lightbox.innerHTML = '<div class="image-lightbox__panel">'
+        + '<button class="image-lightbox__close" type="button" aria-label="关闭图片放大视图">×</button>'
+        + '<img class="image-lightbox__image" alt=""></div>';
+      document.body.appendChild(lightbox);
+      return lightbox;
+    }
+    function initImageLightbox() {
+      const lightbox = ensureImageLightbox();
+      const preview = lightbox.querySelector('.image-lightbox__image');
+      const closeButton = lightbox.querySelector('.image-lightbox__close');
+      let isOpen = false;
+      const close = () => {
+        if (!isOpen) return;
+        isOpen = false;
+        lightbox.classList.remove('is-open');
+        window.setTimeout(() => {
+          if (isOpen) return;
+          lightbox.hidden = true;
+          preview.removeAttribute('src');
+        }, 220);
+      };
+      const open = (image) => {
+        const src = image.currentSrc || image.src;
+        if (!src) return;
+        isOpen = true;
+        preview.src = src;
+        preview.alt = image.alt || '';
+        lightbox.hidden = false;
+        window.requestAnimationFrame(() => lightbox.classList.add('is-open'));
+      };
+      document.addEventListener('click', (event) => {
+        const image = event.target?.closest?.('.source-figure img, .og-media img, #originalSection img');
+        if (!image) return;
+        event.preventDefault();
+        open(image);
+      });
+      lightbox.addEventListener('click', (event) => { if (event.target === lightbox) close(); });
+      closeButton.addEventListener('click', close);
+      document.addEventListener('keydown', (event) => {
+        if (isOpen && event.key === 'Escape') {
+          event.preventDefault();
+          close();
+        }
+      });
+    }
     document.querySelectorAll('.w').forEach((word) => {
       const data = dict[word.dataset.k];
       const tip = word.querySelector('.tip');
@@ -1428,6 +1486,7 @@ def render_script(data: dict[str, object]) -> str:
     document.querySelectorAll('.gloss-item .speak').forEach((button) => {
       button.addEventListener('click', (event) => speak(button.closest('.gloss-item')?.dataset.word || '', event));
     });
+    initImageLightbox();
     window.addEventListener('DOMContentLoaded', () => {
       if (window.hljs) window.hljs.highlightAll();
     });

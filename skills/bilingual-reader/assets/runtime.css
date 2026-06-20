@@ -1,7 +1,7 @@
 /* ===================================================================
    runtime.css — 各独立模板共享的底层能力样式（构建时注入 runtime CSS token）。
    只包含与交互强相关、容易出错的部分：阅读进度条、可悬停词、词典浮窗、
-   等级标签、朗读按钮。模板各自负责页面骨架与其余视觉，并可覆盖这些变量。
+   图片放大层、等级标签、朗读按钮。模板各自负责页面骨架与其余视觉，并可覆盖这些变量。
    =================================================================== */
 #progress{position:fixed; top:0; left:0; height:3px; width:0; z-index:1000;
   background:linear-gradient(90deg,var(--accent),var(--accent2)); transition:width .1s}
@@ -38,6 +38,28 @@
 .tip .def{color:var(--text); font-size:14px; margin:6px 0; line-height:1.5}
 .tip .eg{color:var(--en); font-size:13px; border-left:2px solid var(--accent); padding-left:8px; margin-top:6px; font-style:italic}
 .tip .eg .egzh{display:block; color:var(--muted); font-style:normal; margin-top:2px}
+
+/* 原文图片放大层：运行时挂载到 <body> 顶层，避免受模板容器 overflow/transform 影响 */
+.source-figure img,.og-media img,#originalSection img{cursor:zoom-in}
+.image-lightbox{position:fixed; inset:0; z-index:2147483600; display:grid; place-items:center;
+  padding:min(6vw,96px);
+  background:radial-gradient(circle at 50% 42%,color-mix(in srgb,var(--panel) 28%,transparent),transparent 38%),
+    linear-gradient(135deg,rgba(4,8,16,.76),rgba(20,26,40,.52));
+  -webkit-backdrop-filter:blur(18px) saturate(1.18); backdrop-filter:blur(18px) saturate(1.18);
+  opacity:0; visibility:hidden; pointer-events:none;
+  transition:opacity .22s ease,visibility .22s ease}
+.image-lightbox.is-open{opacity:1; visibility:visible; pointer-events:auto}
+.image-lightbox[hidden]{display:none}
+.image-lightbox__panel{position:relative; display:grid; max-width:min(82vw,1280px);
+  max-height:82vh; transform:translateY(18px) scale(.985); transition:transform .22s ease}
+.image-lightbox.is-open .image-lightbox__panel{transform:translateY(0) scale(1)}
+.image-lightbox__image{display:block; width:auto; height:auto; max-width:min(82vw,1280px);
+  max-height:78vh; object-fit:contain; border-radius:18px;
+  background:rgba(255,255,255,.06); box-shadow:0 30px 100px rgba(0,0,0,.48)}
+.image-lightbox__close{position:absolute; top:-18px; right:-18px; width:44px; height:44px;
+  border:1px solid rgba(255,255,255,.32); border-radius:999px;
+  background:rgba(10,14,24,.72); color:#fff; cursor:pointer; font-size:26px; line-height:1;
+  -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px)}
 
 /* CEFR 等级标签 */
 .lv{font-size:10px; font-weight:800; padding:1px 7px; border-radius:6px; letter-spacing:.5px; white-space:nowrap; color:#06121f}

@@ -747,7 +747,10 @@
         display: block;
       }
       .gloss-group {
-        display: block;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
         margin: 22px 0 12px;
         padding-bottom: 8px;
         border-bottom: 1px dashed var(--border);
@@ -779,17 +782,34 @@
         font-weight: 600;
       }
       .gloss-group .gg-count {
-        margin-left: 8px;
+        display: inline-flex;
+        align-items: center;
+        margin-left: 6px;
+        padding: 2px 9px;
+        border: 1px solid color-mix(in srgb, var(--accent2) 24%, var(--border));
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--accent2) 10%, transparent);
         font-size: 12px;
         color: var(--muted);
+        font-weight: 800;
+        line-height: 1.4;
       }
       .gloss-grid-inner {
+        --gloss-card-min: 240px;
+        --gloss-card-max: 340px;
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        grid-template-columns: repeat(
+          auto-fill,
+          minmax(min(100%, var(--gloss-card-min)), var(--gloss-card-max))
+        );
+        justify-content: start;
         gap: 12px;
         margin-bottom: 6px;
       }
       .gloss-item {
+        width: 100%;
+        min-width: 0;
+        max-width: var(--gloss-card-max);
         background: var(--panel);
         border: 1px solid var(--border);
         border-radius: 10px;

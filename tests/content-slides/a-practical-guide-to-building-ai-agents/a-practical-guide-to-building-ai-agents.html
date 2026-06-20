@@ -450,6 +450,75 @@
         color: var(--kbd-key-text);
         line-height: 1;
       }
+      .slide img {
+        cursor: zoom-in;
+      }
+      /* 全局图片放大层放在舞台外，避免被 1920×1080 stage 的缩放影响。 */
+      .image-lightbox {
+        position: fixed;
+        inset: 0;
+        z-index: 2000;
+        display: grid;
+        place-items: center;
+        padding: min(6vw, 96px);
+        background:
+          radial-gradient(circle at 50% 42%, rgba(255, 255, 255, 0.16), transparent 36%),
+          linear-gradient(135deg, rgba(6, 10, 18, 0.72), rgba(18, 24, 38, 0.48));
+        -webkit-backdrop-filter: blur(18px) saturate(1.2);
+        backdrop-filter: blur(18px) saturate(1.2);
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition:
+          opacity 220ms ease,
+          visibility 220ms ease;
+      }
+      .image-lightbox.is-open {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+      }
+      .image-lightbox[hidden] {
+        display: none;
+      }
+      .image-lightbox__panel {
+        position: relative;
+        display: grid;
+        max-width: min(82vw, 1280px);
+        max-height: 82vh;
+        transform: translateY(18px) scale(0.985);
+        transition: transform 220ms ease;
+      }
+      .image-lightbox.is-open .image-lightbox__panel {
+        transform: translateY(0) scale(1);
+      }
+      .image-lightbox__image {
+        display: block;
+        width: auto;
+        height: auto;
+        max-width: min(82vw, 1280px);
+        max-height: 78vh;
+        object-fit: contain;
+        border-radius: 18px;
+        box-shadow: 0 30px 100px rgba(0, 0, 0, 0.48);
+        background: rgba(255, 255, 255, 0.06);
+      }
+      .image-lightbox__close {
+        position: absolute;
+        top: -18px;
+        right: -18px;
+        width: 44px;
+        height: 44px;
+        border: 1px solid rgba(255, 255, 255, 0.32);
+        border-radius: 999px;
+        background: rgba(10, 14, 24, 0.72);
+        color: #fff;
+        cursor: pointer;
+        font-size: 26px;
+        line-height: 1;
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px);
+      }
     </style>
   </head>
   <body>
@@ -955,6 +1024,26 @@ def save_results(output):
         </div>
       </div>
     </div>
+    <div
+      class="image-lightbox"
+      id="imageLightbox"
+      aria-modal="true"
+      role="dialog"
+      aria-label="图片放大视图"
+      hidden
+    >
+      <div class="image-lightbox__panel">
+        <button
+          class="image-lightbox__close"
+          id="imageLightboxClose"
+          type="button"
+          aria-label="关闭图片放大视图"
+        >
+          ×
+        </button>
+        <img class="image-lightbox__image" id="imageLightboxImage" alt="" />
+      </div>
+    </div>
     <script>
       class SlidePresentation {
         constructor() {
@@ -967,6 +1056,10 @@ def save_results(output):
           this.nextButton = document.getElementById('nextSlide');
           this.currentSlideLabel = document.getElementById('currentSlide');
           this.totalSlidesLabel = document.getElementById('totalSlides');
+          this.lightbox = document.getElementById('imageLightbox');
+          this.lightboxImage = document.getElementById('imageLightboxImage');
+          this.lightboxClose = document.getElementById('imageLightboxClose');
+          this.lightboxOpen = false;
           this.hideControlsTimer = null;
           this.setupControlButtons();
           this.setupStageScale();
@@ -974,6 +1067,7 @@ def save_results(output):
           this.setupControlsReveal();
           this.setupTouchNav();
           this.setupWheelNav();
+          this.setupImageLightbox();
           this.showSlide(0);
         }
         setupControlButtons() {
@@ -994,6 +1088,11 @@ def save_results(output):
         }
         setupKeyboardNav() {
           document.addEventListener('keydown', e => {
+            if (this.lightboxOpen) {
+              if (e.key === 'Escape') this.closeImageLightbox();
+              e.preventDefault();
+              return;
+            }
             switch (e.key) {
               case 'ArrowRight':
               case 'ArrowDown':
@@ -1044,6 +1143,7 @@ def save_results(output):
           document.addEventListener(
             'touchstart',
             e => {
+              if (this.lightboxOpen) return;
               startX = e.changedTouches[0].clientX;
               startY = e.changedTouches[0].clientY;
             },
@@ -1052,6 +1152,7 @@ def save_results(output):
           document.addEventListener(
             'touchend',
             e => {
+              if (this.lightboxOpen) return;
               const dx = e.changedTouches[0].clientX - startX;
               const dy = e.changedTouches[0].clientY - startY;
               if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
@@ -1066,6 +1167,7 @@ def save_results(output):
           window.addEventListener(
             'wheel',
             e => {
+              if (this.lightboxOpen) return;
               if (lock || Math.abs(e.deltaY) < 20) return;
               lock = true;
               e.deltaY > 0 ? this.next() : this.prev();
@@ -1076,53 +1178,46 @@ def save_results(output):
             {passive: true},
           );
         }
+        setupImageLightbox() {
+          if (!this.lightbox || !this.lightboxImage || !this.stage) return;
+          this.stage.addEventListener('click', event => {
+            const image = event.target.closest('.slide img');
+            if (!image) return;
+            event.preventDefault();
+            this.openImageLightbox(image);
+          });
+          this.lightbox.addEventListener('click', event => {
+            if (event.target === this.lightbox) this.closeImageLightbox();
+          });
+          if (this.lightboxClose) {
+            this.lightboxClose.addEventListener('click', () => this.closeImageLightbox());
+          }
+        }
+        openImageLightbox(image) {
+          const src = image.currentSrc || image.src;
+          if (!src) return;
+          this.lightboxOpen = true;
+          this.lightboxImage.src = src;
+          this.lightboxImage.alt = image.alt || '';
+          this.lightbox.hidden = false;
+          window.requestAnimationFrame(() => this.lightbox.classList.add('is-open'));
+        }
+        closeImageLightbox() {
+          if (!this.lightboxOpen || !this.lightbox) return;
+          this.lightboxOpen = false;
+          this.lightbox.classList.remove('is-open');
+          window.setTimeout(() => {
+            if (!this.lightboxOpen) {
+              this.lightbox.hidden = true;
+              this.lightboxImage.removeAttribute('src');
+            }
+          }, 220);
+        }
         next() {
           this.showSlide(this.current + 1);
         }
         prev() {
           this.showSlide(this.current - 1);
-        }
-        syncChromeToSlide(slide) {
-          if (!this.controlsBar || !slide) return;
-          const presets = {
-            dark: {
-              '--control-accent': 'var(--accent)',
-              '--chrome-border': 'rgba(255, 255, 255, 0.22)',
-              '--kbd-bar-bg': 'rgba(8, 12, 20, 0.82)',
-              '--kbd-text': 'rgba(255, 255, 255, 0.92)',
-              '--kbd-bg': 'rgba(255, 255, 255, 0.16)',
-              '--kbd-border': 'rgba(255, 255, 255, 0.28)',
-              '--kbd-separator': 'rgba(255, 255, 255, 0.18)',
-              '--kbd-key-text': '#ffffff',
-            },
-            light: {
-              '--control-accent': 'var(--accent)',
-              '--chrome-border': 'rgba(17, 24, 39, 0.16)',
-              '--kbd-bar-bg': 'rgba(255, 255, 255, 0.88)',
-              '--kbd-text': 'rgba(17, 24, 39, 0.82)',
-              '--kbd-bg': 'rgba(17, 24, 39, 0.08)',
-              '--kbd-border': 'rgba(17, 24, 39, 0.16)',
-              '--kbd-separator': 'rgba(17, 24, 39, 0.14)',
-              '--kbd-key-text': 'rgba(17, 24, 39, 0.9)',
-            },
-          };
-          const mode = (slide.dataset.chrome || '').toLowerCase();
-          const preset = presets[mode] || {};
-          const attrs = {
-            '--control-accent': slide.getAttribute('data-control-accent'),
-            '--chrome-border': slide.getAttribute('data-chrome-border'),
-            '--kbd-bar-bg': slide.getAttribute('data-kbd-bar-bg'),
-            '--kbd-text': slide.getAttribute('data-kbd-text'),
-            '--kbd-bg': slide.getAttribute('data-kbd-bg'),
-            '--kbd-border': slide.getAttribute('data-kbd-border'),
-            '--kbd-separator': slide.getAttribute('data-kbd-separator'),
-            '--kbd-key-text': slide.getAttribute('data-kbd-key-text'),
-          };
-          Object.keys(attrs).forEach(name => {
-            const value = attrs[name] || preset[name];
-            if (value) this.controlsBar.style.setProperty(name, value);
-            else this.controlsBar.style.removeProperty(name);
-          });
         }
         showSlide(index) {
           this.current = Math.max(0, Math.min(index, this.slides.length - 1));
@@ -1130,7 +1225,6 @@ def save_results(output):
             slide.classList.toggle('active', i === this.current);
             slide.classList.toggle('visible', i === this.current);
           });
-          this.syncChromeToSlide(this.slides[this.current]);
           this.currentSlideLabel.textContent = String(this.current + 1);
           this.prevButton.disabled = this.current === 0;
           this.nextButton.disabled = this.current === this.slides.length - 1;

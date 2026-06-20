@@ -179,11 +179,11 @@ structure: 图纸标题栏 Hero + 青色细网格底图 + 技术规格表双列�
   /* —— Glossary —— */
   #glossary{display:none}
   #glossary.show{display:block}
-  .gloss-group{display:block; margin:28px 0 14px; padding-bottom:10px; border-bottom:1px dashed var(--border)}
+  .gloss-group{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:28px 0 14px; padding-bottom:10px; border-bottom:1px dashed var(--border)}
   .gloss-group .gg-desc{font-size:15px; color:var(--text); font-weight:700; letter-spacing:.5px}
-  .gloss-group .gg-count{margin-left:auto; font-size:12px; color:var(--muted); font-family:"SF Mono","JetBrains Mono",Menlo,Consolas,monospace}
-  .gloss-grid-inner{display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:16px; margin-bottom:14px}
-  .gloss-item{background:var(--panel); border:1px solid var(--border); border-radius:0; padding:18px 20px; position:relative}
+  .gloss-group .gg-count{display:inline-flex; align-items:center; margin-left:6px; padding:2px 9px; border:1px solid color-mix(in srgb,var(--accent2) 24%,var(--border)); border-radius:999px; background:color-mix(in srgb,var(--accent2) 10%,transparent); font-size:12px; font-weight:800; line-height:1.4; color:var(--muted); font-family:"SF Mono","JetBrains Mono",Menlo,Consolas,monospace}
+  .gloss-grid-inner{--gloss-card-min:240px; --gloss-card-max:340px; display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,var(--gloss-card-min)),var(--gloss-card-max))); justify-content:start; gap:16px; margin-bottom:14px}
+  .gloss-item{width:100%; min-width:0; max-width:var(--gloss-card-max); background:var(--panel); border:1px solid var(--border); border-radius:0; padding:18px 20px; position:relative}
   .gloss-item::before{content:""; position:absolute; top:6px; right:6px; width:9px; height:9px;
     border-top:1px solid var(--accent); border-right:1px solid var(--accent)}
   .gloss-item .grow{display:flex; align-items:center; gap:10px}

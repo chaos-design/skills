@@ -165,13 +165,13 @@ structure: 报头 masthead（粗横线+期号日期）+ 头版头条 hero + 报�
   /* —— Glossary —— */
   #glossary{display:none}
   #glossary.show{display:block}
-  .gloss-group{display:block; margin:26px 0 14px; padding-bottom:8px;
+  .gloss-group{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:26px 0 14px; padding-bottom:8px;
     border-bottom:2px solid var(--text)}
   .gloss-group .gg-desc{font-size:15px; color:var(--text); font-weight:900; letter-spacing:.5px; font-variant:small-caps}
-  .gloss-group .gg-count{margin-left:auto; font-size:13px; color:var(--muted); font-style:italic}
-  .gloss-grid-inner{display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:0;
+  .gloss-group .gg-count{display:inline-flex; align-items:center; margin-left:6px; padding:2px 9px; border:1px solid color-mix(in srgb,var(--accent2) 24%,var(--border)); border-radius:999px; background:color-mix(in srgb,var(--accent2) 10%,transparent); font-size:12px; font-weight:800; line-height:1.4; color:var(--muted); font-style:italic}
+  .gloss-grid-inner{--gloss-card-min:240px; --gloss-card-max:340px; display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,var(--gloss-card-min)),var(--gloss-card-max))); justify-content:start; gap:0;
     border-top:1px solid var(--border); border-left:1px solid var(--border); margin-bottom:14px}
-  .gloss-item{background:transparent; border-right:1px solid var(--border); border-bottom:1px solid var(--border);
+  .gloss-item{width:100%; min-width:0; max-width:var(--gloss-card-max); background:transparent; border-right:1px solid var(--border); border-bottom:1px solid var(--border);
     border-radius:0; padding:16px 20px}
   .gloss-item .grow{display:flex; align-items:center; gap:10px}
   .gloss-item .word,.gloss-item .gw{display:inline-block; font-weight:900; color:var(--accent); font-size:23px; line-height:1.05; letter-spacing:.06em; text-shadow:0 0 12px color-mix(in srgb,var(--accent) 22%,transparent); font-family:Georgia,serif}

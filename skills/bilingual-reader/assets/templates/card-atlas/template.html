@@ -56,13 +56,13 @@ style: source-derived article atlas, anchored reading workspace, numbered biling
     border:0;border-radius:18px;background:linear-gradient(135deg,var(--panel2),var(--panel));
     padding:18px 20px;margin-bottom:14px;
   }
-  .sum-grid,.cards,.principles,.gloss-grid-inner{grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+  .sum-grid,.cards,.principles{grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
   .sum-card,.card,.pri,.gloss-item,.quiz,.summary-box{
     border-radius:20px;border-color:color-mix(in srgb,var(--accent) 20%,var(--border));
     box-shadow:0 12px 34px rgba(0,0,0,.12);
   }
   #glossary .gloss-group{
-    display:block;margin:32px 0 22px;padding:0 0 14px;
+    display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:32px 0 22px;padding:0 0 14px;
     border-bottom:1px solid color-mix(in srgb,var(--accent) 24%,var(--border));
   }
   #glossary .gloss-group h4{
@@ -70,11 +70,18 @@ style: source-derived article atlas, anchored reading workspace, numbered biling
     letter-spacing:-.01em;
   }
   #glossary .gloss-group h4 span{display:inline;margin-left:8px;color:var(--muted);font-size:13px;font-weight:600;}
+  #glossary .gloss-group .gg-count{
+    display:inline-flex;align-items:center;margin-left:6px;padding:2px 9px;
+    border:1px solid color-mix(in srgb,var(--accent2) 24%,var(--border));
+    border-radius:999px;background:color-mix(in srgb,var(--accent2) 10%,transparent);
+    color:var(--muted);font-size:12px;font-weight:800;line-height:1.4;
+  }
   #glossary .gloss-grid-inner{
-    display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin:0 0 18px;
+    --gloss-card-min:240px;--gloss-card-max:340px;
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,var(--gloss-card-min)),var(--gloss-card-max)));justify-content:start;gap:16px;margin:0 0 18px;
   }
   #glossary .gloss-item{
-    position:relative;overflow:hidden;padding:18px 18px 16px;
+    position:relative;overflow:hidden;width:100%;min-width:0;max-width:var(--gloss-card-max);padding:18px 18px 16px;
     background:
       linear-gradient(150deg,color-mix(in srgb,var(--accent) 10%,transparent),transparent 34%),
       color-mix(in srgb,var(--panel) 92%,transparent);

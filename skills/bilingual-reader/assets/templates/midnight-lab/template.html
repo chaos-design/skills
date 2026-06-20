@@ -155,11 +155,11 @@ structure: 终端顶栏 + $ 实验封面 + SOURCE/TRANSLATION 上下堆叠证据
   /* —— Glossary：代码块词条 —— */
   #glossary{display:none}
   #glossary.show{display:block}
-  .gloss-group{display:block; margin:18px 0 10px; padding-bottom:7px; border-bottom:1px dashed var(--border)}
+  .gloss-group{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:18px 0 10px; padding-bottom:7px; border-bottom:1px dashed var(--border)}
   .gloss-group .gg-desc{font-size:12.5px; color:var(--text)}
-  .gloss-group .gg-count{margin-left:auto; font-size:11px; color:var(--muted)}
-  .gloss-grid-inner{display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:10px; margin-bottom:6px}
-  .gloss-item{background:var(--panel); border:1px solid var(--border); border-radius:6px; padding:12px 14px}
+  .gloss-group .gg-count{display:inline-flex; align-items:center; margin-left:6px; padding:2px 9px; border:1px solid color-mix(in srgb,var(--accent2) 24%,var(--border)); border-radius:999px; background:color-mix(in srgb,var(--accent2) 10%,transparent); font-size:11px; font-weight:800; line-height:1.4; color:var(--muted)}
+  .gloss-grid-inner{--gloss-card-min:240px; --gloss-card-max:340px; display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,var(--gloss-card-min)),var(--gloss-card-max))); justify-content:start; gap:10px; margin-bottom:6px}
+  .gloss-item{width:100%; min-width:0; max-width:var(--gloss-card-max); background:var(--panel); border:1px solid var(--border); border-radius:6px; padding:12px 14px}
   .gloss-item .grow{display:flex; align-items:center; gap:8px}
   .gloss-item .word,.gloss-item .gw{display:inline-block; font-weight:900; color:var(--accent); font-size:19px; line-height:1.08; letter-spacing:.06em; text-shadow:0 0 12px color-mix(in srgb,var(--accent) 28%,transparent)}
   .gloss-item .gw::before{content:"> "; color:var(--muted)}

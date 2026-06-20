@@ -122,6 +122,73 @@ Reference architecture for generating the slide deck. Every deck uses a fixed 16
          * examples as plain text. Keep trailing punctuation outside any generated link.
          */
 
+        .slide img {
+            cursor: zoom-in;
+        }
+
+        /* Global image lightbox lives outside .deck-stage so it is not affected by stage scaling. */
+        .image-lightbox {
+            position: fixed;
+            inset: 0;
+            z-index: 2000;
+            display: grid;
+            place-items: center;
+            padding: min(6vw, 96px);
+            background:
+                radial-gradient(circle at 50% 42%, rgba(255, 255, 255, 0.16), transparent 36%),
+                linear-gradient(135deg, rgba(6, 10, 18, 0.72), rgba(18, 24, 38, 0.48));
+            -webkit-backdrop-filter: blur(18px) saturate(1.2);
+            backdrop-filter: blur(18px) saturate(1.2);
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity 220ms ease, visibility 220ms ease;
+        }
+        .image-lightbox.is-open {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+        }
+        .image-lightbox[hidden] { display: none; }
+        .image-lightbox__panel {
+            position: relative;
+            display: grid;
+            max-width: min(82vw, 1280px);
+            max-height: 82vh;
+            transform: translateY(18px) scale(0.985);
+            transition: transform 220ms ease;
+        }
+        .image-lightbox.is-open .image-lightbox__panel {
+            transform: translateY(0) scale(1);
+        }
+        .image-lightbox__image {
+            display: block;
+            width: auto;
+            height: auto;
+            max-width: min(82vw, 1280px);
+            max-height: 78vh;
+            object-fit: contain;
+            border-radius: 18px;
+            box-shadow: 0 30px 100px rgba(0, 0, 0, 0.48);
+            background: rgba(255, 255, 255, 0.06);
+        }
+        .image-lightbox__close {
+            position: absolute;
+            top: -18px;
+            right: -18px;
+            width: 44px;
+            height: 44px;
+            border: 1px solid rgba(255, 255, 255, 0.32);
+            border-radius: 999px;
+            background: rgba(10, 14, 24, 0.72);
+            color: #fff;
+            cursor: pointer;
+            font-size: 26px;
+            line-height: 1;
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+        }
+
         /* === ANIMATIONS === */
         .reveal {
             opacity: 0;
@@ -271,6 +338,13 @@ Reference architecture for generating the slide deck. Every deck uses a fixed 16
         </div>
     </div>
 
+    <div class="image-lightbox" id="imageLightbox" aria-modal="true" role="dialog" aria-label="图片放大视图" hidden>
+        <div class="image-lightbox__panel">
+            <button class="image-lightbox__close" id="imageLightboxClose" type="button" aria-label="关闭图片放大视图">×</button>
+            <img class="image-lightbox__image" id="imageLightboxImage" alt="">
+        </div>
+    </div>
+
     <script>
         /* === SlidePresentation controller (see section 4) === */
     </script>
@@ -331,29 +405,12 @@ Put everything stylistic in `:root` so the look changes in one place. Sizes are 
 }
 ```
 
-When a deck mixes light and dark slides, set chrome on each slide so keyboard hints follow the
-current slide instead of staying on a fixed deck-wide palette:
+The bottom controls use one fixed chrome palette for the whole deck. Define that palette in
+`:root` from the chosen deck theme and keep it stable while slides change:
 
-```html
-<section class="slide" data-chrome="dark">...</section>
-<section class="slide" data-chrome="light">...</section>
-```
-
-Use `data-chrome="dark"` for dark slide backgrounds and `data-chrome="light"` for bright slide
-backgrounds. For custom palettes, override the active slide's chrome tokens with data attributes:
-
-```html
-<section
-    class="slide"
-    data-kbd-bar-bg="rgba(8, 12, 20, 0.84)"
-    data-kbd-text="rgba(255, 255, 255, 0.92)"
-    data-kbd-key-text="#ffffff"
->
-    ...
-</section>
-```
-
-Never leave the bottom controls on a fixed light or fixed dark palette when slides vary by theme.
+Do not update `--kbd-*`, `--chrome-border`, or `--control-accent` from individual slide
+`data-chrome` attributes. If a deck mixes light and dark slides, choose a single bar palette with
+enough contrast over the stage and keep the controls visually consistent across navigation.
 
 ---
 
@@ -394,6 +451,10 @@ class SlidePresentation {
         this.nextButton = document.getElementById('nextSlide');
         this.currentSlideLabel = document.getElementById('currentSlide');
         this.totalSlidesLabel = document.getElementById('totalSlides');
+        this.lightbox = document.getElementById('imageLightbox');
+        this.lightboxImage = document.getElementById('imageLightboxImage');
+        this.lightboxClose = document.getElementById('imageLightboxClose');
+        this.lightboxOpen = false;
         this.hideControlsTimer = null;
         this.setupControlButtons();
         this.setupStageScale();
@@ -401,6 +462,7 @@ class SlidePresentation {
         this.setupControlsReveal();
         this.setupTouchNav();
         this.setupWheelNav();
+        this.setupImageLightbox();
         this.showSlide(0);
     }
 
@@ -425,6 +487,11 @@ class SlidePresentation {
     setupKeyboardNav() {
         document.addEventListener('keydown', (e) => {
             if (e.target.isContentEditable) return; // don't navigate while editing text
+            if (this.lightboxOpen) {
+                if (e.key === 'Escape') this.closeImageLightbox();
+                e.preventDefault();
+                return;
+            }
             switch (e.key) {
                 case 'ArrowRight':
                 case 'ArrowDown':
@@ -470,10 +537,12 @@ class SlidePresentation {
     setupTouchNav() {
         let startX = 0, startY = 0;
         document.addEventListener('touchstart', (e) => {
+            if (this.lightboxOpen) return;
             startX = e.changedTouches[0].clientX;
             startY = e.changedTouches[0].clientY;
         }, { passive: true });
         document.addEventListener('touchend', (e) => {
+            if (this.lightboxOpen) return;
             const dx = e.changedTouches[0].clientX - startX;
             const dy = e.changedTouches[0].clientY - startY;
             if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
@@ -485,6 +554,7 @@ class SlidePresentation {
     setupWheelNav() {
         let lock = false;
         window.addEventListener('wheel', (e) => {
+            if (this.lightboxOpen) return;
             if (lock) return;
             if (Math.abs(e.deltaY) < 20) return;
             lock = true;
@@ -493,51 +563,46 @@ class SlidePresentation {
         }, { passive: true });
     }
 
+    setupImageLightbox() {
+        if (!this.lightbox || !this.lightboxImage || !this.stage) return;
+        this.stage.addEventListener('click', (event) => {
+            const image = event.target.closest('.slide img');
+            if (!image) return;
+            event.preventDefault();
+            this.openImageLightbox(image);
+        });
+        this.lightbox.addEventListener('click', (event) => {
+            if (event.target === this.lightbox) this.closeImageLightbox();
+        });
+        if (this.lightboxClose) {
+            this.lightboxClose.addEventListener('click', () => this.closeImageLightbox());
+        }
+    }
+
+    openImageLightbox(image) {
+        const src = image.currentSrc || image.src;
+        if (!src) return;
+        this.lightboxOpen = true;
+        this.lightboxImage.src = src;
+        this.lightboxImage.alt = image.alt || '';
+        this.lightbox.hidden = false;
+        window.requestAnimationFrame(() => this.lightbox.classList.add('is-open'));
+    }
+
+    closeImageLightbox() {
+        if (!this.lightboxOpen || !this.lightbox) return;
+        this.lightboxOpen = false;
+        this.lightbox.classList.remove('is-open');
+        window.setTimeout(() => {
+            if (!this.lightboxOpen) {
+                this.lightbox.hidden = true;
+                this.lightboxImage.removeAttribute('src');
+            }
+        }, 220);
+    }
+
     next() { this.showSlide(this.current + 1); }
     prev() { this.showSlide(this.current - 1); }
-
-    syncChromeToSlide(slide) {
-        if (!this.controlsBar || !slide) return;
-        const presets = {
-            dark: {
-                '--control-accent': 'var(--accent)',
-                '--chrome-border': 'rgba(255, 255, 255, 0.22)',
-                '--kbd-bar-bg': 'rgba(8, 12, 20, 0.82)',
-                '--kbd-text': 'rgba(255, 255, 255, 0.92)',
-                '--kbd-bg': 'rgba(255, 255, 255, 0.16)',
-                '--kbd-border': 'rgba(255, 255, 255, 0.28)',
-                '--kbd-separator': 'rgba(255, 255, 255, 0.18)',
-                '--kbd-key-text': '#ffffff'
-            },
-            light: {
-                '--control-accent': 'var(--accent)',
-                '--chrome-border': 'rgba(17, 24, 39, 0.16)',
-                '--kbd-bar-bg': 'rgba(255, 255, 255, 0.88)',
-                '--kbd-text': 'rgba(17, 24, 39, 0.82)',
-                '--kbd-bg': 'rgba(17, 24, 39, 0.08)',
-                '--kbd-border': 'rgba(17, 24, 39, 0.16)',
-                '--kbd-separator': 'rgba(17, 24, 39, 0.14)',
-                '--kbd-key-text': 'rgba(17, 24, 39, 0.9)'
-            }
-        };
-        const mode = (slide.dataset.chrome || '').toLowerCase();
-        const preset = presets[mode] || {};
-        const attrs = {
-            '--control-accent': slide.getAttribute('data-control-accent'),
-            '--chrome-border': slide.getAttribute('data-chrome-border'),
-            '--kbd-bar-bg': slide.getAttribute('data-kbd-bar-bg'),
-            '--kbd-text': slide.getAttribute('data-kbd-text'),
-            '--kbd-bg': slide.getAttribute('data-kbd-bg'),
-            '--kbd-border': slide.getAttribute('data-kbd-border'),
-            '--kbd-separator': slide.getAttribute('data-kbd-separator'),
-            '--kbd-key-text': slide.getAttribute('data-kbd-key-text')
-        };
-        Object.keys(attrs).forEach((name) => {
-            const value = attrs[name] || preset[name];
-            if (value) this.controlsBar.style.setProperty(name, value);
-            else this.controlsBar.style.removeProperty(name);
-        });
-    }
 
     showSlide(index) {
         this.current = Math.max(0, Math.min(index, this.slides.length - 1));
@@ -545,7 +610,6 @@ class SlidePresentation {
             slide.classList.toggle('active', i === this.current);
             slide.classList.toggle('visible', i === this.current);
         });
-        this.syncChromeToSlide(this.slides[this.current]);
         if (this.currentSlideLabel) this.currentSlideLabel.textContent = String(this.current + 1);
         if (this.prevButton) this.prevButton.disabled = this.current === 0;
         if (this.nextButton) this.nextButton.disabled = this.current === this.slides.length - 1;
@@ -555,9 +619,9 @@ class SlidePresentation {
 document.addEventListener('DOMContentLoaded', () => new SlidePresentation());
 ```
 
-Required behaviors recap: keyboard (arrows/space/PageUp-Down/Home/End/R reset), touch swipe, mouse wheel (throttled), compact bottom previous/next buttons, current/total page status, a bottom control bar that reveals only from the bottom hover zone and hides after a short delay, and one-transform stage scaling that re-runs on resize. Keyboard hints must show `Space`, `↓`, `→` for next and `←`, `↑` for previous. The bottom controls and shortcut hints must synchronize to the currently active slide's theme through `data-chrome="dark|light"` or per-slide `data-kbd-*` overrides; verify both light and dark slides keep readable label text, key text, key backgrounds, separators, and borders. Do not add large floating previous/next buttons on the slide canvas, do not add top-right page numbers or separate right-bottom page indicators outside the control bar, and do not add right-side anchor dots or any other anchor/jump-dot information by default. Keep all chrome OUTSIDE `.deck-stage` so it stays crisp and isn't scaled with the slides. If the user explicitly requests side anchor navigation, add it as an opt-in extension and derive its colors from the active slide's chrome variables, not copied fixed template colors.
+Required behaviors recap: keyboard (arrows/space/PageUp-Down/Home/End/R reset), touch swipe, mouse wheel (throttled), compact bottom previous/next buttons, current/total page status, a bottom control bar that reveals only from the bottom hover zone and hides after a short delay, and one-transform stage scaling that re-runs on resize. Keyboard hints must show `Space`, `↓`, `→` for next and `←`, `↑` for previous. The bottom controls and shortcut hints must keep one stable deck-wide chrome palette derived from the overall slide theme; verify the fixed palette remains readable across representative light and dark slides. Do not add large floating previous/next buttons on the slide canvas, do not add top-right page numbers or separate right-bottom page indicators outside the control bar, and do not add right-side anchor dots or any other anchor/jump-dot information by default. Keep all chrome OUTSIDE `.deck-stage` so it stays crisp and isn't scaled with the slides. If the user explicitly requests side anchor navigation, add it as an opt-in extension and derive its colors from the deck-wide chrome variables, not per-slide copied colors.
 
-**On light-theme presets**, keep the same rule: derive chrome from that preset's palette. If the whole deck is light, define root chrome variables. If only some slides are light, prefer per-slide `data-chrome="light"` or `data-kbd-*` overrides so the controls, hints, and links stay visible against the active background, e.g.:
+**On light-theme presets**, keep the same rule: derive the fixed chrome from that preset's palette. Define root chrome variables once, e.g.:
 ```css
 :root {
     --control-accent: var(--accent);
@@ -670,5 +734,7 @@ Placement:
 .slide-image.logo { max-height: 200px; }
 .diagram-image { max-width: 100%; max-height: 760px; object-fit: contain; }
 ```
+
+Every generated deck that contains `<img>` elements must include the global image lightbox from the base template. Users should be able to click any slide image to inspect the original embedded source at a larger size. The lightbox must stay outside `.deck-stage`, use the image's `currentSrc || src`, preserve original aspect ratio with `object-fit: contain`, and close on backdrop click, close-button click, or `Escape`.
 
 Fit every image or rendered diagram inside the 1920×1080 stage. If a slide is already full, move the visual to its own slide. Never reuse the same image on multiple slides (logos on title + closing are fine). Before delivery, view each visual at presentation size and confirm text labels are readable, the original information is complete, no generated replacement slipped in, and no frame, mask, crop, or background color makes the content hard to read. Any caption or explanation added around the image must be supported by visible image details, source-provided alt/caption text, or nearby source prose.
