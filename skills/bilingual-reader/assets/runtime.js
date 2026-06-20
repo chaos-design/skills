@@ -163,13 +163,12 @@
       var tip = el.querySelector('.tip');
       if (!tip) return;
       el.dataset.brBound = '1';
-      var lvc = LVC[d.level] || '';
-      var lvHtml = d.level ? '<span class="lv lv-' + lvc + '">' + escapeHtml(d.level) + '</span>' : '';
       var ipaHtml = d.ipa ? '<span class="ipa">' + escapeHtml(d.ipa) + '</span>' : '';
+      var posHtml = d.pos ? '<span class="pos">' + escapeHtml(d.pos) + '</span>' : '';
       tip.innerHTML =
         '<div class="h"><span class="word">' + escapeHtml(d.w) + '</span>' +
         '<button class="speak" title="朗读" data-speak="' + escapeHtml(d.w) + '">🔊</button></div>' +
-        '<div class="sub">' + ipaHtml + '<span class="pos">' + escapeHtml(d.pos) + '</span>' + lvHtml + '</div>' +
+        '<div class="sub">' + ipaHtml + posHtml + '</div>' +
         '<div class="def">' + escapeHtml(d.def) + '</div>' +
         '<div class="eg">' + escapeHtml(d.eg || '') + '<span class="egzh">' + escapeHtml(d.egzh || '') + '</span></div>';
       document.body.appendChild(tip);

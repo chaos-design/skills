@@ -34,7 +34,8 @@
 .tip .word{font-size:20px; font-weight:800; color:var(--accent); line-height:1.1}
 .tip .sub{display:flex; align-items:center; gap:8px; margin-bottom:8px; flex-wrap:wrap}
 .tip .ipa{color:var(--accent2); font-size:13px; font-family:Georgia,serif; white-space:nowrap}
-.tip .pos{font-size:11px; background:var(--accent2); color:var(--accent2-ink); padding:1px 8px; border-radius:6px; font-style:italic; white-space:nowrap}
+.tip .pos{font-size:11px; background:color-mix(in srgb,var(--accent2) 92%,#000); color:#fff; padding:1px 8px; border-radius:6px; font-style:normal; font-weight:800; white-space:nowrap}
+html[data-theme="light"] .tip .pos{background:color-mix(in srgb,var(--accent2) 16%,#fff); color:#073763}
 .tip .def{color:var(--text); font-size:14px; margin:6px 0; line-height:1.5}
 .tip .eg{color:var(--en); font-size:13px; border-left:2px solid var(--accent); padding-left:8px; margin-top:6px; font-style:italic}
 .tip .eg .egzh{display:block; color:var(--muted); font-style:normal; margin-top:2px}

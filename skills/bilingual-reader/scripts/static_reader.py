@@ -14,10 +14,24 @@ from pathlib import Path
 from urllib.request import Request, urlopen
 
 try:
-    from markdown_to_data import Article, autowrap_pattern, build_learning_data, parse_markdown, validate_learning_data
+    from markdown_to_data import (
+        Article,
+        autowrap_pattern,
+        build_learning_data,
+        display_pos,
+        parse_markdown,
+        validate_learning_data,
+    )
 except ImportError:
     sys.path.insert(0, str(Path(__file__).resolve().parent))
-    from markdown_to_data import Article, autowrap_pattern, build_learning_data, parse_markdown, validate_learning_data
+    from markdown_to_data import (
+        Article,
+        autowrap_pattern,
+        build_learning_data,
+        display_pos,
+        parse_markdown,
+        validate_learning_data,
+    )
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -565,14 +579,47 @@ def render_content_summary(data: dict[str, object]) -> str:
       </section>"""
 
 
+def conclusion_points(summary: dict[str, object]) -> list[dict[str, str]]:
+    """Return source-grounded analysis takeaways for the conclusion module.
+
+    Prefer authored ``keyPoints``; fall back to the always-validated
+    ``summary.cards`` so the analysis block is never empty when evidence exists.
+    """
+
+    points: list[dict[str, str]] = []
+    for point in summary.get("keyPoints", []) or []:
+        if not isinstance(point, dict):
+            continue
+        text = str(point.get("text", "")).strip()
+        if text:
+            points.append({"label": str(point.get("label", "")).strip() or "核心结论", "text": text})
+    if points:
+        return points[:3]
+    labels = ("核心判断", "关键边界", "实践路径")
+    for label, card in zip(labels, summary.get("cards", []) or []):
+        if not isinstance(card, dict):
+            continue
+        body = str(card.get("body", "")).strip()
+        if body:
+            points.append({"label": label, "text": body})
+    return points[:3]
+
+
 def render_conclusion_output(data: dict[str, object]) -> str:
-    """Render the final conclusion output as an independent module."""
+    """Render the final conclusion output as an independent module.
+
+    The evidence column is only emitted alongside a non-empty analysis column,
+    so the module never ships source quotes without an analytical conclusion.
+    """
 
     summary = data["summary"]
-    key_points = list(summary.get("keyPoints", []))[:3]
+    key_points = conclusion_points(summary)
+    if not key_points:
+        return ""
     sections = list(data.get("sections", []))
     last_section = sections[-1] if sections else {}
     final_rows = list(last_section.get("rows", []))[:2] if isinstance(last_section, dict) else []
+    final_rows = [row for row in final_rows if str(row.get("zh", "")).strip()]
     point_html = "".join(
         f"""
           <li><b>{escape(point["label"])}</b><span>{escape(point["text"])}</span></li>"""
@@ -583,6 +630,15 @@ def render_conclusion_output(data: dict[str, object]) -> str:
           <blockquote>{escape(row["zh"])}</blockquote>"""
         for row in final_rows
     )
+    evidence_card = (
+        f"""
+          <article class="conclusion-card">
+            <span class="guide-kicker">Source-grounded Close</span>
+            {evidence_html}
+          </article>"""
+        if evidence_html
+        else ""
+    )
     return f"""
       <section class="summary-view block conclusion-output" id="conclusion-output" data-toc="结论输出">
         <h3 class="sec-title"><span class="num">OUT</span>结论输出</h3>
@@ -590,11 +646,7 @@ def render_conclusion_output(data: dict[str, object]) -> str:
           <article class="conclusion-card">
             <span class="guide-kicker">Final Takeaways</span>
             <ul class="conclusion-list">{point_html}</ul>
-          </article>
-          <article class="conclusion-card">
-            <span class="guide-kicker">Source-grounded Close</span>
-            {evidence_html}
-          </article>
+          </article>{evidence_card}
         </div>
       </section>"""
 
@@ -629,8 +681,8 @@ def render_evidence_row(row: dict[str, str], index: int) -> str:
 
     return f"""
       <div class="evidence">
-        <div class="ev-part src"><span class="ev-tag">SOURCE</span><span class="ev-no">{index:02d}</span>{escape(row["en"])}</div>
-        <div class="ev-part tr"><span class="ev-tag">TRANSLATION</span>{escape(row["zh"])}</div>
+        <div class="ev-part src"><span class="ev-no">{index:02d}</span>{escape(row["en"])}</div>
+        <div class="ev-part tr">{escape(row["zh"])}</div>
       </div>"""
 
 
@@ -685,22 +737,55 @@ def render_sections(data: dict[str, object], mode: str) -> str:
 
 
 def render_core_section(section: dict[str, object], index: int, section_id: str) -> str:
-    """Render one close-reading section with only core ideas and principles."""
+    """Render one close-reading section with only core ideas and principles.
+
+    A section is skipped when it has no Chinese analysis, and the Source Basis
+    evidence column only renders when a non-empty analysis accompanies it.
+    """
 
     rows = list(section.get("rows", []))[:3]
     if not rows:
         return ""
     lead = rows[0]
-    principle_rows = rows[1:] or rows[:1]
+    lead_zh = str(lead.get("zh", "")).strip()
+    if not lead_zh:
+        return ""
+    principle_rows = [row for row in (rows[1:] or rows[:1]) if str(row.get("zh", "")).strip()]
     principles = "".join(
         f"""
           <li>{escape(row["zh"])}</li>"""
         for row in principle_rows
     )
+    principles_block = (
+        f"""
+            <article class="core-principles">
+              <span class="guide-kicker">Principles</span>
+              <ul>{principles}</ul>
+            </article>"""
+        if principles
+        else ""
+    )
     source_rows = "".join(
         f"""
           <p>{escape(row["en"])}</p>"""
         for row in rows[:2]
+        if str(row.get("en", "")).strip()
+    )
+    source_block = (
+        f"""
+            <article class="core-source">
+              <span class="guide-kicker">Source Basis</span>
+              {source_rows}
+            </article>"""
+        if source_rows
+        else ""
+    )
+    detail_block = (
+        f"""
+          <div class="core-detail-grid">{principles_block}{source_block}
+          </div>"""
+        if (principles_block or source_block)
+        else ""
     )
     return f"""
       <section class="summary-view block reader-section close-core-section" id="{escape(section_id)}" data-toc="{escape(section["toc"])}">
@@ -708,18 +793,8 @@ def render_core_section(section: dict[str, object], index: int, section_id: str)
         <div class="core-layout">
           <article class="core-thesis">
             <span class="guide-kicker">Core Idea</span>
-            <p>{escape(lead["zh"])}</p>
-          </article>
-          <div class="core-detail-grid">
-            <article class="core-principles">
-              <span class="guide-kicker">Principles</span>
-              <ul>{principles}</ul>
-            </article>
-            <article class="core-source">
-              <span class="guide-kicker">Source Basis</span>
-              {source_rows}
-            </article>
-          </div>
+            <p>{escape(lead_zh)}</p>
+          </article>{detail_block}
         </div>
       </section>"""
 
@@ -983,11 +1058,9 @@ def render_source_table_pair(rows: list[object], translated_rows: list[object]) 
     return f"""
       <div class="og-row og-table-row">
         <div class="en og-table-cell">
-          <div class="og-cell-label">Original Table</div>
           {render_table_html(source)}
         </div>
         <div class="zh og-table-cell">
-          <div class="og-cell-label">中文对照表</div>
           {render_table_html(translated)}
         </div>
       </div>"""
@@ -1125,10 +1198,16 @@ def render_glossary(data: dict[str, object]) -> str:
 def render_glossary_item(key: str, entry: dict[str, str]) -> str:
     """Render one glossary item."""
 
+    word = str(entry.get("w", ""))
+    pos = display_pos(word, str(entry.get("pos", "")))
+    sub = f'<div class="gsub sub"><span class="gipa ipa">{escape(entry.get("ipa", ""))}</span>'
+    if pos:
+        sub += f'<span class="gpos pos">{escape(pos)}</span>'
+    sub += "</div>"
     return f"""
-      <div class="gloss-item" data-k="{escape(key)}" data-word="{escape(entry.get("w", ""))}">
-        <div class="grow"><span class="gw word">{escape(entry.get("w", ""))}</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">{escape(entry.get("ipa", ""))}</span><span class="gpos pos">{escape(entry.get("pos", ""))}</span></div>
+      <div class="gloss-item" data-k="{escape(key)}" data-word="{escape(word)}">
+        <div class="grow"><span class="gw word">{escape(word)}</span><button class="speak" type="button">🔊</button></div>
+        {sub}
         <div class="gdef def">{escape(entry.get("def", ""))}</div>
         <div class="geg eg">🗣 {escape(entry.get("eg", ""))}<span class="egzh">{escape(entry.get("egzh", ""))}</span></div>
       </div>"""
@@ -1184,14 +1263,16 @@ def static_overrides() -> str:
   #originalSection .w{color:#4169ff;text-decoration:none!important;cursor:text!important}#originalSection .w::after{right:-5px;top:.05em;width:4px;height:4px;background:#9b6bff;box-shadow:0 0 0 2px rgba(142,91,255,.16)}#originalSection .w:hover{color:#8e55ff;text-decoration:none!important;cursor:text!important}
   .source-figure{max-width:min(880px,92%);margin:24px auto;padding:14px;border:1px solid color-mix(in srgb,var(--accent2) 28%,var(--border));border-radius:var(--radius);background:var(--panel);overflow:hidden;text-align:center}
   .source-figure img{display:block;width:min(720px,100%);height:405px;max-width:100%;margin:0 auto;border-radius:calc(var(--radius) - 4px);background:#fff;object-fit:contain}.source-figure figcaption{margin-top:10px;color:var(--muted);font-size:13px;line-height:1.55}.source-figure a{color:var(--accent2)}
-  .og-table-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;border:0;background:transparent;box-shadow:none;overflow:visible}.og-table-row .og-table-cell{overflow:auto;border:1px solid color-mix(in srgb,var(--accent2) 22%,var(--border));border-radius:calc(var(--radius) + 2px);background:var(--panel);box-shadow:0 10px 26px rgba(0,0,0,.08)}.og-table-row .en{border-right:1px solid color-mix(in srgb,var(--accent2) 22%,var(--border))}.og-cell-label{margin-bottom:10px;color:var(--accent2);font-size:11px;font-weight:900;letter-spacing:.14em;text-transform:uppercase}.source-table-wrap{margin:18px 0;padding:12px;border:1px solid color-mix(in srgb,var(--accent) 28%,var(--border));border-radius:var(--radius);background:var(--panel);overflow:auto}
-  .source-table{width:100%;min-width:max-content;border-collapse:collapse;table-layout:auto;color:var(--text);font-size:14px;line-height:1.55}.source-table th,.source-table td{max-width:260px;padding:10px 12px;border:1px solid var(--border);vertical-align:top;text-align:left;white-space:normal;overflow-wrap:anywhere;word-break:normal}.source-table th{min-width:120px;background:color-mix(in srgb,var(--accent2) 14%,var(--panel2));color:var(--accent2);font-weight:800}.source-table td{background:color-mix(in srgb,var(--panel2) 52%,transparent)}
+  .og-table-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;border:0;background:transparent;box-shadow:none;overflow:visible}.og-table-row .og-table-cell{overflow:auto;border:1px solid color-mix(in srgb,var(--accent2) 22%,var(--border));border-radius:calc(var(--radius) + 2px);background:var(--panel);box-shadow:0 10px 26px rgba(0,0,0,.08)}.og-table-row .en{border-right:1px solid color-mix(in srgb,var(--accent2) 22%,var(--border))}.source-table-wrap{margin:18px 0;padding:12px;border:1px solid color-mix(in srgb,var(--accent) 28%,var(--border));border-radius:var(--radius);background:var(--panel);overflow:auto}
+  .source-table{width:max-content;min-width:100%;border-collapse:collapse;table-layout:auto;color:var(--text);font-size:14px;line-height:1.55}.source-table th,.source-table td{padding:10px 12px;border:1px solid var(--border);vertical-align:top;text-align:left;white-space:normal;overflow-wrap:normal;word-break:normal}.source-table th{min-width:max-content;background:color-mix(in srgb,var(--accent2) 14%,var(--panel2));color:var(--accent2);font-weight:800;white-space:nowrap}.source-table td{background:color-mix(in srgb,var(--panel2) 52%,transparent)}
   pre{overflow:auto;padding:16px 18px;border:1px solid var(--border);border-radius:var(--radius);background:#05070b;color:#d7fbe8;line-height:1.55}code{font-family:"SF Mono",Consolas,monospace}
   #glossary{display:none}#glossary.show{display:block}body.gloss-open #glossary{display:block}body.gloss-open .wrap{width:100vw;max-width:none;margin:0;padding:28px 56px 80px 24px}
   .gloss-group{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
   .gloss-group .gg-count{display:inline-flex;align-items:center;margin-left:6px;padding:2px 9px;border:1px solid color-mix(in srgb,var(--accent2) 24%,var(--border));border-radius:999px;background:color-mix(in srgb,var(--accent2) 10%,transparent);color:var(--muted);font-size:12px;font-weight:800;line-height:1.4}
   .gloss-grid-inner{--gloss-card-min:240px;--gloss-card-max:340px;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,var(--gloss-card-min)),var(--gloss-card-max)));justify-content:start;gap:12px}
   .gloss-item{width:100%;min-width:0;max-width:var(--gloss-card-max)}
+  .tip .pos,.gloss-item .pos,.gloss-item .gpos{background:color-mix(in srgb,var(--accent2) 92%,#000);color:#fff;font-weight:800;font-style:normal}
+  html[data-theme="light"] .tip .pos,html[data-theme="light"] .gloss-item .pos,html[data-theme="light"] .gloss-item .gpos{background:color-mix(in srgb,var(--accent2) 16%,#fff);color:#073763}
   .quiz-list{display:grid;gap:14px}.quiz .fb strong{color:var(--accent)}.quiz .fb .why{display:block;margin-top:4px;color:var(--muted)}
   .vquiz{display:grid;gap:18px}
   .vq-group{padding:16px 18px;border:1px solid var(--border);border-radius:var(--radius);background:var(--panel)}
@@ -1470,8 +1551,9 @@ def render_script(data: dict[str, object]) -> str:
       const data = dict[word.dataset.k];
       const tip = word.querySelector('.tip');
       if (!data || !tip) return;
+      const posHtml = data.pos ? '<span class="pos">' + esc(data.pos) + '</span>' : '';
       tip.innerHTML = '<div class="h"><span class="word">' + esc(data.w) + '</span><button class="speak" type="button">🔊</button></div>'
-        + '<div class="sub"><span class="ipa">' + esc(data.ipa) + '</span><span class="pos">' + esc(data.pos) + '</span><span class="lv">' + esc(data.level) + '</span></div>'
+        + '<div class="sub"><span class="ipa">' + esc(data.ipa) + '</span>' + posHtml + '</div>'
         + '<div class="def">' + esc(data.def) + '</div><div class="eg">' + esc(data.eg) + '<span class="egzh">' + esc(data.egzh) + '</span></div>';
       document.body.appendChild(tip);
       tip.querySelector('.speak')?.addEventListener('click', (event) => speak(data.w, event));

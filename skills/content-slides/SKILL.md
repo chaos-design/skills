@@ -44,17 +44,17 @@ Unless the user explicitly specifies otherwise, the **default deck language is z
 
 ```mermaid
 flowchart TD
-  A[Phase 0 Intake\nInput: URL/PDF/DOCX/Markdown/plain text/screenshot/pasted notes\nOutput: source-request] --> B[Phase 1 Source to Markdown\nInput: source-request\nOutput: source.md + metadata]
-  B --> Q[Markdown Confirmation Gate\nAskUserQuestion: continue or modify/regenerate]
-  Q --> C[Phase 2 Content Brief\nInput: source.md\nOutput: content-brief]
-  C --> D[Phase 3 Slide Plan\nInput: content-brief\nOutput: slide-plan + asset map]
-  D --> E[Phase 4 Visual System\nInput: slide-plan\nOutput: theme decision]
-  E --> F[Phase 5 HTML Draft\nInput: slide-plan + theme + template\nOutput: draft HTML]
-  F --> G[Phase 6 Human Review Gate\nInput: draft HTML\nOutput: internal review notes]
+  A[Phase 0 Intake<br />Input: URL/PDF/DOCX/Markdown/plain text/screenshot/pasted notes<br />Output: source-request] --> B[Phase 1 Source to Markdown<br />Input: source-request<br />Output: source.md + metadata]
+  B --> Q[Markdown Confirmation Gate<br />AskUserQuestion: continue or modify/regenerate]
+  Q --> C[Phase 2 Content Brief<br />Input: source.md<br />Output: content-brief]
+  C --> D[Phase 3 Slide Plan<br />Input: content-brief<br />Output: slide-plan + asset map]
+  D --> E[Phase 4 Visual System<br />Input: slide-plan<br />Output: theme decision]
+  E --> F[Phase 5 HTML Draft<br />Input: slide-plan + theme + template<br />Output: draft HTML]
+  F --> G[Phase 6 Human Review Gate<br />Input: draft HTML<br />Output: internal review notes]
   G --> H{P0/P1 issues?}
-  H -- Yes --> I[Phase 7 Revision Loop\nInput: internal review notes\nOutput: repaired HTML]
+  H -- Yes --> I[Phase 7 Revision Loop<br />Input: internal review notes<br />Output: repaired HTML]
   I --> G
-  H -- No --> J[Phase 8 Final Acceptance & Delivery\nInput: accepted HTML\nOutput: source.md + final HTML]
+  H -- No --> J[Phase 8 Final Acceptance & Delivery<br />Input: accepted HTML<br />Output: source.md + final HTML]
 ```
 
 | Phase | Node | Required input | Required output | Gate |

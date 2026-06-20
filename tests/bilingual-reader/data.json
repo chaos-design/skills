@@ -50,66 +50,66 @@
   "hero": {
     "title": "A practical guide to building agents",
     "meta": "https://openai.com/business/guides-and-resources/a-practical-guide-to-building-ai-agents/",
-    "en": "Introduction",
-    "zh": "导言"
+    "en": "Agents are systems that independently accomplish tasks on your behalf, using an LLM to manage workflow execution and make decisions.",
+    "zh": "Agent 是能够代表你独立完成任务的系统，依靠 LLM 管理工作流执行并作出决策。"
   },
   "summary": {
     "overviewTitle": "全文速览",
-    "thesis": "本文围绕《A practical guide to building agents》展开，核心结论是：导言",
-    "lead": "本文围绕《A practical guide to building agents》展开，核心结论是：导言",
+    "thesis": "本文是面向产品与工程团队的 Agent 构建实践指南：先界定 Agent 与普通 LLM 应用的区别，再给出何时该构建 Agent 的判断标准，随后拆解模型、工具、指令三大设计基础，并系统讲解单 Agent 与多 Agent 的编排模式，最后用分层护栏与人工介入保障其安全、可预测地运行。",
+    "lead": "本文是面向产品与工程团队的 Agent 构建实践指南：先界定 Agent 与普通 LLM 应用的区别，再给出何时该构建 Agent 的判断标准，随后拆解模型、工具、指令三大设计基础，并系统讲解单 Agent 与多 Agent 的编排模式，最后用分层护栏与人工介入保障其安全、可预测地运行。",
     "keyPoints": [
       {
         "label": "核心判断",
-        "text": "导言"
+        "text": "Agent 是由 LLM 控制工作流执行、能代表用户自主完成多步骤任务的系统，区别于简单聊天机器人或单轮 LLM 应用。"
       },
       {
         "label": "关键边界",
-        "text": "大语言模型正越来越擅长处理复杂的多步骤任务。"
+        "text": "只有当工作流涉及复杂决策、规则难以维护或高度依赖非结构化数据时才值得构建 Agent，否则确定性方案可能已经足够。"
       },
       {
         "label": "实践路径",
-        "text": "传统软件可以帮助用户简化并自动化工作流，而 Agent 则能够以较高的自主性代表用户执行这些工作流。"
+        "text": "先用最强模型建立基线，从配备工具的单 Agent 起步，仅在必要时演进到多 Agent，并在每个阶段叠加护栏与人工介入。"
       }
     ],
     "cards": [
       {
-        "icon": "🧭",
-        "title": "Introduction",
-        "body": "导言"
+        "icon": "🧩",
+        "title": "什么是 Agent",
+        "body": "Agent 由 LLM 控制工作流执行、动态选择工具，并在护栏内代表用户独立完成任务；仅集成 LLM 却不由其控制流程的应用不算 Agent。"
       },
       {
         "icon": "⚖️",
-        "title": "Introduction",
-        "body": "大语言模型正越来越擅长处理复杂的多步骤任务。"
-      },
-      {
-        "icon": "🧩",
-        "title": "What is an agent?",
-        "body": "传统软件可以帮助用户简化并自动化工作流，而 Agent 则能够以较高的自主性代表用户执行这些工作流。"
-      },
-      {
-        "icon": "🔧",
-        "title": "When should you build an agent?",
-        "body": "构建 Agent 需要重新思考系统如何决策以及如何处理复杂性。"
+        "title": "何时该构建",
+        "body": "优先用于过去难以自动化的工作流，尤其是复杂决策、难以维护的规则，以及高度依赖非结构化数据的场景。"
       },
       {
         "icon": "🤖",
-        "title": "Agent design foundations",
-        "body": "从最基本的形态看，一个 Agent 由三个核心组件构成："
+        "title": "三大设计基础",
+        "body": "一个 Agent 由模型、工具、指令三部分构成：模型提供推理，工具执行操作，指令定义行为与护栏。"
       },
       {
         "icon": "🎯",
-        "title": "Selecting your models",
-        "body": "不同模型在任务复杂度、延迟和成本方面各有优势与取舍。"
+        "title": "模型选择",
+        "body": "先用最强模型为每项任务建立性能基线，再尝试替换为更小、更快的模型，以平衡准确率、延迟和成本。"
+      },
+      {
+        "icon": "🔧",
+        "title": "编排模式",
+        "body": "从单 Agent 循环起步，复杂度上升时再拆分为多 Agent，可采用管理者模式或去中心化交接两类编排。"
+      },
+      {
+        "icon": "🛡️",
+        "title": "护栏与人工介入",
+        "body": "用相关性、安全、PII、内容审核等分层护栏防御风险，并在超过失败阈值或执行高风险操作时转交人工。"
       }
     ],
     "readingPath": [
       "1. Introduction",
-      "2. Introduction",
-      "3. What is an agent?",
-      "4. When should you build an agent?",
-      "5. Agent design foundations",
-      "6. Selecting your models"
+      "2. What is an agent?",
+      "3. When should you build an agent?",
+      "4. Agent design foundations",
+      "5. Orchestration",
+      "6. Guardrails"
     ]
   },
   "framework": {
@@ -117,33 +117,33 @@
     "nodes": [
       {
         "id": "fw-1",
-        "label": "Introduction",
-        "summary": "Introduction"
+        "label": "导言",
+        "summary": "LLM 在推理、多模态和工具使用上的进步，催生了由 LLM 驱动的新系统：Agent。"
       },
       {
         "id": "fw-2",
-        "label": "Introduction",
-        "summary": "Large language models are becoming increasingly capable of handling complex, multi-step tas…"
+        "label": "什么是 Agent",
+        "summary": "Agent 能由 LLM 控制工作流执行，代表用户自主完成任务，区别于普通 LLM 应用。"
       },
       {
         "id": "fw-3",
-        "label": "What is an agent?",
-        "summary": "While conventional software enables users to streamline and automate workflows, agents are…"
+        "label": "何时该构建 Agent",
+        "summary": "适用于复杂决策、规则难以维护、依赖非结构化数据等传统方法难以胜任的工作流。"
       },
       {
         "id": "fw-4",
-        "label": "When should you build an agent?",
-        "summary": "Building agents requires rethinking how your systems make decisions and handle complexity.…"
+        "label": "设计基础",
+        "summary": "一个 Agent 由模型、工具、指令三大核心组件构成，并据此选择合适模型。"
       },
       {
         "id": "fw-5",
-        "label": "Agent design foundations",
-        "summary": "In its most fundamental form, an agent consists of three core components:"
+        "label": "编排模式",
+        "summary": "从单 Agent 循环起步，复杂度上升时再演进到管理者或去中心化的多 Agent 系统。"
       },
       {
         "id": "fw-6",
-        "label": "Selecting your models",
-        "summary": "Different models have different strengths and tradeoffs related to task complexity, latency…"
+        "label": "护栏与人工介入",
+        "summary": "用分层护栏防御隐私与安全风险，并在高风险或反复失败时转交人工处理。"
       }
     ],
     "edges": [
@@ -172,12 +172,12 @@
   "sections": [
     {
       "num": "1",
-      "toc": "Introduction",
-      "title": "Introduction",
+      "toc": "A practical guide to building agents",
+      "title": "A practical guide to building agents",
       "rows": [
         {
-          "en": "Introduction",
-          "zh": "导言"
+          "en": "This guide distills insights from numerous customer deployments into practical, actionable best practices for building your first agent.",
+          "zh": "本指南将大量客户部署经验提炼为务实、可落地的最佳实践，帮助你构建第一个 Agent。"
         }
       ]
     },
@@ -774,56 +774,56 @@
   ],
   "quiz": [
     {
-      "question": "关于“Introduction”，哪一项最符合原文？",
+      "question": "根据原文，下列哪项最准确地描述了 Agent？",
       "options": [
-        "导言",
-        "大语言模型正越来越擅长处理复杂的多步骤任务。推理、多模态和工具使用能力的进步，催生了一类由 LLM 驱动的新系统，即 Agent。",
-        "传统软件可以帮助用户简化并自动化工作流，而 Agent 则能够以较高的自主性代表用户执行这些工作流。",
-        "构建 Agent 需要重新思考系统如何决策以及如何处理复杂性。不同于传统自动化，Agent 特别适合那些传统确定性方法和基于规则的方法难以胜任的工作流。"
+        "能由 LLM 控制工作流执行、代表用户独立完成任务的系统。",
+        "任何集成了 LLM 的应用，例如简单聊天机器人或情感分类器。",
+        "只在单轮对话中回答问题、不执行多步骤工作流的模型。",
+        "依赖固定规则逐条匹配、无法处理模糊情境的引擎。"
       ],
       "answer": 0,
-      "explain": "依据原文段落：Introduction",
-      "wrongReason": "该选项没有对应本节原文，或混淆了其他章节的观点。",
-      "sourceAnchor": "Introduction"
-    },
-    {
-      "question": "关于“Introduction”，哪一项最符合原文？",
-      "options": [
-        "导言",
-        "大语言模型正越来越擅长处理复杂的多步骤任务。推理、多模态和工具使用能力的进步，催生了一类由 LLM 驱动的新系统，即 Agent。",
-        "传统软件可以帮助用户简化并自动化工作流，而 Agent 则能够以较高的自主性代表用户执行这些工作流。",
-        "构建 Agent 需要重新思考系统如何决策以及如何处理复杂性。不同于传统自动化，Agent 特别适合那些传统确定性方法和基于规则的方法难以胜任的工作流。"
-      ],
-      "answer": 1,
-      "explain": "依据原文段落：Large language models are becoming increasingly capable of handling complex, multi-step tasks. Advances in reasoning, multimodality, and tool use have unlocked a new category of LLM-powered systems known as agents.",
-      "wrongReason": "该选项没有对应本节原文，或混淆了其他章节的观点。",
-      "sourceAnchor": "Introduction"
-    },
-    {
-      "question": "关于“What is an agent?”，哪一项最符合原文？",
-      "options": [
-        "大语言模型正越来越擅长处理复杂的多步骤任务。推理、多模态和工具使用能力的进步，催生了一类由 LLM 驱动的新系统，即 Agent。",
-        "导言",
-        "传统软件可以帮助用户简化并自动化工作流，而 Agent 则能够以较高的自主性代表用户执行这些工作流。",
-        "构建 Agent 需要重新思考系统如何决策以及如何处理复杂性。不同于传统自动化，Agent 特别适合那些传统确定性方法和基于规则的方法难以胜任的工作流。"
-      ],
-      "answer": 2,
-      "explain": "依据原文段落：While conventional software enables users to streamline and automate workflows, agents are able to perform the same workflows on the users’ behalf with a high degree of independence.",
-      "wrongReason": "该选项没有对应本节原文，或混淆了其他章节的观点。",
+      "explain": "依据原文：Agent 利用 LLM 管理工作流执行并作出决策，能代表用户独立完成任务，并在护栏内动态选择工具。",
+      "wrongReason": "原文明确指出，仅集成 LLM、却不由 LLM 控制工作流执行的应用（如聊天机器人、单轮 LLM、情感分类器）并不是 Agent。",
       "sourceAnchor": "What is an agent?"
     },
     {
-      "question": "关于“When should you build an agent?”，哪一项最符合原文？",
+      "question": "原文建议在什么情况下优先考虑构建 Agent？",
       "options": [
-        "传统软件可以帮助用户简化并自动化工作流，而 Agent 则能够以较高的自主性代表用户执行这些工作流。",
-        "导言",
-        "大语言模型正越来越擅长处理复杂的多步骤任务。推理、多模态和工具使用能力的进步，催生了一类由 LLM 驱动的新系统，即 Agent。",
-        "构建 Agent 需要重新思考系统如何决策以及如何处理复杂性。不同于传统自动化，Agent 特别适合那些传统确定性方法和基于规则的方法难以胜任的工作流。"
+        "任务简单、规则清晰、用确定性方案即可稳定完成时。",
+        "只需要一次性检索或固定格式输出、无需判断时。",
+        "工作流涉及复杂决策、规则难以维护，或高度依赖非结构化数据时。",
+        "团队希望尽量减少模型调用、降低系统复杂度时。"
+      ],
+      "answer": 2,
+      "explain": "依据原文：应优先考虑过去难以自动化的工作流，尤其是复杂决策、难以维护的规则，以及高度依赖非结构化数据的场景。",
+      "wrongReason": "原文指出，如果用例无法清晰满足这些条件，确定性方案可能已经足够，不必构建 Agent。",
+      "sourceAnchor": "When should you build an agent?"
+    },
+    {
+      "question": "关于“选择模型”，原文推荐的有效做法是什么？",
+      "options": [
+        "一开始就为所有任务选用最小、最快的模型以压缩成本。",
+        "先用最强模型为每项任务建立性能基线，再尝试替换为更小的模型。",
+        "为每个任务长期固定使用同一个最强模型，不再调整。",
+        "完全依据延迟选择模型，忽略准确率目标。"
+      ],
+      "answer": 1,
+      "explain": "依据原文：先用最强模型构建原型以建立基线，再换用更小模型观察是否仍达到可接受效果，从而平衡准确率、成本与延迟。",
+      "wrongReason": "原文不建议一开始就限制能力或固定单一模型，而是先建立基线再按需优化成本和延迟。",
+      "sourceAnchor": "Selecting your models"
+    },
+    {
+      "question": "原文如何描述护栏（Guardrails）的作用方式？",
+      "options": [
+        "单个全能护栏即可提供充分保护，无需叠加其他措施。",
+        "护栏可以完全替代认证、授权和访问控制等安全措施。",
+        "护栏只在模型输出阶段生效，与输入无关。",
+        "作为分层防御机制，多个专业化护栏组合使用以构建更具韧性的 Agent。"
       ],
       "answer": 3,
-      "explain": "依据原文段落：Building agents requires rethinking how your systems make decisions and handle complexity. Unlike conventional automation, agents are uniquely suited to workflows where traditional deterministic and rule-based approaches fall short.",
-      "wrongReason": "该选项没有对应本节原文，或混淆了其他章节的观点。",
-      "sourceAnchor": "When should you build an agent?"
+      "explain": "依据原文：应把护栏视为分层防御，单个护栏难以充分保护，多个专业化护栏组合才能构建更具韧性的 Agent。",
+      "wrongReason": "原文强调护栏需与稳健的认证、授权、访问控制及标准软件安全措施配合，且要覆盖输入与输出，不能仅靠单一护栏。",
+      "sourceAnchor": "Guardrails"
     }
   ],
   "original": {
@@ -836,8 +836,8 @@
         "rows": [
           {
             "type": "bilingual",
-            "en": "Introduction",
-            "zh": "导言"
+            "en": "A practical guide to building agents.",
+            "zh": "构建 Agent 的实践指南。"
           }
         ]
       },

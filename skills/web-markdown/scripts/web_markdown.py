@@ -63,6 +63,8 @@ KNOWN_LANGS = {
     "clojure", "groovy", "markdown", "dockerfile", "makefile", "graphql",
     "diff", "ini", "powershell", "vim", "text",
 }
+UTC_PLUS_8 = timezone(timedelta(hours=8))
+FETCHED_RE = re.compile(r"^> Fetched:\s*(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})$", re.MULTILINE)
 
 
 @dataclass
@@ -246,8 +248,23 @@ def source_title_fallback(source: str) -> str:
     return path.stem or "Untitled Document"
 
 
-def fetched_timestamp() -> str:
-    return datetime.now(timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
+def fetched_timestamp(now: datetime | None = None) -> str:
+    """Return the current modification timestamp rendered in UTC+8."""
+
+    current = now or datetime.now(UTC_PLUS_8)
+    if current.tzinfo is None:
+        current = current.replace(tzinfo=UTC_PLUS_8)
+    return current.astimezone(UTC_PLUS_8).strftime("%Y-%m-%d %H:%M:%S")
+
+
+def normalize_mermaid_line_breaks(markdown: str) -> str:
+    """Use HTML line breaks for literal Mermaid label newlines."""
+
+    def replace_breaks(match: re.Match[str]) -> str:
+        body = match.group(2).replace("\\n", "<br />")
+        return f"{match.group(1)}{body}{match.group(3)}"
+
+    return MERMAID_BLOCK_RE.sub(replace_breaks, markdown)
 
 
 def wrap_markdown_document(document: MarkdownDocument) -> str:
@@ -258,6 +275,7 @@ def wrap_markdown_document(document: MarkdownDocument) -> str:
     metadata = [("Source", document.source), ("Fetched", fetched), *document.metadata]
     metadata_block = "\n".join(f"> {key}: {value}" for key, value in metadata if value != "")
     markdown = f"# {document.title}\n\n{metadata_block}\n\n{body}\n"
+    markdown = normalize_mermaid_line_breaks(markdown)
     validate_markdown(markdown)
     return markdown
 
@@ -994,6 +1012,13 @@ def validate_markdown(markdown: str) -> None:
         raise ValueError("Markdown title is missing.")
     if "> Source:" not in markdown:
         raise ValueError("Source metadata is missing.")
+    fetched = FETCHED_RE.search(markdown)
+    if not fetched:
+        raise ValueError("Fetched metadata must use YYYY-MM-DD HH:mm:ss.")
+    try:
+        datetime.strptime(fetched.group(1), "%Y-%m-%d %H:%M:%S")
+    except ValueError as exc:
+        raise ValueError("Fetched metadata is not a valid calendar time.") from exc
     if len(re.findall(r"```", markdown)) % 2:
         raise ValueError("Unbalanced fenced code block.")
     if re.search(r"\b(TODO|FIXME|<Title>)\b", markdown):

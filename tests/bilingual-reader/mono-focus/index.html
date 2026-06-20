@@ -535,12 +535,17 @@
       }
       .tip .pos {
         font-size: 11px;
-        background: var(--accent2);
-        color: var(--accent2-ink);
+        background: color-mix(in srgb, var(--accent2) 92%, #000);
+        color: #fff;
         padding: 1px 8px;
         border-radius: 6px;
-        font-style: italic;
+        font-style: normal;
+        font-weight: 800;
         white-space: nowrap;
+      }
+      html[data-theme="light"] .tip .pos {
+        background: color-mix(in srgb, var(--accent2) 16%, #fff);
+        color: #073763;
       }
       .lv {
         font-size: 10px;
@@ -844,11 +849,12 @@
       }
       .gloss-item .pos {
         font-size: 10px;
-        background: var(--accent2);
-        color: var(--accent2-ink);
+        background: color-mix(in srgb, var(--accent2) 92%, #000);
+        color: #fff;
         padding: 1px 6px;
         border-radius: 5px;
-        font-style: italic;
+        font-style: normal;
+        font-weight: 800;
       }
       .gloss-item .def {
         font-size: 13px;
@@ -895,11 +901,17 @@
       }
       .gloss-item .gpos {
         font-size: 10px;
-        background: var(--accent2);
-        color: var(--accent2-ink);
+        background: color-mix(in srgb, var(--accent2) 92%, #000);
+        color: #fff;
         padding: 1px 6px;
         border-radius: 5px;
-        font-style: italic;
+        font-style: normal;
+        font-weight: 800;
+      }
+      html[data-theme="light"] .gloss-item .pos,
+      html[data-theme="light"] .gloss-item .gpos {
+        background: color-mix(in srgb, var(--accent2) 16%, #fff);
+        color: #073763;
       }
       .gloss-item .gdef {
         font-size: 13px;
@@ -1298,14 +1310,16 @@
   #originalSection .w{color:#4169ff;text-decoration:none!important;cursor:text!important}#originalSection .w::after{right:-5px;top:.05em;width:4px;height:4px;background:#9b6bff;box-shadow:0 0 0 2px rgba(142,91,255,.16)}#originalSection .w:hover{color:#8e55ff;text-decoration:none!important;cursor:text!important}
   .source-figure{max-width:min(880px,92%);margin:24px auto;padding:14px;border:1px solid color-mix(in srgb,var(--accent2) 28%,var(--border));border-radius:var(--radius);background:var(--panel);overflow:hidden;text-align:center}
   .source-figure img{display:block;width:min(720px,100%);height:405px;max-width:100%;margin:0 auto;border-radius:calc(var(--radius) - 4px);background:#fff;object-fit:contain}.source-figure figcaption{margin-top:10px;color:var(--muted);font-size:13px;line-height:1.55}.source-figure a{color:var(--accent2)}
-  .og-table-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;border:0;background:transparent;box-shadow:none;overflow:visible}.og-table-row .og-table-cell{overflow:auto;border:1px solid color-mix(in srgb,var(--accent2) 22%,var(--border));border-radius:calc(var(--radius) + 2px);background:var(--panel);box-shadow:0 10px 26px rgba(0,0,0,.08)}.og-table-row .en{border-right:1px solid color-mix(in srgb,var(--accent2) 22%,var(--border))}.og-cell-label{margin-bottom:10px;color:var(--accent2);font-size:11px;font-weight:900;letter-spacing:.14em;text-transform:uppercase}.source-table-wrap{margin:18px 0;padding:12px;border:1px solid color-mix(in srgb,var(--accent) 28%,var(--border));border-radius:var(--radius);background:var(--panel);overflow:auto}
-  .source-table{width:100%;min-width:max-content;border-collapse:collapse;table-layout:auto;color:var(--text);font-size:14px;line-height:1.55}.source-table th,.source-table td{max-width:260px;padding:10px 12px;border:1px solid var(--border);vertical-align:top;text-align:left;white-space:normal;overflow-wrap:anywhere;word-break:normal}.source-table th{min-width:120px;background:color-mix(in srgb,var(--accent2) 14%,var(--panel2));color:var(--accent2);font-weight:800}.source-table td{background:color-mix(in srgb,var(--panel2) 52%,transparent)}
+  .og-table-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;border:0;background:transparent;box-shadow:none;overflow:visible}.og-table-row .og-table-cell{overflow:auto;border:1px solid color-mix(in srgb,var(--accent2) 22%,var(--border));border-radius:calc(var(--radius) + 2px);background:var(--panel);box-shadow:0 10px 26px rgba(0,0,0,.08)}.og-table-row .en{border-right:1px solid color-mix(in srgb,var(--accent2) 22%,var(--border))}.source-table-wrap{margin:18px 0;padding:12px;border:1px solid color-mix(in srgb,var(--accent) 28%,var(--border));border-radius:var(--radius);background:var(--panel);overflow:auto}
+  .source-table{width:max-content;min-width:100%;border-collapse:collapse;table-layout:auto;color:var(--text);font-size:14px;line-height:1.55}.source-table th,.source-table td{padding:10px 12px;border:1px solid var(--border);vertical-align:top;text-align:left;white-space:normal;overflow-wrap:normal;word-break:normal}.source-table th{min-width:max-content;background:color-mix(in srgb,var(--accent2) 14%,var(--panel2));color:var(--accent2);font-weight:800;white-space:nowrap}.source-table td{background:color-mix(in srgb,var(--panel2) 52%,transparent)}
   pre{overflow:auto;padding:16px 18px;border:1px solid var(--border);border-radius:var(--radius);background:#05070b;color:#d7fbe8;line-height:1.55}code{font-family:"SF Mono",Consolas,monospace}
   #glossary{display:none}#glossary.show{display:block}body.gloss-open #glossary{display:block}body.gloss-open .wrap{width:100vw;max-width:none;margin:0;padding:28px 56px 80px 24px}
   .gloss-group{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
   .gloss-group .gg-count{display:inline-flex;align-items:center;margin-left:6px;padding:2px 9px;border:1px solid color-mix(in srgb,var(--accent2) 24%,var(--border));border-radius:999px;background:color-mix(in srgb,var(--accent2) 10%,transparent);color:var(--muted);font-size:12px;font-weight:800;line-height:1.4}
   .gloss-grid-inner{--gloss-card-min:240px;--gloss-card-max:340px;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,var(--gloss-card-min)),var(--gloss-card-max)));justify-content:start;gap:12px}
   .gloss-item{width:100%;min-width:0;max-width:var(--gloss-card-max)}
+  .tip .pos,.gloss-item .pos,.gloss-item .gpos{background:color-mix(in srgb,var(--accent2) 92%,#000);color:#fff;font-weight:800;font-style:normal}
+  html[data-theme="light"] .tip .pos,html[data-theme="light"] .gloss-item .pos,html[data-theme="light"] .gloss-item .gpos{background:color-mix(in srgb,var(--accent2) 16%,#fff);color:#073763}
   .quiz-list{display:grid;gap:14px}.quiz .fb strong{color:var(--accent)}.quiz .fb .why{display:block;margin-top:4px;color:var(--muted)}
   .vquiz{display:grid;gap:18px}
   .vq-group{padding:16px 18px;border:1px solid var(--border);border-radius:var(--radius);background:var(--panel)}
@@ -1340,7 +1354,7 @@
       </div>
     </div>
   </header>
-  <nav class="toc" id="toc" aria-label="精读章节导航"><a href="#full-content-summary"><span>全文内容总结</span></a><a href="#conclusion-output"><span>结论输出</span></a><a href="#close-sec-1"><span>Introduction</span></a><a href="#close-sec-2"><span>Introduction</span></a><a href="#close-sec-3"><span>What is an agent?</span></a><a href="#close-sec-4"><span>When should you build an agent?</span></a><a href="#close-sec-5"><span>Agent design foundations</span></a><a href="#close-sec-6"><span>Selecting your models</span></a><a href="#close-sec-7"><span>Defining tools</span></a><a href="#close-sec-8"><span>Configuring instructions</span></a><a href="#close-sec-9"><span>Best practices for agent instructions</span></a><a href="#close-sec-10"><span>Orchestration</span></a><a href="#close-sec-11"><span>Single-agent systems</span></a><a href="#close-sec-12"><span>When to consider creating multiple agents</span></a><a href="#comprehension-check"><span>理解检查</span></a><a href="#vocabulary-quiz"><span>词汇测验</span></a></nav>
+  <nav class="toc" id="toc" aria-label="精读章节导航"><a href="#full-content-summary"><span>全文内容总结</span></a><a href="#conclusion-output"><span>结论输出</span></a><a href="#close-sec-1"><span>A practical guide to building agents</span></a><a href="#close-sec-2"><span>Introduction</span></a><a href="#close-sec-3"><span>What is an agent?</span></a><a href="#close-sec-4"><span>When should you build an agent?</span></a><a href="#close-sec-5"><span>Agent design foundations</span></a><a href="#close-sec-6"><span>Selecting your models</span></a><a href="#close-sec-7"><span>Defining tools</span></a><a href="#close-sec-8"><span>Configuring instructions</span></a><a href="#close-sec-9"><span>Best practices for agent instructions</span></a><a href="#close-sec-10"><span>Orchestration</span></a><a href="#close-sec-11"><span>Single-agent systems</span></a><a href="#close-sec-12"><span>When to consider creating multiple agents</span></a><a href="#comprehension-check"><span>理解检查</span></a><a href="#vocabulary-quiz"><span>词汇测验</span></a></nav>
   <div class="wrap">
 
       <div class="hero" id="hero">
@@ -1348,7 +1362,7 @@
           <div class="hero-main">
             <span class="badge">Close Reading Brief</span>
             <h2>A practical guide to building agents</h2>
-            <p class="hero-thesis">本文围绕《A practical guide to building agents》展开，核心结论是：导言</p>
+            <p class="hero-thesis">本文是面向产品与工程团队的 Agent 构建实践指南：先界定 Agent 与普通 LLM 应用的区别，再给出何时该构建 Agent 的判断标准，随后拆解模型、工具、指令三大设计基础，并系统讲解单 Agent 与多 Agent 的编排模式，最后用分层护栏与人工介入保障其安全、可预测地运行。</p>
             <div class="article-tags"><span class="article-tag">AI</span><span class="article-tag">Agent</span><span class="article-tag">工程实践</span><span class="article-tag">安全护栏</span></div>
           </div>
         </div>
@@ -1364,55 +1378,55 @@
         <div class="gloss-grid-inner">
       <div class="gloss-item" data-k="practical" data-word="practical">
         <div class="grow"><span class="gw word">practical</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/ˈpræktɪkəl/</span><span class="gpos pos">adj.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/ˈpræktɪkəl/</span><span class="gpos pos">adj</span></div>
         <div class="gdef def">实际可用的；注重现实操作的。</div>
         <div class="geg eg">🗣 The guide turns deployments into practical best practices.<span class="egzh">这份指南把部署经验转化为可操作的最佳实践。</span></div>
       </div>
       <div class="gloss-item" data-k="support" data-word="support">
         <div class="grow"><span class="gw word">support</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/səˈpɔːrt/</span><span class="gpos pos">n./v.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/səˈpɔːrt/</span><span class="gpos pos">n</span></div>
         <div class="gdef def">支持；帮助系统或用户完成工作。</div>
         <div class="geg eg">🗣 Support scripts can be converted into agent instructions.<span class="egzh">支持脚本可以被转化为 Agent 指令。</span></div>
       </div>
       <div class="gloss-item" data-k="process" data-word="process">
         <div class="grow"><span class="gw word">process</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/ˈprɑːses/</span><span class="gpos pos">v./n.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/ˈprɑːses/</span><span class="gpos pos">v</span></div>
         <div class="gdef def">处理；流程。</div>
         <div class="geg eg">🗣 The agent can process a home insurance claim.<span class="egzh">Agent 可以处理家庭保险理赔。</span></div>
       </div>
       <div class="gloss-item" data-k="approach" data-word="approach">
         <div class="grow"><span class="gw word">approach</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/əˈproʊtʃ/</span><span class="gpos pos">n.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/əˈproʊtʃ/</span><span class="gpos pos">n</span></div>
         <div class="gdef def">方法；处理问题的方式。</div>
         <div class="geg eg">🗣 An incremental approach reduces deployment risk.<span class="egzh">渐进式方法可以降低部署风险。</span></div>
       </div>
       <div class="gloss-item" data-k="advance" data-word="advance">
         <div class="grow"><span class="gw word">advance</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/ədˈvæns/</span><span class="gpos pos">n./v.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/ədˈvæns/</span><span class="gpos pos">n</span></div>
         <div class="gdef def">进步；推进。</div>
         <div class="geg eg">🗣 Advances in reasoning unlock new agent capabilities.<span class="egzh">推理能力的进步解锁了新的 Agent 能力。</span></div>
       </div>
       <div class="gloss-item" data-k="category" data-word="category">
         <div class="grow"><span class="gw word">category</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/ˈkætəɡɔːri/</span><span class="gpos pos">n.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/ˈkætəɡɔːri/</span><span class="gpos pos">n</span></div>
         <div class="gdef def">类别；分类。</div>
         <div class="geg eg">🗣 Agents are a new category of LLM-powered systems.<span class="egzh">Agent 是一类新的 LLM 驱动系统。</span></div>
       </div>
       <div class="gloss-item" data-k="identify" data-word="identify">
         <div class="grow"><span class="gw word">identify</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/aɪˈdentɪfaɪ/</span><span class="gpos pos">v.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/aɪˈdentɪfaɪ/</span><span class="gpos pos">v</span></div>
         <div class="gdef def">识别；确认。</div>
         <div class="geg eg">🗣 The guide helps identify promising use cases.<span class="egzh">这份指南帮助识别有前景的用例。</span></div>
       </div>
       <div class="gloss-item" data-k="pattern" data-word="pattern">
         <div class="grow"><span class="gw word">pattern</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/ˈpætərn/</span><span class="gpos pos">n.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/ˈpætərn/</span><span class="gpos pos">n</span></div>
         <div class="gdef def">模式；反复出现的结构。</div>
         <div class="geg eg">🗣 The article compares orchestration patterns.<span class="egzh">文章比较了编排模式。</span></div>
       </div>
       <div class="gloss-item" data-k="decision" data-word="decision">
         <div class="grow"><span class="gw word">decision</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/dɪˈsɪʒən/</span><span class="gpos pos">n.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/dɪˈsɪʒən/</span><span class="gpos pos">n</span></div>
         <div class="gdef def">决策；判断后的选择。</div>
         <div class="geg eg">🗣 Agents make decisions during workflow execution.<span class="egzh">Agent 在工作流执行中作出决策。</span></div>
       </div></div>
@@ -1423,187 +1437,187 @@
         <div class="gloss-grid-inner">
       <div class="gloss-item" data-k="capable" data-word="capable">
         <div class="grow"><span class="gw word">capable</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/ˈkeɪpəbəl/</span><span class="gpos pos">adj.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/ˈkeɪpəbəl/</span><span class="gpos pos">adj</span></div>
         <div class="gdef def">有能力的；能够完成特定任务的。</div>
         <div class="geg eg">🗣 A capable model may approve a refund more reliably.<span class="egzh">能力更强的模型可能更可靠地审批退款。</span></div>
       </div>
       <div class="gloss-item" data-k="complex" data-word="complex">
         <div class="grow"><span class="gw word">complex</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/kəmˈpleks/</span><span class="gpos pos">adj.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/kəmˈpleks/</span><span class="gpos pos">adj</span></div>
         <div class="gdef def">复杂的；由多部分组成、难以处理的。</div>
         <div class="geg eg">🗣 Agents are useful for complex workflows.<span class="egzh">Agent 适合复杂工作流。</span></div>
       </div>
       <div class="gloss-item" data-k="conventional" data-word="conventional">
         <div class="grow"><span class="gw word">conventional</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/kənˈvenʃənəl/</span><span class="gpos pos">adj.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/kənˈvenʃənəl/</span><span class="gpos pos">adj</span></div>
         <div class="gdef def">传统的；常规的。</div>
         <div class="geg eg">🗣 Conventional software automates fixed workflows.<span class="egzh">传统软件会自动化固定工作流。</span></div>
       </div>
       <div class="gloss-item" data-k="automate" data-word="automate">
         <div class="grow"><span class="gw word">automate</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/ˈɔːtəmeɪt/</span><span class="gpos pos">v.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/ˈɔːtəmeɪt/</span><span class="gpos pos">v</span></div>
         <div class="gdef def">自动化；让流程自动运行。</div>
         <div class="geg eg">🗣 Agents can automate entire workflows.<span class="egzh">Agent 可以自动化整个工作流。</span></div>
       </div>
       <div class="gloss-item" data-k="workflow" data-word="workflow">
         <div class="grow"><span class="gw word">workflow</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/ˈwɜːrkfloʊ/</span><span class="gpos pos">n.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/ˈwɜːrkfloʊ/</span><span class="gpos pos">n</span></div>
         <div class="gdef def">工作流；为达成目标而执行的一系列步骤。</div>
         <div class="geg eg">🗣 A workflow may include tool calls and decisions.<span class="egzh">工作流可能包含工具调用和决策。</span></div>
       </div>
       <div class="gloss-item" data-k="independently" data-word="independently">
         <div class="grow"><span class="gw word">independently</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/ˌɪndɪˈpendəntli/</span><span class="gpos pos">adv.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/ˌɪndɪˈpendəntli/</span><span class="gpos pos">adv</span></div>
         <div class="gdef def">独立地；无需持续人工指挥地。</div>
         <div class="geg eg">🗣 Agents can independently accomplish tasks.<span class="egzh">Agent 可以独立完成任务。</span></div>
       </div>
       <div class="gloss-item" data-k="reliable" data-word="reliable">
         <div class="grow"><span class="gw word">reliable</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/rɪˈlaɪəbəl/</span><span class="gpos pos">adj.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/rɪˈlaɪəbəl/</span><span class="gpos pos">adj</span></div>
         <div class="gdef def">可靠的；表现稳定且可依赖的。</div>
         <div class="geg eg">🗣 Reliable agents fail safely.<span class="egzh">可靠的 Agent 会安全失败。</span></div>
       </div>
       <div class="gloss-item" data-k="context" data-word="context">
         <div class="grow"><span class="gw word">context</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/ˈkɑːntekst/</span><span class="gpos pos">n.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/ˈkɑːntekst/</span><span class="gpos pos">n</span></div>
         <div class="gdef def">上下文；理解或决策所需的背景信息。</div>
         <div class="geg eg">🗣 The agent gathers context before taking action.<span class="egzh">Agent 在行动前会收集上下文。</span></div>
       </div>
       <div class="gloss-item" data-k="criteria" data-word="criteria">
         <div class="grow"><span class="gw word">criteria</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/kraɪˈtɪriə/</span><span class="gpos pos">n.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/kraɪˈtɪriə/</span><span class="gpos pos">n</span></div>
         <div class="gdef def">标准；用于判断或筛选的条件。</div>
         <div class="geg eg">🗣 Validate that your use case meets the criteria.<span class="egzh">验证你的用例是否符合这些标准。</span></div>
       </div>
       <div class="gloss-item" data-k="approval" data-word="approval">
         <div class="grow"><span class="gw word">approval</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/əˈpruːvəl/</span><span class="gpos pos">n.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/əˈpruːvəl/</span><span class="gpos pos">n</span></div>
         <div class="gdef def">批准；同意某项操作。</div>
         <div class="geg eg">🗣 Refund approval may require nuanced judgment.<span class="egzh">退款审批可能需要细致判断。</span></div>
       </div>
       <div class="gloss-item" data-k="baseline" data-word="baseline">
         <div class="grow"><span class="gw word">baseline</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/ˈbeɪslaɪn/</span><span class="gpos pos">n.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/ˈbeɪslaɪn/</span><span class="gpos pos">n</span></div>
         <div class="gdef def">基线；用于比较的初始表现。</div>
         <div class="geg eg">🗣 Set up evals to establish a baseline.<span class="egzh">建立评估以确定基线。</span></div>
       </div>
       <div class="gloss-item" data-k="latency" data-word="latency">
         <div class="grow"><span class="gw word">latency</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/ˈleɪtənsi/</span><span class="gpos pos">n.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/ˈleɪtənsi/</span><span class="gpos pos">n</span></div>
         <div class="gdef def">延迟；系统响应所需时间。</div>
         <div class="geg eg">🗣 Smaller models can reduce latency.<span class="egzh">较小模型可以降低延迟。</span></div>
       </div>
       <div class="gloss-item" data-k="deployment" data-word="deployment">
         <div class="grow"><span class="gw word">deployment</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/dɪˈplɔɪmənt/</span><span class="gpos pos">n.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/dɪˈplɔɪmənt/</span><span class="gpos pos">n</span></div>
         <div class="gdef def">部署；把系统投入实际使用。</div>
         <div class="geg eg">🗣 Early deployment benefits from human oversight.<span class="egzh">早期部署会受益于人工监督。</span></div>
       </div>
       <div class="gloss-item" data-k="evaluation" data-word="evaluation">
         <div class="grow"><span class="gw word">evaluation</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/ɪˌvæljuˈeɪʃn/</span><span class="gpos pos">n.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/ɪˌvæljuˈeɪʃn/</span><span class="gpos pos">n</span></div>
         <div class="gdef def">评估；衡量表现或质量的过程。</div>
         <div class="geg eg">🗣 Evaluation helps diagnose model failures.<span class="egzh">评估有助于诊断模型失败。</span></div>
       </div>
       <div class="gloss-item" data-k="capability" data-word="capability">
         <div class="grow"><span class="gw word">capability</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/ˌkeɪpəˈbɪləti/</span><span class="gpos pos">n.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/ˌkeɪpəˈbɪləti/</span><span class="gpos pos">n</span></div>
         <div class="gdef def">能力；系统可完成任务的范围。</div>
         <div class="geg eg">🗣 Each tool expands the agent&#x27;s capability.<span class="egzh">每个工具都会扩展 Agent 的能力。</span></div>
       </div>
       <div class="gloss-item" data-k="external" data-word="external">
         <div class="grow"><span class="gw word">external</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/ɪkˈstɜːrnəl/</span><span class="gpos pos">adj.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/ɪkˈstɜːrnəl/</span><span class="gpos pos">adj</span></div>
         <div class="gdef def">外部的；系统之外的。</div>
         <div class="geg eg">🗣 Tools let agents interact with external systems.<span class="egzh">工具让 Agent 与外部系统交互。</span></div>
       </div>
       <div class="gloss-item" data-k="streamline" data-word="streamline">
         <div class="grow"><span class="gw word">streamline</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/ˈstriːmlaɪn/</span><span class="gpos pos">v.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/ˈstriːmlaɪn/</span><span class="gpos pos">v</span></div>
         <div class="gdef def">简化；使流程更高效。</div>
         <div class="geg eg">🗣 Conventional software can streamline workflows.<span class="egzh">传统软件可以简化工作流。</span></div>
       </div>
       <div class="gloss-item" data-k="execute" data-word="execute">
         <div class="grow"><span class="gw word">execute</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/ˈeksɪkjuːt/</span><span class="gpos pos">v.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/ˈeksɪkjuːt/</span><span class="gpos pos">v</span></div>
         <div class="gdef def">执行；运行。</div>
         <div class="geg eg">🗣 Single-agent systems execute workflows in a loop.<span class="egzh">单 Agent 系统在循环中执行工作流。</span></div>
       </div>
       <div class="gloss-item" data-k="sequence" data-word="sequence">
         <div class="grow"><span class="gw word">sequence</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/ˈsiːkwəns/</span><span class="gpos pos">n.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/ˈsiːkwəns/</span><span class="gpos pos">n</span></div>
         <div class="gdef def">序列；按顺序排列的一组步骤。</div>
         <div class="geg eg">🗣 A workflow is a sequence of steps.<span class="egzh">工作流是一系列步骤。</span></div>
       </div>
       <div class="gloss-item" data-k="resolve" data-word="resolve">
         <div class="grow"><span class="gw word">resolve</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/rɪˈzɑːlv/</span><span class="gpos pos">v.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/rɪˈzɑːlv/</span><span class="gpos pos">v</span></div>
         <div class="gdef def">解决；处理完成。</div>
         <div class="geg eg">🗣 A workflow may resolve a customer service issue.<span class="egzh">工作流可以解决客服问题。</span></div>
       </div>
       <div class="gloss-item" data-k="integrate" data-word="integrate">
         <div class="grow"><span class="gw word">integrate</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/ˈɪntɪɡreɪt/</span><span class="gpos pos">v.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/ˈɪntɪɡreɪt/</span><span class="gpos pos">v</span></div>
         <div class="gdef def">集成；整合到系统中。</div>
         <div class="geg eg">🗣 Some applications integrate LLMs without becoming agents.<span class="egzh">有些应用集成了 LLM，但并不成为 Agent。</span></div>
       </div>
       <div class="gloss-item" data-k="independence" data-word="independence">
         <div class="grow"><span class="gw word">independence</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/ˌɪndɪˈpendəns/</span><span class="gpos pos">n.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/ˌɪndɪˈpendəns/</span><span class="gpos pos">n</span></div>
         <div class="gdef def">独立性；自主完成事情的能力。</div>
         <div class="geg eg">🗣 Agents act with a high degree of independence.<span class="egzh">Agent 以较高独立性行动。</span></div>
       </div>
       <div class="gloss-item" data-k="leverage" data-word="leverage">
         <div class="grow"><span class="gw word">leverage</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/ˈlevərɪdʒ/</span><span class="gpos pos">v.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/ˈlevərɪdʒ/</span><span class="gpos pos">v</span></div>
         <div class="gdef def">利用；借助某种能力。</div>
         <div class="geg eg">🗣 An agent leverages an LLM to manage execution.<span class="egzh">Agent 利用 LLM 管理执行。</span></div>
       </div>
       <div class="gloss-item" data-k="dynamically" data-word="dynamically">
         <div class="grow"><span class="gw word">dynamically</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/daɪˈnæmɪkli/</span><span class="gpos pos">adv.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/daɪˈnæmɪkli/</span><span class="gpos pos">adv</span></div>
         <div class="gdef def">动态地；随情况变化地。</div>
         <div class="geg eg">🗣 Agents dynamically select the appropriate tools.<span class="egzh">Agent 会动态选择合适工具。</span></div>
       </div>
       <div class="gloss-item" data-k="appropriate" data-word="appropriate">
         <div class="grow"><span class="gw word">appropriate</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/əˈproʊpriət/</span><span class="gpos pos">adj.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/əˈproʊpriət/</span><span class="gpos pos">adj</span></div>
         <div class="gdef def">合适的；适当的。</div>
         <div class="geg eg">🗣 The agent selects the appropriate tool.<span class="egzh">Agent 选择合适的工具。</span></div>
       </div>
       <div class="gloss-item" data-k="validate" data-word="validate">
         <div class="grow"><span class="gw word">validate</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/ˈvælɪdeɪt/</span><span class="gpos pos">v.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/ˈvælɪdeɪt/</span><span class="gpos pos">v</span></div>
         <div class="gdef def">验证；确认有效。</div>
         <div class="geg eg">🗣 Validate that the use case meets the criteria.<span class="egzh">验证用例是否符合标准。</span></div>
       </div>
       <div class="gloss-item" data-k="sufficient" data-word="sufficient">
         <div class="grow"><span class="gw word">sufficient</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/səˈfɪʃənt/</span><span class="gpos pos">adj.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/səˈfɪʃənt/</span><span class="gpos pos">adj</span></div>
         <div class="gdef def">足够的；充分的。</div>
         <div class="geg eg">🗣 A single agent with tools is often sufficient.<span class="egzh">配备工具的单 Agent 往往已经足够。</span></div>
       </div>
       <div class="gloss-item" data-k="optimize" data-word="optimize">
         <div class="grow"><span class="gw word">optimize</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/ˈɑːptɪmaɪz/</span><span class="gpos pos">v.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/ˈɑːptɪmaɪz/</span><span class="gpos pos">v</span></div>
         <div class="gdef def">优化；提升效率或效果。</div>
         <div class="geg eg">🗣 Optimize for cost and latency.<span class="egzh">优化成本和延迟。</span></div>
       </div>
       <div class="gloss-item" data-k="maintain" data-word="maintain">
         <div class="grow"><span class="gw word">maintain</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/meɪnˈteɪn/</span><span class="gpos pos">v.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/meɪnˈteɪn/</span><span class="gpos pos">v</span></div>
         <div class="gdef def">维护；保持可用状态。</div>
         <div class="geg eg">🗣 Prompt templates are easier to maintain.<span class="egzh">提示词模板更易维护。</span></div>
       </div>
       <div class="gloss-item" data-k="classification" data-word="classification">
         <div class="grow"><span class="gw word">classification</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/ˌklæsɪfɪˈkeɪʃən/</span><span class="gpos pos">n.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/ˌklæsɪfɪˈkeɪʃən/</span><span class="gpos pos">n</span></div>
         <div class="gdef def">分类；分类任务。</div>
         <div class="geg eg">🗣 Intent classification may use a smaller model.<span class="egzh">意图分类可以使用较小模型。</span></div>
       </div>
       <div class="gloss-item" data-k="retrieval" data-word="retrieval">
         <div class="grow"><span class="gw word">retrieval</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/rɪˈtriːvəl/</span><span class="gpos pos">n.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/rɪˈtriːvəl/</span><span class="gpos pos">n</span></div>
         <div class="gdef def">检索；取回信息。</div>
         <div class="geg eg">🗣 A simple retrieval task may need a smaller model.<span class="egzh">简单检索任务可能只需要较小模型。</span></div>
       </div></div>
@@ -1614,151 +1628,151 @@
         <div class="gloss-grid-inner">
       <div class="gloss-item" data-k="ambiguous" data-word="ambiguous">
         <div class="grow"><span class="gw word">ambiguous</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/æmˈbɪɡjuəs/</span><span class="gpos pos">adj.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/æmˈbɪɡjuəs/</span><span class="gpos pos">adj</span></div>
         <div class="gdef def">含糊的；有多种解释的。</div>
         <div class="geg eg">🗣 Agents can manage ambiguous situations.<span class="egzh">Agent 可以处理含糊情境。</span></div>
       </div>
       <div class="gloss-item" data-k="deterministic" data-word="deterministic">
         <div class="grow"><span class="gw word">deterministic</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/dɪˌtɜːrmɪˈnɪstɪk/</span><span class="gpos pos">adj.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/dɪˌtɜːrmɪˈnɪstɪk/</span><span class="gpos pos">adj</span></div>
         <div class="gdef def">确定性的；按固定规则产生结果的。</div>
         <div class="geg eg">🗣 Deterministic approaches can fall short.<span class="egzh">确定性方法可能不够用。</span></div>
       </div>
       <div class="gloss-item" data-k="orchestration" data-word="orchestration">
         <div class="grow"><span class="gw word">orchestration</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/ˌɔːrkɪˈstreɪʃn/</span><span class="gpos pos">n.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/ˌɔːrkɪˈstreɪʃn/</span><span class="gpos pos">n</span></div>
         <div class="gdef def">编排；协调多步流程或多个组件。</div>
         <div class="geg eg">🗣 Orchestration patterns control workflow execution.<span class="egzh">编排模式控制工作流执行。</span></div>
       </div>
       <div class="gloss-item" data-k="proactively" data-word="proactively">
         <div class="grow"><span class="gw word">proactively</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/proʊˈæktɪvli/</span><span class="gpos pos">adv.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/proʊˈæktɪvli/</span><span class="gpos pos">adv</span></div>
         <div class="gdef def">主动地；提前采取行动地。</div>
         <div class="geg eg">🗣 The agent can proactively correct its actions.<span class="egzh">Agent 可以主动修正自身行动。</span></div>
       </div>
       <div class="gloss-item" data-k="intricate" data-word="intricate">
         <div class="grow"><span class="gw word">intricate</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/ˈɪntrɪkət/</span><span class="gpos pos">adj.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/ˈɪntrɪkət/</span><span class="gpos pos">adj</span></div>
         <div class="gdef def">错综复杂的；细节繁多的。</div>
         <div class="geg eg">🗣 Intricate rulesets are costly to update.<span class="egzh">复杂规则集的更新成本很高。</span></div>
       </div>
       <div class="gloss-item" data-k="unstructured" data-word="unstructured">
         <div class="grow"><span class="gw word">unstructured</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/ʌnˈstrʌktʃərd/</span><span class="gpos pos">adj.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/ʌnˈstrʌktʃərd/</span><span class="gpos pos">adj</span></div>
         <div class="gdef def">非结构化的；没有固定格式的。</div>
         <div class="geg eg">🗣 Agents are useful for unstructured data.<span class="egzh">Agent 适合处理非结构化数据。</span></div>
       </div>
       <div class="gloss-item" data-k="retrieve" data-word="retrieve">
         <div class="grow"><span class="gw word">retrieve</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/rɪˈtriːv/</span><span class="gpos pos">v.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/rɪˈtriːv/</span><span class="gpos pos">v</span></div>
         <div class="gdef def">检索；取回信息。</div>
         <div class="geg eg">🗣 Data tools retrieve context for the workflow.<span class="egzh">数据工具会为工作流检索上下文。</span></div>
       </div>
       <div class="gloss-item" data-k="scalability" data-word="scalability">
         <div class="grow"><span class="gw word">scalability</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/ˌskeɪləˈbɪləti/</span><span class="gpos pos">n.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/ˌskeɪləˈbɪləti/</span><span class="gpos pos">n</span></div>
         <div class="gdef def">可扩展性；随规模增长仍能工作的能力。</div>
         <div class="geg eg">🗣 Multiple agents can improve scalability.<span class="egzh">多个 Agent 可以提升可扩展性。</span></div>
       </div>
       <div class="gloss-item" data-k="relevance" data-word="relevance">
         <div class="grow"><span class="gw word">relevance</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/ˈreləvəns/</span><span class="gpos pos">n.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/ˈreləvəns/</span><span class="gpos pos">n</span></div>
         <div class="gdef def">相关性；与目标是否匹配。</div>
         <div class="geg eg">🗣 Relevance validation checks whether a query is on topic.<span class="egzh">相关性校验会检查查询是否切题。</span></div>
       </div>
       <div class="gloss-item" data-k="authentication" data-word="authentication">
         <div class="grow"><span class="gw word">authentication</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/ɔːˌθentɪˈkeɪʃən/</span><span class="gpos pos">n.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/ɔːˌθentɪˈkeɪʃən/</span><span class="gpos pos">n</span></div>
         <div class="gdef def">认证；确认身份的机制。</div>
         <div class="geg eg">🗣 Guardrails should be coupled with authentication.<span class="egzh">护栏应与认证机制配合使用。</span></div>
       </div>
       <div class="gloss-item" data-k="authorization" data-word="authorization">
         <div class="grow"><span class="gw word">authorization</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/ˌɔːθərəˈzeɪʃən/</span><span class="gpos pos">n.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/ˌɔːθərəˈzeɪʃən/</span><span class="gpos pos">n</span></div>
         <div class="gdef def">授权；确认是否有执行权限。</div>
         <div class="geg eg">🗣 Agents need robust authorization protocols.<span class="egzh">Agent 需要稳健的授权协议。</span></div>
       </div>
       <div class="gloss-item" data-k="composable" data-word="composable">
         <div class="grow"><span class="gw word">composable</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/kəmˈpoʊzəbəl/</span><span class="gpos pos">adj.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/kəmˈpoʊzəbəl/</span><span class="gpos pos">adj</span></div>
         <div class="gdef def">可组合的；能灵活拼接成系统的。</div>
         <div class="geg eg">🗣 Keep components flexible and composable.<span class="egzh">保持组件灵活且可组合。</span></div>
       </div>
       <div class="gloss-item" data-k="resilient" data-word="resilient">
         <div class="grow"><span class="gw word">resilient</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/rɪˈzɪliənt/</span><span class="gpos pos">adj.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/rɪˈzɪliənt/</span><span class="gpos pos">adj</span></div>
         <div class="gdef def">有韧性的；能从压力或故障中恢复的。</div>
         <div class="geg eg">🗣 Multiple guardrails create more resilient agents.<span class="egzh">多重护栏可以构建更具韧性的 Agent。</span></div>
       </div>
       <div class="gloss-item" data-k="autonomous" data-word="autonomous">
         <div class="grow"><span class="gw word">autonomous</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/ɔːˈtɑːnəməs/</span><span class="gpos pos">adj.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/ɔːˈtɑːnəməs/</span><span class="gpos pos">adj</span></div>
         <div class="gdef def">自主的；能独立运行的。</div>
         <div class="geg eg">🗣 A fully autonomous agent can add complexity.<span class="egzh">完全自主的 Agent 会增加复杂度。</span></div>
       </div>
       <div class="gloss-item" data-k="friction" data-word="friction">
         <div class="grow"><span class="gw word">friction</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/ˈfrɪkʃən/</span><span class="gpos pos">n.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/ˈfrɪkʃən/</span><span class="gpos pos">n</span></div>
         <div class="gdef def">阻力；流程中的摩擦。</div>
         <div class="geg eg">🗣 Traditional methods can encounter friction.<span class="egzh">传统方法可能遇到阻力。</span></div>
       </div>
       <div class="gloss-item" data-k="suspicious" data-word="suspicious">
         <div class="grow"><span class="gw word">suspicious</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/səˈspɪʃəs/</span><span class="gpos pos">adj.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/səˈspɪʃəs/</span><span class="gpos pos">adj</span></div>
         <div class="gdef def">可疑的；值得怀疑的。</div>
         <div class="geg eg">🗣 An LLM agent can identify suspicious activity.<span class="egzh">LLM Agent 可以识别可疑活动。</span></div>
       </div>
       <div class="gloss-item" data-k="interpret" data-word="interpret">
         <div class="grow"><span class="gw word">interpret</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/ɪnˈtɜːrprət/</span><span class="gpos pos">v.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/ɪnˈtɜːrprət/</span><span class="gpos pos">v</span></div>
         <div class="gdef def">解释；理解含义。</div>
         <div class="geg eg">🗣 Agents can interpret natural language.<span class="egzh">Agent 可以解释自然语言。</span></div>
       </div>
       <div class="gloss-item" data-k="standardized" data-word="standardized">
         <div class="grow"><span class="gw word">standardized</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/ˈstændərdaɪzd/</span><span class="gpos pos">adj.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/ˈstændərdaɪzd/</span><span class="gpos pos">adj</span></div>
         <div class="gdef def">标准化的；按统一格式定义的。</div>
         <div class="geg eg">🗣 Each tool should have a standardized definition.<span class="egzh">每个工具都应有标准化定义。</span></div>
       </div>
       <div class="gloss-item" data-k="discoverability" data-word="discoverability">
         <div class="grow"><span class="gw word">discoverability</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/dɪˌskʌvərəˈbɪləti/</span><span class="gpos pos">n.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/dɪˌskʌvərəˈbɪləti/</span><span class="gpos pos">n</span></div>
         <div class="gdef def">可发现性；易于被找到和理解的程度。</div>
         <div class="geg eg">🗣 Reusable tools improve discoverability.<span class="egzh">可复用工具提升可发现性。</span></div>
       </div>
       <div class="gloss-item" data-k="conditional" data-word="conditional">
         <div class="grow"><span class="gw word">conditional</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/kənˈdɪʃənəl/</span><span class="gpos pos">adj.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/kənˈdɪʃənəl/</span><span class="gpos pos">adj</span></div>
         <div class="gdef def">有条件的；依赖条件的。</div>
         <div class="geg eg">🗣 Complex prompts may contain conditional statements.<span class="egzh">复杂提示词可能包含条件语句。</span></div>
       </div>
       <div class="gloss-item" data-k="delegate" data-word="delegate">
         <div class="grow"><span class="gw word">delegate</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/ˈdelɪɡeɪt/</span><span class="gpos pos">v.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/ˈdelɪɡeɪt/</span><span class="gpos pos">v</span></div>
         <div class="gdef def">委派；分派任务。</div>
         <div class="geg eg">🗣 A manager agent can delegate tasks.<span class="egzh">管理者 Agent 可以委派任务。</span></div>
       </div>
       <div class="gloss-item" data-k="irrelevant" data-word="irrelevant">
         <div class="grow"><span class="gw word">irrelevant</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/ɪˈreləvənt/</span><span class="gpos pos">adj.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/ɪˈreləvənt/</span><span class="gpos pos">adj</span></div>
         <div class="gdef def">不相关的；无关的。</div>
         <div class="geg eg">🗣 Off-topic input can be flagged as irrelevant.<span class="egzh">离题输入可被标记为不相关。</span></div>
       </div>
       <div class="gloss-item" data-k="breach" data-word="breach">
         <div class="grow"><span class="gw word">breach</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/briːtʃ/</span><span class="gpos pos">v./n.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/briːtʃ/</span><span class="gpos pos">v</span></div>
         <div class="gdef def">违反；突破限制。</div>
         <div class="geg eg">🗣 Guardrails trigger exceptions if constraints are breached.<span class="egzh">约束被违反时护栏会触发异常。</span></div>
       </div>
       <div class="gloss-item" data-k="oversight" data-word="oversight">
         <div class="grow"><span class="gw word">oversight</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/ˈoʊvərsaɪt/</span><span class="gpos pos">n.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/ˈoʊvərsaɪt/</span><span class="gpos pos">n</span></div>
         <div class="gdef def">监督；监管。</div>
         <div class="geg eg">🗣 High-risk actions should trigger human oversight.<span class="egzh">高风险操作应触发人工监督。</span></div>
       </div>
       <div class="gloss-item" data-k="adaptability" data-word="adaptability">
         <div class="grow"><span class="gw word">adaptability</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/əˌdæptəˈbɪləti/</span><span class="gpos pos">n.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/əˌdæptəˈbɪləti/</span><span class="gpos pos">n</span></div>
         <div class="gdef def">适应性；适应变化的能力。</div>
         <div class="geg eg">🗣 Agents can automate workflows with adaptability.<span class="egzh">Agent 能以适应性自动化工作流。</span></div>
       </div></div>
@@ -1769,43 +1783,43 @@
         <div class="gloss-grid-inner">
       <div class="gloss-item" data-k="nuanced" data-word="nuanced">
         <div class="grow"><span class="gw word">nuanced</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/ˈnuːɑːnst/</span><span class="gpos pos">adj.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/ˈnuːɑːnst/</span><span class="gpos pos">adj</span></div>
         <div class="gdef def">细致入微的；包含微妙差别的。</div>
         <div class="geg eg">🗣 Nuanced judgment is hard to encode.<span class="egzh">细致判断很难用规则编码。</span></div>
       </div>
       <div class="gloss-item" data-k="unwieldy" data-word="unwieldy">
         <div class="grow"><span class="gw word">unwieldy</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/ʌnˈwiːldi/</span><span class="gpos pos">adj.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/ʌnˈwiːldi/</span><span class="gpos pos">adj</span></div>
         <div class="gdef def">笨重难用的；难以管理的。</div>
         <div class="geg eg">🗣 Large rulesets can become unwieldy.<span class="egzh">大型规则集可能变得笨重难管。</span></div>
       </div>
       <div class="gloss-item" data-k="brittle" data-word="brittle">
         <div class="grow"><span class="gw word">brittle</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/ˈbrɪtl/</span><span class="gpos pos">adj.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/ˈbrɪtl/</span><span class="gpos pos">adj</span></div>
         <div class="gdef def">脆弱的；遇到变化容易失效的。</div>
         <div class="geg eg">🗣 Brittle rule-based systems are hard to maintain.<span class="egzh">脆弱的规则系统很难维护。</span></div>
       </div>
       <div class="gloss-item" data-k="cumbersome" data-word="cumbersome">
         <div class="grow"><span class="gw word">cumbersome</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/ˈkʌmbərsəm/</span><span class="gpos pos">adj.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/ˈkʌmbərsəm/</span><span class="gpos pos">adj</span></div>
         <div class="gdef def">繁琐笨重的；使用或维护不便的。</div>
         <div class="geg eg">🗣 Declarative graphs can become cumbersome.<span class="egzh">声明式图结构可能变得繁琐笨重。</span></div>
       </div>
       <div class="gloss-item" data-k="reputational" data-word="reputational">
         <div class="grow"><span class="gw word">reputational</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/ˌrepjuˈteɪʃənəl/</span><span class="gpos pos">adj.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/ˌrepjuˈteɪʃənəl/</span><span class="gpos pos">adj</span></div>
         <div class="gdef def">声誉相关的；影响公众信任的。</div>
         <div class="geg eg">🗣 Guardrails reduce reputational risk.<span class="egzh">护栏降低声誉风险。</span></div>
       </div>
       <div class="gloss-item" data-k="irreversible" data-word="irreversible">
         <div class="grow"><span class="gw word">irreversible</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/ˌɪrɪˈvɜːrsəbəl/</span><span class="gpos pos">adj.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/ˌɪrɪˈvɜːrsəbəl/</span><span class="gpos pos">adj</span></div>
         <div class="gdef def">不可逆的；无法撤销的。</div>
         <div class="geg eg">🗣 Irreversible actions need human oversight.<span class="egzh">不可逆操作需要人工监督。</span></div>
       </div>
       <div class="gloss-item" data-k="all_or_nothing" data-word="all-or-nothing">
         <div class="grow"><span class="gw word">all-or-nothing</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/ˌɔːl ɔːr ˈnʌθɪŋ/</span><span class="gpos pos">adj.</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/ˌɔːl ɔːr ˈnʌθɪŋ/</span></div>
         <div class="gdef def">非此即彼的；全有或全无的。</div>
         <div class="geg eg">🗣 Deployment is not all-or-nothing.<span class="egzh">部署并不是非此即彼。</span></div>
       </div></div>
@@ -1816,152 +1830,152 @@
         <div class="gloss-grid-inner">
       <div class="gloss-item" data-k="llm" data-word="LLM">
         <div class="grow"><span class="gw word">LLM</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/ˌel el ˈem/</span><span class="gpos pos">AI</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/ˌel el ˈem/</span></div>
         <div class="gdef def">大语言模型；驱动推理、生成和工作流控制的模型。</div>
         <div class="geg eg">🗣 An LLM powers the agent&#x27;s reasoning.<span class="egzh">LLM 为 Agent 推理提供能力。</span></div>
       </div>
       <div class="gloss-item" data-k="agent" data-word="agent">
         <div class="grow"><span class="gw word">agent</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/ˈeɪdʒənt/</span><span class="gpos pos">AI</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/ˈeɪdʒənt/</span></div>
         <div class="gdef def">能够代表用户执行工作流的智能系统。</div>
         <div class="geg eg">🗣 An agent can execute workflows end-to-end.<span class="egzh">Agent 可以端到端执行工作流。</span></div>
       </div>
       <div class="gloss-item" data-k="agents_sdk" data-word="Agents SDK">
         <div class="grow"><span class="gw word">Agents SDK</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/ˈeɪdʒənts ˌes diː ˈkeɪ/</span><span class="gpos pos">计算机</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/ˈeɪdʒənts ˌes diː ˈkeɪ/</span></div>
         <div class="gdef def">OpenAI 用于构建 Agent 的软件开发工具包。</div>
         <div class="geg eg">🗣 The Agents SDK starts the run loop.<span class="egzh">Agents SDK 启动运行循环。</span></div>
       </div>
       <div class="gloss-item" data-k="api" data-word="API">
         <div class="grow"><span class="gw word">API</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/ˌeɪ piː ˈaɪ/</span><span class="gpos pos">互联网</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/ˌeɪ piː ˈaɪ/</span></div>
         <div class="gdef def">应用程序接口；系统之间交换能力和数据的接口。</div>
         <div class="geg eg">🗣 Tools use APIs from underlying applications.<span class="egzh">工具使用底层应用的 API。</span></div>
       </div>
       <div class="gloss-item" data-k="crm" data-word="CRM">
         <div class="grow"><span class="gw word">CRM</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/ˌsiː ɑːr ˈem/</span><span class="gpos pos">计算机</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/ˌsiː ɑːr ˈem/</span></div>
         <div class="gdef def">客户关系管理系统。</div>
         <div class="geg eg">🗣 A tool can update a CRM record.<span class="egzh">工具可以更新 CRM 记录。</span></div>
       </div>
       <div class="gloss-item" data-k="pdf" data-word="PDF">
         <div class="grow"><span class="gw word">PDF</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/ˌpiː diː ˈef/</span><span class="gpos pos">计算机</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/ˌpiː diː ˈef/</span></div>
         <div class="gdef def">便携式文档格式，常用于文档读取和处理。</div>
         <div class="geg eg">🗣 Agents can read PDF documents.<span class="egzh">Agent 可以读取 PDF 文档。</span></div>
       </div>
       <div class="gloss-item" data-k="web" data-word="web">
         <div class="grow"><span class="gw word">web</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/web/</span><span class="gpos pos">互联网</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/web/</span></div>
         <div class="gdef def">互联网网页环境。</div>
         <div class="geg eg">🗣 Agents can search the web.<span class="egzh">Agent 可以搜索网页。</span></div>
       </div>
       <div class="gloss-item" data-k="database" data-word="database">
         <div class="grow"><span class="gw word">database</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/ˈdeɪtəbeɪs/</span><span class="gpos pos">计算机</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/ˈdeɪtəbeɪs/</span></div>
         <div class="gdef def">用于存储和查询结构化数据的系统。</div>
         <div class="geg eg">🗣 A tool may query transaction databases.<span class="egzh">工具可以查询交易数据库。</span></div>
       </div>
       <div class="gloss-item" data-k="prompt" data-word="prompt">
         <div class="grow"><span class="gw word">prompt</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/prɑːmpt/</span><span class="gpos pos">AI</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/prɑːmpt/</span></div>
         <div class="gdef def">提供给模型的指令或上下文。</div>
         <div class="geg eg">🗣 Prompt templates simplify maintenance.<span class="egzh">提示词模板简化维护。</span></div>
       </div>
       <div class="gloss-item" data-k="jailbreak" data-word="jailbreak">
         <div class="grow"><span class="gw word">jailbreak</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/ˈdʒeɪlbreɪk/</span><span class="gpos pos">AI</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/ˈdʒeɪlbreɪk/</span></div>
         <div class="gdef def">诱导模型绕过限制或泄露指令的攻击方式。</div>
         <div class="geg eg">🗣 A classifier can detect jailbreaks.<span class="egzh">分类器可以检测越狱攻击。</span></div>
       </div>
       <div class="gloss-item" data-k="moderation_api" data-word="Moderation API">
         <div class="grow"><span class="gw word">Moderation API</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/ˌmɑːdəˈreɪʃən ˌeɪ piː ˈaɪ/</span><span class="gpos pos">互联网</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/ˌmɑːdəˈreɪʃən ˌeɪ piː ˈaɪ/</span></div>
         <div class="gdef def">用于审核输入或内容安全风险的接口。</div>
         <div class="geg eg">🗣 The Moderation API vets user inputs.<span class="egzh">Moderation API 审查用户输入。</span></div>
       </div>
       <div class="gloss-item" data-k="classifier" data-word="classifier">
         <div class="grow"><span class="gw word">classifier</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/ˈklæsɪfaɪər/</span><span class="gpos pos">AI</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/ˈklæsɪfaɪər/</span></div>
         <div class="gdef def">对输入或输出进行分类的模型或组件。</div>
         <div class="geg eg">🗣 The classifier marks unsafe messages.<span class="egzh">分类器标记不安全消息。</span></div>
       </div>
       <div class="gloss-item" data-k="computer_use_models" data-word="computer-use models">
         <div class="grow"><span class="gw word">computer-use models</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/kəmˈpjuːtər juːs ˈmɑːdəlz/</span><span class="gpos pos">AI</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/kəmˈpjuːtər juːs ˈmɑːdəlz/</span></div>
         <div class="gdef def">能够像人一样操作网页或应用界面的模型。</div>
         <div class="geg eg">🗣 Agents can rely on computer-use models.<span class="egzh">Agent 可以依靠计算机使用模型。</span></div>
       </div>
       <div class="gloss-item" data-k="graph" data-word="graph">
         <div class="grow"><span class="gw word">graph</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/ɡræf/</span><span class="gpos pos">计算机</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/ɡræf/</span></div>
         <div class="gdef def">由节点和边组成的结构，用于建模系统关系。</div>
         <div class="geg eg">🗣 Multi-agent systems can be modeled as graphs.<span class="egzh">多 Agent 系统可以建模为图。</span></div>
       </div>
       <div class="gloss-item" data-k="node" data-word="node">
         <div class="grow"><span class="gw word">node</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/noʊd/</span><span class="gpos pos">计算机</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/noʊd/</span></div>
         <div class="gdef def">图结构中的节点，常代表一个实体或组件。</div>
         <div class="geg eg">🗣 Agents are represented as nodes.<span class="egzh">Agent 被表示为节点。</span></div>
       </div>
       <div class="gloss-item" data-k="edge" data-word="edge">
         <div class="grow"><span class="gw word">edge</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/edʒ/</span><span class="gpos pos">计算机</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/edʒ/</span></div>
         <div class="gdef def">图结构中的连接，表示调用或交接关系。</div>
         <div class="geg eg">🗣 Edges represent tool calls or handoffs.<span class="egzh">边表示工具调用或交接。</span></div>
       </div>
       <div class="gloss-item" data-k="output_type" data-word="output type">
         <div class="grow"><span class="gw word">output type</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/ˈaʊtpʊt taɪp/</span><span class="gpos pos">计算机</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/ˈaʊtpʊt taɪp/</span></div>
         <div class="gdef def">结构化输出的类型定义。</div>
         <div class="geg eg">🗣 A final-output tool is defined by an output type.<span class="egzh">最终输出工具由输出类型定义。</span></div>
       </div>
       <div class="gloss-item" data-k="structured_output" data-word="structured output">
         <div class="grow"><span class="gw word">structured output</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/ˈstrʌktʃərd ˈaʊtpʊt/</span><span class="gpos pos">AI</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/ˈstrʌktʃərd ˈaʊtpʊt/</span></div>
         <div class="gdef def">按固定结构返回的模型输出。</div>
         <div class="geg eg">🗣 An exit condition can be a structured output.<span class="egzh">退出条件可以是结构化输出。</span></div>
       </div>
       <div class="gloss-item" data-k="human_in_the_loop" data-word="human-in-the-loop">
         <div class="grow"><span class="gw word">human-in-the-loop</span><button class="speak" type="button">🔊</button></div>
-        <div class="gsub sub"><span class="gipa ipa">/ˈhjuːmən ɪn ðə luːp/</span><span class="gpos pos">AI</span></div>
+        <div class="gsub sub"><span class="gipa ipa">/ˈhjuːmən ɪn ðə luːp/</span></div>
         <div class="gdef def">人在回路；关键节点由人工参与确认或处理。</div>
         <div class="geg eg">🗣 Human-in-the-loop intervention improves safety.<span class="egzh">人在回路介入提升安全性。</span></div>
       </div></div></div>
       </section>
       <section class="summary-view block content-summary" id="full-content-summary" data-toc="全文内容总结">
         <h3 class="sec-title"><span class="num">SUM</span>全文内容总结</h3>
-        <p class="summary-lead">本文围绕《A practical guide to building agents》展开，核心结论是：导言</p>
+        <p class="summary-lead">本文是面向产品与工程团队的 Agent 构建实践指南：先界定 Agent 与普通 LLM 应用的区别，再给出何时该构建 Agent 的判断标准，随后拆解模型、工具、指令三大设计基础，并系统讲解单 Agent 与多 Agent 的编排模式，最后用分层护栏与人工介入保障其安全、可预测地运行。</p>
         <div class="summary-card-grid">
           <article class="summary-card">
             <span>01</span>
-            <h4>Introduction</h4>
-            <p>导言</p>
+            <h4>什么是 Agent</h4>
+            <p>Agent 由 LLM 控制工作流执行、动态选择工具，并在护栏内代表用户独立完成任务；仅集成 LLM 却不由其控制流程的应用不算 Agent。</p>
           </article>
           <article class="summary-card">
             <span>02</span>
-            <h4>Introduction</h4>
-            <p>大语言模型正越来越擅长处理复杂的多步骤任务。</p>
+            <h4>何时该构建</h4>
+            <p>优先用于过去难以自动化的工作流，尤其是复杂决策、难以维护的规则，以及高度依赖非结构化数据的场景。</p>
           </article>
           <article class="summary-card">
             <span>03</span>
-            <h4>What is an agent?</h4>
-            <p>传统软件可以帮助用户简化并自动化工作流，而 Agent 则能够以较高的自主性代表用户执行这些工作流。</p>
+            <h4>三大设计基础</h4>
+            <p>一个 Agent 由模型、工具、指令三部分构成：模型提供推理，工具执行操作，指令定义行为与护栏。</p>
           </article>
           <article class="summary-card">
             <span>04</span>
-            <h4>When should you build an agent?</h4>
-            <p>构建 Agent 需要重新思考系统如何决策以及如何处理复杂性。</p>
+            <h4>模型选择</h4>
+            <p>先用最强模型为每项任务建立性能基线，再尝试替换为更小、更快的模型，以平衡准确率、延迟和成本。</p>
           </article>
           <article class="summary-card">
             <span>05</span>
-            <h4>Agent design foundations</h4>
-            <p>从最基本的形态看，一个 Agent 由三个核心组件构成：</p>
+            <h4>编排模式</h4>
+            <p>从单 Agent 循环起步，复杂度上升时再拆分为多 Agent，可采用管理者模式或去中心化交接两类编排。</p>
           </article>
           <article class="summary-card">
             <span>06</span>
-            <h4>Selecting your models</h4>
-            <p>不同模型在任务复杂度、延迟和成本方面各有优势与取舍。</p>
+            <h4>护栏与人工介入</h4>
+            <p>用相关性、安全、PII、内容审核等分层护栏防御风险，并在超过失败阈值或执行高风险操作时转交人工。</p>
           </article></div>
       </section>
       <section class="summary-view block conclusion-output" id="conclusion-output" data-toc="结论输出">
@@ -1970,9 +1984,9 @@
           <article class="conclusion-card">
             <span class="guide-kicker">Final Takeaways</span>
             <ul class="conclusion-list">
-          <li><b>核心判断</b><span>导言</span></li>
-          <li><b>关键边界</b><span>大语言模型正越来越擅长处理复杂的多步骤任务。</span></li>
-          <li><b>实践路径</b><span>传统软件可以帮助用户简化并自动化工作流，而 Agent 则能够以较高的自主性代表用户执行这些工作流。</span></li></ul>
+          <li><b>核心判断</b><span>Agent 是由 LLM 控制工作流执行、能代表用户自主完成多步骤任务的系统，区别于简单聊天机器人或单轮 LLM 应用。</span></li>
+          <li><b>关键边界</b><span>只有当工作流涉及复杂决策、规则难以维护或高度依赖非结构化数据时才值得构建 Agent，否则确定性方案可能已经足够。</span></li>
+          <li><b>实践路径</b><span>先用最强模型建立基线，从配备工具的单 Agent 起步，仅在必要时演进到多 Agent，并在每个阶段叠加护栏与人工介入。</span></li></ul>
           </article>
           <article class="conclusion-card">
             <span class="guide-kicker">Source-grounded Close</span>
@@ -1982,23 +1996,23 @@
           </article>
         </div>
       </section>
-      <section class="summary-view block reader-section close-core-section" id="close-sec-1" data-toc="Introduction">
-        <h3 class="sec-title"><span class="num">01</span>Introduction</h3>
+      <section class="summary-view block reader-section close-core-section" id="close-sec-1" data-toc="A practical guide to building agents">
+        <h3 class="sec-title"><span class="num">01</span>A practical guide to building agents</h3>
         <div class="core-layout">
           <article class="core-thesis">
             <span class="guide-kicker">Core Idea</span>
-            <p>导言</p>
+            <p>本指南将大量客户部署经验提炼为务实、可落地的最佳实践，帮助你构建第一个 Agent。</p>
           </article>
           <div class="core-detail-grid">
             <article class="core-principles">
               <span class="guide-kicker">Principles</span>
               <ul>
-          <li>导言</li></ul>
+          <li>本指南将大量客户部署经验提炼为务实、可落地的最佳实践，帮助你构建第一个 Agent。</li></ul>
             </article>
             <article class="core-source">
               <span class="guide-kicker">Source Basis</span>
               
-          <p>Introduction</p>
+          <p>This guide distills insights from numerous customer deployments into practical, actionable best practices for building your first agent.</p>
             </article>
           </div>
         </div>
@@ -2258,41 +2272,41 @@
         <h3 class="sec-title"><span class="num">Q</span>理解检查</h3>
         <p class="note">题目基于原文段落生成，答题后立即显示正确性与错误原因。</p>
         <div class="quiz-list">
-        <div class="quiz" data-source-anchor="Introduction">
-          <div class="q-txt">01. 关于“Introduction”，哪一项最符合原文？</div>
-          
-          <button class="opt" data-correct="true">导言</button>
-          <button class="opt">大语言模型正越来越擅长处理复杂的多步骤任务。推理、多模态和工具使用能力的进步，催生了一类由 LLM 驱动的新系统，即 Agent。</button>
-          <button class="opt">传统软件可以帮助用户简化并自动化工作流，而 Agent 则能够以较高的自主性代表用户执行这些工作流。</button>
-          <button class="opt">构建 Agent 需要重新思考系统如何决策以及如何处理复杂性。不同于传统自动化，Agent 特别适合那些传统确定性方法和基于规则的方法难以胜任的工作流。</button>
-          <div class="fb" data-explain="依据原文段落：Introduction" data-wrong="该选项没有对应本节原文，或混淆了其他章节的观点。" aria-live="polite"></div>
-        </div>
-        <div class="quiz" data-source-anchor="Introduction">
-          <div class="q-txt">02. 关于“Introduction”，哪一项最符合原文？</div>
-          
-          <button class="opt">导言</button>
-          <button class="opt" data-correct="true">大语言模型正越来越擅长处理复杂的多步骤任务。推理、多模态和工具使用能力的进步，催生了一类由 LLM 驱动的新系统，即 Agent。</button>
-          <button class="opt">传统软件可以帮助用户简化并自动化工作流，而 Agent 则能够以较高的自主性代表用户执行这些工作流。</button>
-          <button class="opt">构建 Agent 需要重新思考系统如何决策以及如何处理复杂性。不同于传统自动化，Agent 特别适合那些传统确定性方法和基于规则的方法难以胜任的工作流。</button>
-          <div class="fb" data-explain="依据原文段落：Large language models are becoming increasingly capable of handling complex, multi-step tasks. Advances in reasoning, multimodality, and tool use have unlocked a new category of LLM-powered systems known as agents." data-wrong="该选项没有对应本节原文，或混淆了其他章节的观点。" aria-live="polite"></div>
-        </div>
         <div class="quiz" data-source-anchor="What is an agent?">
-          <div class="q-txt">03. 关于“What is an agent?”，哪一项最符合原文？</div>
+          <div class="q-txt">01. 根据原文，下列哪项最准确地描述了 Agent？</div>
           
-          <button class="opt">大语言模型正越来越擅长处理复杂的多步骤任务。推理、多模态和工具使用能力的进步，催生了一类由 LLM 驱动的新系统，即 Agent。</button>
-          <button class="opt">导言</button>
-          <button class="opt" data-correct="true">传统软件可以帮助用户简化并自动化工作流，而 Agent 则能够以较高的自主性代表用户执行这些工作流。</button>
-          <button class="opt">构建 Agent 需要重新思考系统如何决策以及如何处理复杂性。不同于传统自动化，Agent 特别适合那些传统确定性方法和基于规则的方法难以胜任的工作流。</button>
-          <div class="fb" data-explain="依据原文段落：While conventional software enables users to streamline and automate workflows, agents are able to perform the same workflows on the users’ behalf with a high degree of independence." data-wrong="该选项没有对应本节原文，或混淆了其他章节的观点。" aria-live="polite"></div>
+          <button class="opt" data-correct="true">能由 LLM 控制工作流执行、代表用户独立完成任务的系统。</button>
+          <button class="opt">任何集成了 LLM 的应用，例如简单聊天机器人或情感分类器。</button>
+          <button class="opt">只在单轮对话中回答问题、不执行多步骤工作流的模型。</button>
+          <button class="opt">依赖固定规则逐条匹配、无法处理模糊情境的引擎。</button>
+          <div class="fb" data-explain="依据原文：Agent 利用 LLM 管理工作流执行并作出决策，能代表用户独立完成任务，并在护栏内动态选择工具。" data-wrong="原文明确指出，仅集成 LLM、却不由 LLM 控制工作流执行的应用（如聊天机器人、单轮 LLM、情感分类器）并不是 Agent。" aria-live="polite"></div>
         </div>
         <div class="quiz" data-source-anchor="When should you build an agent?">
-          <div class="q-txt">04. 关于“When should you build an agent?”，哪一项最符合原文？</div>
+          <div class="q-txt">02. 原文建议在什么情况下优先考虑构建 Agent？</div>
           
-          <button class="opt">传统软件可以帮助用户简化并自动化工作流，而 Agent 则能够以较高的自主性代表用户执行这些工作流。</button>
-          <button class="opt">导言</button>
-          <button class="opt">大语言模型正越来越擅长处理复杂的多步骤任务。推理、多模态和工具使用能力的进步，催生了一类由 LLM 驱动的新系统，即 Agent。</button>
-          <button class="opt" data-correct="true">构建 Agent 需要重新思考系统如何决策以及如何处理复杂性。不同于传统自动化，Agent 特别适合那些传统确定性方法和基于规则的方法难以胜任的工作流。</button>
-          <div class="fb" data-explain="依据原文段落：Building agents requires rethinking how your systems make decisions and handle complexity. Unlike conventional automation, agents are uniquely suited to workflows where traditional deterministic and rule-based approaches fall short." data-wrong="该选项没有对应本节原文，或混淆了其他章节的观点。" aria-live="polite"></div>
+          <button class="opt">任务简单、规则清晰、用确定性方案即可稳定完成时。</button>
+          <button class="opt">只需要一次性检索或固定格式输出、无需判断时。</button>
+          <button class="opt" data-correct="true">工作流涉及复杂决策、规则难以维护，或高度依赖非结构化数据时。</button>
+          <button class="opt">团队希望尽量减少模型调用、降低系统复杂度时。</button>
+          <div class="fb" data-explain="依据原文：应优先考虑过去难以自动化的工作流，尤其是复杂决策、难以维护的规则，以及高度依赖非结构化数据的场景。" data-wrong="原文指出，如果用例无法清晰满足这些条件，确定性方案可能已经足够，不必构建 Agent。" aria-live="polite"></div>
+        </div>
+        <div class="quiz" data-source-anchor="Selecting your models">
+          <div class="q-txt">03. 关于“选择模型”，原文推荐的有效做法是什么？</div>
+          
+          <button class="opt">一开始就为所有任务选用最小、最快的模型以压缩成本。</button>
+          <button class="opt" data-correct="true">先用最强模型为每项任务建立性能基线，再尝试替换为更小的模型。</button>
+          <button class="opt">为每个任务长期固定使用同一个最强模型，不再调整。</button>
+          <button class="opt">完全依据延迟选择模型，忽略准确率目标。</button>
+          <div class="fb" data-explain="依据原文：先用最强模型构建原型以建立基线，再换用更小模型观察是否仍达到可接受效果，从而平衡准确率、成本与延迟。" data-wrong="原文不建议一开始就限制能力或固定单一模型，而是先建立基线再按需优化成本和延迟。" aria-live="polite"></div>
+        </div>
+        <div class="quiz" data-source-anchor="Guardrails">
+          <div class="q-txt">04. 原文如何描述护栏（Guardrails）的作用方式？</div>
+          
+          <button class="opt">单个全能护栏即可提供充分保护，无需叠加其他措施。</button>
+          <button class="opt">护栏可以完全替代认证、授权和访问控制等安全措施。</button>
+          <button class="opt">护栏只在模型输出阶段生效，与输入无关。</button>
+          <button class="opt" data-correct="true">作为分层防御机制，多个专业化护栏组合使用以构建更具韧性的 Agent。</button>
+          <div class="fb" data-explain="依据原文：应把护栏视为分层防御，单个护栏难以充分保护，多个专业化护栏组合才能构建更具韧性的 Agent。" data-wrong="原文强调护栏需与稳健的认证、授权、访问控制及标准软件安全措施配合，且要覆盖输入与输出，不能仅靠单一护栏。" aria-live="polite"></div>
         </div></div>
       </section>
       <section class="summary-view block" id="vocabulary-quiz" data-toc="词汇测验">
@@ -2373,13 +2387,13 @@
         
         <div class="hero original-hero">
           <h2>A practical guide to building agents</h2>
-          <p class="zh">导言</p>
+          <p class="zh">Agent 是能够代表你独立完成任务的系统，依靠 LLM 管理工作流执行并作出决策。</p>
         </div>
         <nav class="toc" id="originalToc" hidden aria-label="原文章节导航"><a href="#og-1"><span>A practical guide to building agents</span></a><a href="#og-2"><span>Introduction</span></a><a href="#og-3"><span>What is an agent?</span></a><a href="#og-4"><span>When should you build an agent?</span></a><a href="#og-5"><span>Agent design foundations</span></a><a href="#og-6"><span>Guardrails</span></a><a href="#og-7"><span>Conclusion</span></a></nav>
         <div id="originalHost"><div class="og-h" id="og-1">A practical guide to building agents</div>
       <div class="row" data-atlas-index="00">
-        <div class="cell en">Introduction</div>
-        <div class="cell zh">导言</div>
+        <div class="cell en">A practical guide to building agents.</div>
+        <div class="cell zh">构建 Agent 的实践指南。</div>
       </div><div class="og-h" id="og-2">Introduction</div>
       <div class="row" data-atlas-index="00">
         <div class="cell en">Large language models are becoming increasingly capable of handling complex, multi-step tasks. Advances in reasoning, multimodality, and tool use have unlocked a new category of LLM-powered systems known as agents.</div>
@@ -2519,7 +2533,6 @@
       </div>
       <div class="og-row og-table-row">
         <div class="en og-table-cell">
-          <div class="og-cell-label">Original Table</div>
           
           <table class="source-table">
             <thead><tr><th>Type</th><th>Description</th><th>Examples</th></tr></thead>
@@ -2527,7 +2540,6 @@
           </table>
         </div>
         <div class="zh og-table-cell">
-          <div class="og-cell-label">中文对照表</div>
           
           <table class="source-table">
             <thead><tr><th>类型</th><th>描述</th><th>示例</th></tr></thead>
@@ -3261,8 +3273,9 @@ async def main():
       const data = dict[word.dataset.k];
       const tip = word.querySelector('.tip');
       if (!data || !tip) return;
+      const posHtml = data.pos ? '<span class="pos">' + esc(data.pos) + '</span>' : '';
       tip.innerHTML = '<div class="h"><span class="word">' + esc(data.w) + '</span><button class="speak" type="button">🔊</button></div>'
-        + '<div class="sub"><span class="ipa">' + esc(data.ipa) + '</span><span class="pos">' + esc(data.pos) + '</span><span class="lv">' + esc(data.level) + '</span></div>'
+        + '<div class="sub"><span class="ipa">' + esc(data.ipa) + '</span>' + posHtml + '</div>'
         + '<div class="def">' + esc(data.def) + '</div><div class="eg">' + esc(data.eg) + '<span class="egzh">' + esc(data.egzh) + '</span></div>';
       document.body.appendChild(tip);
       tip.querySelector('.speak')?.addEventListener('click', (event) => speak(data.w, event));

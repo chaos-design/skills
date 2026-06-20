@@ -127,6 +127,14 @@ The generated HTML must be static, self-contained, and functional from `file://`
 3. **Content rendering**
    - Code blocks should preserve a language class when language is known.
    - Tables, code, images, source links, and original sections must be rendered as visible DOM.
+4. **Close-reading evidence chain**
+   - Every close-reading block must pair evidence with analysis.
+   - The “结论输出” module (`conclusion-output`) and each close-reading section
+     (`close-core-section`) are scanned for evidence-only output.
+   - `content.evidence_without_analysis` is an `error` when a block renders source evidence
+     (blockquotes or Source Basis paragraphs) without a paired analysis conclusion (Final Takeaways
+     list, Core Idea, or Principles). Delivery must stop until every evidence block has a
+     source-grounded analysis conclusion.
 
 ## Boundary And Layout Rules
 

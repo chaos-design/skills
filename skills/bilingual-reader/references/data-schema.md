@@ -69,6 +69,11 @@ The parser and renderer must fail with a clear error before producing artifacts 
     "lead": "导语，可用 <b>…</b> 强调。",
     "cards": [
       {"icon": "🧠", "title": "核心区分", "body": "卡片正文，可含 <b>。"}
+    ],
+    // keyPoints 是“结论输出”模块的分析要点，每条都必须基于原文推导。
+    // 缺省时渲染器会回退到 cards，确保结论输出始终先给出分析，再给证据。
+    "keyPoints": [
+      {"label": "核心判断", "text": "从原文推导出的核心结论。"}
     ]
   },
 
@@ -201,6 +206,12 @@ comes from or directly explains the article.
 
 - **`summary.cards[]`**: each card MUST contain exactly `icon`, `title`, and `body`, all strings.
   Do not use `k`/`v`, `ico`, or any extra fields. Use `icon: ""` when no icon is needed.
+- **`summary.keyPoints[]`**: each item has `label` and `text`; both must be source-grounded
+  analysis, never raw quotes. These feed the close-reading “结论输出” analysis column. When
+  `keyPoints` is omitted, the renderer derives analysis from `summary.cards`, so cards must always
+  carry real source-grounded conclusions. Close-reading evidence (the source quote/blockquote
+  column) is only rendered next to a non-empty analysis column; a block must never show evidence
+  without an analysis conclusion.
 - **Summary hover words** (`sections[].rows[].en`): wrap manually with the `<span class="w"
   data-k="KEY">…<span class="tip"></span></span>` pattern. `KEY` must exist in `dict`.
 - **Section Chinese fields**: every `sections[].rows[].zh`, `sections[].cards[].zh`,

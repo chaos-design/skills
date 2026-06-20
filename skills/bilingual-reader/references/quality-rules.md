@@ -24,6 +24,11 @@ Load this document only after the user has approved the normalized Markdown.
 - Translate prose into natural Chinese with full-width punctuation.
 - Every `zh` or `zh*` field under `sections` must contain Chinese translation or Chinese explanation grounded in the corresponding source content. Do not copy English prose into section `zh` fields.
 - Build summary, logic framework, quiz, glossary, and final summary from article evidence.
+- Every close-reading content block must pair evidence with analysis. The “结论输出” module and each
+  close-reading section must present a source-grounded analysis conclusion (`summary.keyPoints` or
+  `summary.cards`-derived takeaways, plus each section's Core Idea / Principles). Never emit a block
+  that shows only source evidence (blockquotes or Source Basis) with no analysis. Every analysis
+  point must be derived from the source through rigorous reasoning, never fabricated.
 - Review `data.json` manually before HTML rendering. Check every translation sentence against the source, correct inaccurate or misleading translation, and keep domain terminology consistent.
 - Verify all close-reading summaries against the approved Markdown. If a summary point, framework node, quiz explanation, glossary note, caption, or final takeaway is not directly supported by the source, delete it or rewrite it from supported source meaning.
 - Do not use plausible but unsupported background knowledge to fill gaps in the article. The close-reading layer may explain the source, but it must not add new claims.

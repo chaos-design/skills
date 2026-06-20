@@ -338,6 +338,113 @@ def contains_suspicious_number(value: str, source_text: str) -> bool:
     return False
 
 
+VOID_TAGS = {
+    "area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta",
+    "param", "source", "track", "wbr", "path", "circle", "rect", "line",
+    "polygon", "polyline", "ellipse", "stop", "use",
+}
+
+
+class CloseReadingAuditor(HTMLParser):
+    """Audit that every close-reading evidence block has a paired analysis block.
+
+    The close-reading layer must never present source evidence without an
+    accompanying analytical conclusion. This parser tracks each conclusion-output
+    and close-core-section block and records whether it contains analysis text and
+    evidence text, so an evidence-only block can be reported as an error.
+    """
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.stack: list[dict[str, Any]] = []
+        self.active: list[dict[str, Any]] = []
+        self.findings: list[dict[str, Any]] = []
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        tag = tag.casefold()
+        if tag in VOID_TAGS:
+            return
+        attr_map = {key.casefold(): (value or "") for key, value in attrs}
+        classes = set(attr_map.get("class", "").split())
+        self.stack.append({"tag": tag, "classes": classes})
+        if tag == "section":
+            kind = (
+                "conclusion"
+                if "conclusion-output" in classes
+                else "core"
+                if "close-core-section" in classes
+                else ""
+            )
+            if kind:
+                self.active.append(
+                    {
+                        "kind": kind,
+                        "depth": len(self.stack),
+                        "id": attr_map.get("id", ""),
+                        "analysis": False,
+                        "evidence": False,
+                    }
+                )
+
+    def handle_startendtag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        return
+
+    def handle_endtag(self, tag: str) -> None:
+        tag = tag.casefold()
+        if tag in VOID_TAGS:
+            return
+        if self.active and tag == "section" and self.active[-1]["depth"] == len(self.stack):
+            self.findings.append(self.active.pop())
+        for index in range(len(self.stack) - 1, -1, -1):
+            if self.stack[index]["tag"] == tag:
+                del self.stack[index:]
+                break
+
+    def handle_data(self, data: str) -> None:
+        if not self.active or not data.strip() or not self.stack:
+            return
+        context = self.active[-1]
+        parent = self.stack[-1]["tag"]
+        ancestor_classes: set[str] = set()
+        for node in self.stack:
+            ancestor_classes |= node["classes"]
+        if context["kind"] == "conclusion":
+            if parent == "blockquote" or any(node["tag"] == "blockquote" for node in self.stack):
+                context["evidence"] = True
+            if "conclusion-list" in ancestor_classes and parent in {"li", "b", "span"}:
+                context["analysis"] = True
+        else:
+            if "core-source" in ancestor_classes and parent == "p":
+                context["evidence"] = True
+            if ("core-thesis" in ancestor_classes and parent == "p") or (
+                "core-principles" in ancestor_classes and parent == "li"
+            ):
+                context["analysis"] = True
+
+
+def review_close_reading(text: str, path: Path, issues: list[Issue]) -> None:
+    """Flag any close-reading block that shows evidence without analysis."""
+
+    auditor = CloseReadingAuditor()
+    try:
+        auditor.feed(text)
+    except Exception:
+        return
+    labels = {"conclusion": "结论输出", "core": "精读章节"}
+    for finding in auditor.findings:
+        anchor = finding.get("id") or finding["kind"]
+        if finding["evidence"] and not finding["analysis"]:
+            add_issue(
+                issues,
+                "error",
+                "content.evidence_without_analysis",
+                "html",
+                f"{path}#{anchor}",
+                f"{labels[finding['kind']]}只有证据区块，缺少配套分析要点。",
+                "为每个证据区块补充基于原文推导的分析结论，或移除孤立证据。",
+            )
+
+
 def review_html(path: Path, issues: list[Issue]) -> str:
     """Review generated HTML content, functionality, and layout risks."""
 
@@ -355,6 +462,7 @@ def review_html(path: Path, issues: list[Issue]) -> str:
         add_issue(issues, "error", "html.forbidden_runtime", "html", str(path), "发现占位符、开发标记或禁用运行时模式。", "重新渲染静态 HTML。")
     review_html_contract(text, collector, path, issues)
     review_layout_boundaries(text, collector, path, issues)
+    review_close_reading(text, path, issues)
     return text
 
 

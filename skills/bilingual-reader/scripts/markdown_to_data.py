@@ -42,6 +42,39 @@ IRREGULAR_INFLECTIONS = {
     "go": ("goes", "went", "gone", "going"),
     "have": ("has", "had", "having"),
 }
+POS_ALIASES = {
+    "noun": "n",
+    "nouns": "n",
+    "verb": "v",
+    "verbs": "v",
+    "adjective": "adj",
+    "adjectives": "adj",
+    "adverb": "adv",
+    "adverbs": "adv",
+    "preposition": "prep",
+    "prepositions": "prep",
+    "conjunction": "conj",
+    "conjunctions": "conj",
+    "pronoun": "pron",
+    "pronouns": "pron",
+    "determiner": "det",
+    "determiners": "det",
+    "interjection": "interj",
+    "interjections": "interj",
+}
+POS_ABBREVIATIONS = (
+    "adj",
+    "adv",
+    "conj",
+    "det",
+    "interj",
+    "n",
+    "num",
+    "phr",
+    "prep",
+    "pron",
+    "v",
+)
 
 BOILERPLATE_PHRASES = (
     "introduction what is an agent? when should you build an agent? agent design foundations guardrails conclusion",
@@ -98,6 +131,23 @@ def clean_text(value: str) -> str:
     """Normalize inline whitespace without changing source wording."""
 
     return re.sub(r"\s+", " ", value).strip()
+
+
+def display_pos(word: str, pos: str) -> str:
+    """Return only a concise grammatical part-of-speech abbreviation."""
+
+    if re.search(r"[\s-]", clean_text(word)):
+        return ""
+    normalized = clean_text(pos).casefold().replace(".", "")
+    if not normalized:
+        return ""
+    tokens = [token for token in re.split(r"[^a-z]+", normalized) if token]
+    for token in tokens:
+        if token in POS_ALIASES:
+            return POS_ALIASES[token]
+        if token in POS_ABBREVIATIONS:
+            return token
+    return ""
 
 
 def strip_inline_markdown(value: str) -> str:
@@ -548,7 +598,7 @@ def build_glossary_contract(entries: list[dict[str, str]]) -> dict[str, object]:
         dictionary[key] = {
             "w": word,
             "ipa": str(entry.get("ipa", "")),
-            "pos": str(entry.get("pos") or ("术语" if entry.get("level") == "术语" else "")),
+            "pos": display_pos(word, str(entry.get("pos", ""))),
             "level": str(entry.get("level") or "术语"),
             "def": str(entry.get("definitionZh", "")),
             "eg": str(entry.get("collocationExample", "")),
