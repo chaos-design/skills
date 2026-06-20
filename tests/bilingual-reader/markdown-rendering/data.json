@@ -1068,6 +1068,28 @@
                 "Agent 本身也可以作为其他 Agent 的工具，参见编排部分的管理者模式。",
                 "退款 Agent、研究 Agent、写作 Agent。"
               ]
+              ],
+              "zhHtmlRows": [
+                [
+                  "类型",
+                  "描述",
+                  "示例"
+                ],
+                [
+                  "数据",
+                  "使 Agent 能够检索执行工作流所需的上下文和信息。",
+                  "查询交易数据库或 CRM 等系统，读取 PDF 文档，或搜索网页。"
+                ],
+                [
+                  "操作",
+                  "使 Agent 能够与系统交互并采取行动，例如向数据库添加新信息、更新记录或发送消息。",
+                  "发送电子邮件和短信，更新 CRM 记录，或将客服工单转交给人工处理。"
+                ],
+                [
+                  "编排",
+                  "Agent 本身也可以作为其他 Agent 的工具，参见编排部分的管理者模式。",
+                  "退款 Agent、研究 Agent、写作 Agent。"
+                ]
             ]
           },
           {
@@ -3238,7 +3260,7 @@
         "support"
       ],
       [
-        "\\b(?:processing|processes|processed|process)\\b",
+        "\\b(?:processing|processed|processes|process)\\b",
         "i",
         "process"
       ],
@@ -3263,7 +3285,7 @@
         "conventional"
       ],
       [
-        "\\b(?:automating|automates|automated|automate)\\b",
+        "\\b(?:automating|automated|automates|automate)\\b",
         "i",
         "automate"
       ],
@@ -3418,7 +3440,7 @@
         "irreversible"
       ],
       [
-        "\\b(?:advancing|advances|advanced|advance)\\b",
+        "\\b(?:advancing|advanced|advances|advance)\\b",
         "i",
         "advance"
       ],
@@ -3448,12 +3470,12 @@
         "external"
       ],
       [
-        "\\b(?:streamlining|streamlines|streamlined|streamline)\\b",
+        "\\b(?:streamlining|streamlined|streamlines|streamline)\\b",
         "i",
         "streamline"
       ],
       [
-        "\\b(?:executing|executes|executed|execute)\\b",
+        "\\b(?:executing|executed|executes|execute)\\b",
         "i",
         "execute"
       ],
@@ -3463,7 +3485,7 @@
         "sequence"
       ],
       [
-        "\\b(?:resolving|resolves|resolved|resolve)\\b",
+        "\\b(?:resolving|resolved|resolves|resolve)\\b",
         "i",
         "resolve"
       ],
@@ -3478,7 +3500,7 @@
         "independence"
       ],
       [
-        "\\b(?:leveraging|leverages|leveraged|leverage)\\b",
+        "\\b(?:leveraging|leveraged|leverages|leverage)\\b",
         "i",
         "leverage"
       ],
@@ -3558,7 +3580,7 @@
         "conditional"
       ],
       [
-        "\\b(?:delegating|delegates|delegated|delegate)\\b",
+        "\\b(?:delegating|delegated|delegates|delegate)\\b",
         "i",
         "delegate"
       ],
@@ -3568,7 +3590,7 @@
         "irrelevant"
       ],
       [
-        "\\b(?:breaching|breached|breaches|breach)\\b",
+        "\\b(?:breaching|breaches|breached|breach)\\b",
         "i",
         "breach"
       ],

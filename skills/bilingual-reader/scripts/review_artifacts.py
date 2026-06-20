@@ -36,6 +36,10 @@ FORBIDDEN_HTML_RE = re.compile(
     r"__DATA_JSON__|__THEME_JSON__|\b(?:DOC|TPL|DOM)\d+\b|fetch\s*\(|type=[\"']module[\"']",
     re.IGNORECASE,
 )
+APPROVED_CODE_HIGHLIGHT_ASSETS = {
+    "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css",
+    "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js",
+}
 
 
 @dataclass
@@ -226,8 +230,10 @@ def review_data_ranges(data: dict[str, Any], path: Path, issues: list[Issue]) ->
         add_issue(issues, "error", "data.sections_range", "data", "sections", "sections 数量超出 1-80 合理范围。", "检查是否缺失或重复生成。")
     if isinstance(quiz, list) and len(quiz) > 20:
         add_issue(issues, "warning", "data.quiz_range", "data", "quiz", "quiz 数量超过 20。", "保留高价值题目，避免噪声。")
-    if isinstance(glossary, list) and len(glossary) > 120:
-        add_issue(issues, "warning", "data.glossary_range", "data", "glossary.entries", "词汇表超过 120 项。", "减少低价值或重复词条。")
+    if isinstance(glossary, list) and len(glossary) > 160:
+        add_issue(issues, "warning", "data.glossary_range", "data", "glossary.entries", "词汇表超过 160 项。", "减少低价值或重复词条。")
+    if isinstance(sections, list) and len(sections) >= 4 and isinstance(glossary, list) and 0 < len(glossary) < 60:
+        add_issue(issues, "warning", "data.glossary_sparse", "data", "glossary.entries", "中等及以上文章的词汇表少于 60 项。", "优先补充来源中的高价值词、短语和领域术语，避免无关填充。")
     source_url = str(data.get("metadata", {}).get("sourceUrl") or data.get("article", {}).get("sourceUrl") or "")
     if source_url and not source_url.startswith(("http://", "https://")):
         add_issue(issues, "error", "data.invalid_source_url", "data", str(path), "sourceUrl 不是 http(s) URL。", "使用真实来源 URL。")
@@ -483,8 +489,24 @@ def review_html_contract(text: str, collector: TagCollector, path: Path, issues:
     for mode in ("summary", "original", "glossary"):
         if not any(attrs.get("data-mode") == mode for attrs in buttons):
             add_issue(issues, "error", "html.missing_mode_button", "html", mode, f"缺少 `{mode}` 模式按钮。", "修复分段控件。")
-    if "<pre><code" in text and "language-" not in text:
+    has_code_blocks = "<pre><code" in text
+    if has_code_blocks and "language-" not in text:
         add_issue(issues, "warning", "html.code_language_missing", "html", str(path), "代码块缺少 language class。", "保留代码语言信息。")
+    if has_code_blocks:
+        stylesheet_urls = [attrs.get("href", "") for tag, attrs in collector.tags if tag == "link" and attrs.get("rel") == "stylesheet"]
+        script_urls = [attrs.get("src", "") for tag, attrs in collector.tags if tag == "script"]
+        has_highlight_css = any(is_approved_code_highlight_asset(url) and url.endswith(".css") for url in stylesheet_urls)
+        has_highlight_script = any(is_approved_code_highlight_asset(url) and url.endswith(".min.js") for url in script_urls)
+        if not has_highlight_css or not has_highlight_script:
+            add_issue(
+                issues,
+                "error",
+                "html.code_highlight_missing",
+                "html",
+                str(path),
+                "页面包含代码块但缺少批准的代码高亮 SDK。",
+                "保留 Highlight.js CSS 与脚本，同时确保代码内容仍以 <pre><code> 可见。",
+            )
 
 
 def review_layout_boundaries(text: str, collector: TagCollector, path: Path, issues: list[Issue]) -> None:
@@ -502,9 +524,17 @@ def review_layout_boundaries(text: str, collector: TagCollector, path: Path, iss
         check_image_bounds(attrs, index, path, issues)
     for tag, attrs in collector.tags:
         if tag == "link" and attrs.get("rel") == "stylesheet" and attrs.get("href", "").startswith(("http://", "https://")):
-            add_issue(issues, "warning", "html.external_stylesheet", "html", str(path), f"外部样式：{attrs.get('href')}", "最终交付应内联 CSS。")
+            if not is_approved_code_highlight_asset(attrs.get("href", "")):
+                add_issue(issues, "warning", "html.external_stylesheet", "html", str(path), f"外部样式：{attrs.get('href')}", "最终交付应内联 CSS，代码高亮 SDK 除外。")
         if tag == "script" and attrs.get("src", "").startswith(("http://", "https://")):
-            add_issue(issues, "warning", "html.external_script", "html", str(path), f"外部脚本：{attrs.get('src')}", "最终交付应内联 JS。")
+            if not is_approved_code_highlight_asset(attrs.get("src", "")):
+                add_issue(issues, "warning", "html.external_script", "html", str(path), f"外部脚本：{attrs.get('src')}", "最终交付应内联 JS，代码高亮 SDK 除外。")
+
+
+def is_approved_code_highlight_asset(url: str) -> bool:
+    """Return true for approved external assets used only for code highlighting."""
+
+    return url in APPROVED_CODE_HIGHLIGHT_ASSETS
 
 
 def check_image_bounds(attrs: dict[str, str], index: int, path: Path, issues: list[Issue]) -> None:

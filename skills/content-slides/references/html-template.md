@@ -423,7 +423,7 @@ Pick the layout that fits the content. All are authored at 1920×1080.
 - **Statement / quote** — one large centered line; use for a punchy idea or pulled quote with attribution.
 - **Two-column** — `display:grid; grid-template-columns: 1fr 1fr` for text + image, or compare/contrast.
 - **Stat / hero number** — one giant number (`font-size: 240px`) + a short caption.
-- **Card grid** — `display:grid; grid-template-columns: repeat(3, 1fr); gap` for 3–6 parallel items.
+- **Card grid** — use a centered grid for 3–6 parallel items. Avoid a fixed `repeat(3, 1fr)` when the item count is even: 2 and 4 cards must be centered as balanced two-column groups, and 6 cards may use a balanced 3×2 grid. For 4 cards, prefer `grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: <comfortable width>; margin-inline: auto;` so the layout becomes 2×2 instead of 3+1 with a left-aligned orphan.
 - **Corner radius** — use moderate radii (`12-28px`) for cards, panels, quote blocks, stat blocks, terminal blocks, and image frames when the style supports it. Keep `--module-radius: 0` or very small radii for Brutalist, Swiss, editorial-grid, table-rule, or intentionally hard-edged geometric presets.
 
 Common pitfalls:

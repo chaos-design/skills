@@ -1,0 +1,26 @@
+{
+  "status": "pass",
+  "counts": {
+    "error": 0,
+    "warning": 1,
+    "info": 1
+  },
+  "issues": [
+    {
+      "severity": "warning",
+      "code": "markdown.h1_count",
+      "artifact": "markdown",
+      "path": "tests/bilingual-reader/a-practical-guide-to-building-ai-agents.md",
+      "message": "H1 标题数量不是 1。",
+      "suggestion": "保留一个来源主标题。"
+    },
+    {
+      "severity": "info",
+      "code": "content.manual_review_required",
+      "artifact": "data",
+      "path": "tests/bilingual-reader/markdown-rendering/data.json",
+      "message": "事实准确性和是否胡编乱造仍需人工审查最终确认。",
+      "suggestion": "逐句对照 Markdown 审阅翻译、总结、quiz 和 glossary。"
+    }
+  ]
+}

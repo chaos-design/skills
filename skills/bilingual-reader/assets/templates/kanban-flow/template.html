@@ -183,8 +183,8 @@ structure: 项目看板顶栏 + 无统计数据的任务流 hero + 看板列章�
   .gloss-group .gg-desc{font-size:14.5px; color:var(--text); font-weight:800}
   .gloss-group .gg-count{display:inline-flex; align-items:center; margin-left:6px; font-size:12px; color:var(--muted); font-weight:800; line-height:1.4;
     background:color-mix(in srgb,var(--accent2) 10%,var(--panel2)); border:1px solid color-mix(in srgb,var(--accent2) 24%,var(--border)); border-radius:999px; padding:2px 9px}
-  .gloss-grid-inner{--gloss-card-min:240px; --gloss-card-max:340px; display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,var(--gloss-card-min)),var(--gloss-card-max))); justify-content:start; gap:16px; margin-bottom:14px}
-  .gloss-item{width:100%; min-width:0; max-width:var(--gloss-card-max); background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); padding:18px 20px;
+  .gloss-grid-inner{--gloss-card-min:240px; display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,var(--gloss-card-min)),1fr)); grid-auto-rows:1fr; align-items:stretch; gap:16px; margin-bottom:14px}
+  .gloss-item{width:100%; height:100%; min-width:0; display:flex; flex-direction:column; background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); padding:18px 20px;
     box-shadow:0 4px 14px rgba(30,37,48,.05); transition:.2s}
   .gloss-item:hover{transform:translateY(-2px); box-shadow:0 10px 26px rgba(30,37,48,.1)}
   .gloss-item .grow{display:flex; align-items:center; gap:10px}

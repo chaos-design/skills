@@ -2,97 +2,25 @@
   "status": "pass",
   "counts": {
     "error": 0,
-    "warning": 29,
-    "info": 0
+    "warning": 3,
+    "info": 1
   },
   "issues": [
     {
       "severity": "warning",
-      "code": "content.no_markdown_reference",
+      "code": "markdown.h1_count",
+      "artifact": "markdown",
+      "path": "tests/bilingual-reader/a-practical-guide-to-building-ai-agents.md",
+      "message": "H1 标题数量不是 1。",
+      "suggestion": "保留一个来源主标题。"
+    },
+    {
+      "severity": "info",
+      "code": "content.manual_review_required",
       "artifact": "data",
       "path": "tests/bilingual-reader/data.json",
-      "message": "未提供 Markdown，无法做来源忠实性自动比对。",
-      "suggestion": "同时传入 `--markdown`。"
-    },
-    {
-      "severity": "warning",
-      "code": "html.external_stylesheet",
-      "artifact": "html",
-      "path": "tests/bilingual-reader/aurora-dashboard/index.html",
-      "message": "外部样式：https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css",
-      "suggestion": "最终交付应内联 CSS。"
-    },
-    {
-      "severity": "warning",
-      "code": "html.external_script",
-      "artifact": "html",
-      "path": "tests/bilingual-reader/aurora-dashboard/index.html",
-      "message": "外部脚本：https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js",
-      "suggestion": "最终交付应内联 JS。"
-    },
-    {
-      "severity": "warning",
-      "code": "html.external_stylesheet",
-      "artifact": "html",
-      "path": "tests/bilingual-reader/blueprint-grid/index.html",
-      "message": "外部样式：https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css",
-      "suggestion": "最终交付应内联 CSS。"
-    },
-    {
-      "severity": "warning",
-      "code": "html.external_script",
-      "artifact": "html",
-      "path": "tests/bilingual-reader/blueprint-grid/index.html",
-      "message": "外部脚本：https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js",
-      "suggestion": "最终交付应内联 JS。"
-    },
-    {
-      "severity": "warning",
-      "code": "html.external_stylesheet",
-      "artifact": "html",
-      "path": "tests/bilingual-reader/broadsheet/index.html",
-      "message": "外部样式：https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css",
-      "suggestion": "最终交付应内联 CSS。"
-    },
-    {
-      "severity": "warning",
-      "code": "html.external_script",
-      "artifact": "html",
-      "path": "tests/bilingual-reader/broadsheet/index.html",
-      "message": "外部脚本：https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js",
-      "suggestion": "最终交付应内联 JS。"
-    },
-    {
-      "severity": "warning",
-      "code": "html.external_stylesheet",
-      "artifact": "html",
-      "path": "tests/bilingual-reader/card-atlas/index.html",
-      "message": "外部样式：https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css",
-      "suggestion": "最终交付应内联 CSS。"
-    },
-    {
-      "severity": "warning",
-      "code": "html.external_script",
-      "artifact": "html",
-      "path": "tests/bilingual-reader/card-atlas/index.html",
-      "message": "外部脚本：https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js",
-      "suggestion": "最终交付应内联 JS。"
-    },
-    {
-      "severity": "warning",
-      "code": "html.external_stylesheet",
-      "artifact": "html",
-      "path": "tests/bilingual-reader/command-center/index.html",
-      "message": "外部样式：https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css",
-      "suggestion": "最终交付应内联 CSS。"
-    },
-    {
-      "severity": "warning",
-      "code": "html.external_script",
-      "artifact": "html",
-      "path": "tests/bilingual-reader/command-center/index.html",
-      "message": "外部脚本：https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js",
-      "suggestion": "最终交付应内联 JS。"
+      "message": "事实准确性和是否胡编乱造仍需人工审查最终确认。",
+      "suggestion": "逐句对照 Markdown 审阅翻译、总结、quiz 和 glossary。"
     },
     {
       "severity": "warning",
@@ -107,134 +35,6 @@
       "code": "html.external_script",
       "artifact": "html",
       "path": "tests/bilingual-reader/compact-study/index.html",
-      "message": "外部脚本：https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js",
-      "suggestion": "最终交付应内联 JS。"
-    },
-    {
-      "severity": "warning",
-      "code": "html.external_stylesheet",
-      "artifact": "html",
-      "path": "tests/bilingual-reader/editorial-split/index.html",
-      "message": "外部样式：https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css",
-      "suggestion": "最终交付应内联 CSS。"
-    },
-    {
-      "severity": "warning",
-      "code": "html.external_script",
-      "artifact": "html",
-      "path": "tests/bilingual-reader/editorial-split/index.html",
-      "message": "外部脚本：https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js",
-      "suggestion": "最终交付应内联 JS。"
-    },
-    {
-      "severity": "warning",
-      "code": "html.external_stylesheet",
-      "artifact": "html",
-      "path": "tests/bilingual-reader/gradient-magazine/index.html",
-      "message": "外部样式：https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css",
-      "suggestion": "最终交付应内联 CSS。"
-    },
-    {
-      "severity": "warning",
-      "code": "html.external_script",
-      "artifact": "html",
-      "path": "tests/bilingual-reader/gradient-magazine/index.html",
-      "message": "外部脚本：https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js",
-      "suggestion": "最终交付应内联 JS。"
-    },
-    {
-      "severity": "warning",
-      "code": "html.external_stylesheet",
-      "artifact": "html",
-      "path": "tests/bilingual-reader/ink-scroll/index.html",
-      "message": "外部样式：https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css",
-      "suggestion": "最终交付应内联 CSS。"
-    },
-    {
-      "severity": "warning",
-      "code": "html.external_script",
-      "artifact": "html",
-      "path": "tests/bilingual-reader/ink-scroll/index.html",
-      "message": "外部脚本：https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js",
-      "suggestion": "最终交付应内联 JS。"
-    },
-    {
-      "severity": "warning",
-      "code": "html.external_stylesheet",
-      "artifact": "html",
-      "path": "tests/bilingual-reader/kanban-flow/index.html",
-      "message": "外部样式：https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css",
-      "suggestion": "最终交付应内联 CSS。"
-    },
-    {
-      "severity": "warning",
-      "code": "html.external_script",
-      "artifact": "html",
-      "path": "tests/bilingual-reader/kanban-flow/index.html",
-      "message": "外部脚本：https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js",
-      "suggestion": "最终交付应内联 JS。"
-    },
-    {
-      "severity": "warning",
-      "code": "html.external_stylesheet",
-      "artifact": "html",
-      "path": "tests/bilingual-reader/midnight-lab/index.html",
-      "message": "外部样式：https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css",
-      "suggestion": "最终交付应内联 CSS。"
-    },
-    {
-      "severity": "warning",
-      "code": "html.external_script",
-      "artifact": "html",
-      "path": "tests/bilingual-reader/midnight-lab/index.html",
-      "message": "外部脚本：https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js",
-      "suggestion": "最终交付应内联 JS。"
-    },
-    {
-      "severity": "warning",
-      "code": "html.external_stylesheet",
-      "artifact": "html",
-      "path": "tests/bilingual-reader/mono-focus/index.html",
-      "message": "外部样式：https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css",
-      "suggestion": "最终交付应内联 CSS。"
-    },
-    {
-      "severity": "warning",
-      "code": "html.external_script",
-      "artifact": "html",
-      "path": "tests/bilingual-reader/mono-focus/index.html",
-      "message": "外部脚本：https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js",
-      "suggestion": "最终交付应内联 JS。"
-    },
-    {
-      "severity": "warning",
-      "code": "html.external_stylesheet",
-      "artifact": "html",
-      "path": "tests/bilingual-reader/paper-notes/index.html",
-      "message": "外部样式：https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css",
-      "suggestion": "最终交付应内联 CSS。"
-    },
-    {
-      "severity": "warning",
-      "code": "html.external_script",
-      "artifact": "html",
-      "path": "tests/bilingual-reader/paper-notes/index.html",
-      "message": "外部脚本：https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js",
-      "suggestion": "最终交付应内联 JS。"
-    },
-    {
-      "severity": "warning",
-      "code": "html.external_stylesheet",
-      "artifact": "html",
-      "path": "tests/bilingual-reader/synthwave-arcade/index.html",
-      "message": "外部样式：https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css",
-      "suggestion": "最终交付应内联 CSS。"
-    },
-    {
-      "severity": "warning",
-      "code": "html.external_script",
-      "artifact": "html",
-      "path": "tests/bilingual-reader/synthwave-arcade/index.html",
       "message": "外部脚本：https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js",
       "suggestion": "最终交付应内联 JS。"
     }

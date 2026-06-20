@@ -4,17 +4,18 @@ Load this document only after the user has approved the normalized Markdown.
 
 ## Source Fidelity
 
-- Use the approved Markdown as the source of truth for title, source URL, body text, images, links, tables, and code blocks.
-- Functional tests must use real source extraction and real generated learning
-  content. Do not mark runs that use demo translators, mock data, cached
-  fallbacks, or hand-crafted substitutions as successful skill tests.
+- Use the approved Markdown as the source of truth for title, source URL, publication time, body text, images, links, tables, and code blocks.
+- Functional tests must use real source extraction and reviewed learning
+  content. Do not mark runs that use unreviewed translators, cached fallbacks,
+  or hand-crafted substitutions as successful skill tests.
 - If source fetching, image access, translation, or learning-content generation
   cannot run in the current environment, stop and report the test as blocked
   or failed instead of generating substitute output.
 - Do not invent source content, source images, captions, metadata, quiz evidence, or glossary terms.
 - Do not invent template descriptions or descriptive page modules. Template-related copy must be derived from the approved Markdown and the selected template metadata, and unsupported details must be omitted or identified as source gaps.
-- Preserve source code blocks as content. Do not translate identifiers, comments, strings, CLI commands, API URLs, config keys, placeholders, indentation, or line breaks.
-- Preserve source tables in the original view as editable HTML `<table>` elements in reading order. Do not translate tables into bilingual rows.
+- Preserve source code blocks as content. Do not translate identifiers, comments, strings, CLI commands, API URLs, config keys, placeholders, indentation, or line breaks. Keep the approved code highlighting SDK so fenced code remains syntax-highlighted while the raw `<pre><code>` content stays readable without JavaScript.
+- Preserve source tables in the original view as editable HTML `<table>` elements in reading order. Translate table text in the paired Chinese table while preserving table structure and inline styles; do not flatten tables into bilingual rows.
+- Preserve links, lists, bold, italic, blockquotes, and tables as styled translated HTML. Images and code blocks must remain source-only and must not be translated.
 - Preserve accessible source images in the original view near their source position. Inline image bytes as data URIs when accessible. Render source images centered in a fixed 720x405 bounded image box with `object-fit: contain`. If an image is referenced but inaccessible, state the gap; do not substitute generated, stock, decorative, or placeholder images.
 - For screenshots or scans, OCR only visible English text in reading order and state uncertainty for unclear regions.
 
@@ -35,7 +36,7 @@ Load this document only after the user has approved the normalized Markdown.
 - Quiz questions must include correct answer, wrong-answer reason, and source evidence.
 - The glossary should use high-value words, collocations, and domain terms from the article.
 - Use CEFR levels `B1`, `B2`, `C1`, `C2`, and `术语`.
-- Medium articles should include 40-60 useful glossary entries when enough source terms exist. Do not pad unrelated terms.
+- Medium articles should include 60-90 useful glossary entries when enough source terms exist. Long articles may include up to 120 high-value entries. Do not pad unrelated terms.
 - Normal glossary entries need `w`, `ipa`, `pos`, `level`, `def`, `eg`, and `egzh`.
 - `术语` entries may leave `ipa` empty and use `pos: "术语"`.
 
@@ -69,5 +70,7 @@ Before delivery, verify that generated HTML contains:
 - no unresolved runtime data blobs;
 - no invented replacement images;
 - no unconstrained original-view image dimensions;
-- no translated code blocks;
-- no translated table rows.
+- no translated images or code blocks;
+- code blocks keep `language-*` classes and approved Highlight.js CSS/JS for syntax highlighting;
+- no flattened table translations;
+- translated links, lists, bold, italic, blockquotes, and tables preserve their source structure.

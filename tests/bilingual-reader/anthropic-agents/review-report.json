@@ -1,0 +1,26 @@
+{
+  "status": "pass",
+  "counts": {
+    "error": 0,
+    "warning": 1,
+    "info": 1
+  },
+  "issues": [
+    {
+      "severity": "warning",
+      "code": "data.glossary_sparse",
+      "artifact": "data",
+      "path": "glossary.entries",
+      "message": "中等及以上文章的词汇表少于 60 项。",
+      "suggestion": "优先补充来源中的高价值词、短语和领域术语，避免无关填充。"
+    },
+    {
+      "severity": "info",
+      "code": "content.manual_review_required",
+      "artifact": "data",
+      "path": "tests/bilingual-reader/anthropic-agents/data.json",
+      "message": "事实准确性和是否胡编乱造仍需人工审查最终确认。",
+      "suggestion": "逐句对照 Markdown 审阅翻译、总结、quiz 和 glossary。"
+    }
+  ]
+}

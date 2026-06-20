@@ -10,12 +10,13 @@ from __future__ import annotations
 
 import argparse
 from datetime import datetime
+import html
 import json
 import re
 import sys
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Callable, Iterable, Optional, Union
+from typing import Callable, Iterable, Optional
 
 
 DEV_MARKER_RE = re.compile(r"\b(?:DOC|TPL|DOM)\d+\b")
@@ -23,10 +24,20 @@ PLACEHOLDER_RE = re.compile(r"__(?:[A-Z][A-Z0-9_]*|DATA_JSON|THEME_JSON)__")
 SOURCE_RE = re.compile(r"^>\s*Source:\s*(\S+)\s*$", re.IGNORECASE)
 FETCHED_RE = re.compile(r"^>\s*Fetched:\s*(.+?)\s*$", re.IGNORECASE)
 FETCHED_AT_RE = re.compile(r"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$")
+PUBLISHED_RE = re.compile(r"^(?:Published|Date|发布时间)[:：]?\s+(.+?)\s*$", re.IGNORECASE)
 HEADING_RE = re.compile(r"^(#{1,6})\s+(.+?)\s*$")
 IMAGE_RE = re.compile(r"^!\[([^\]]*)\]\(([^)\s]+)(?:\s+\"([^\"]*)\")?\)\s*$")
 FENCE_RE = re.compile(r"^```([A-Za-z0-9_+.-]*)\s*$")
+LIST_ITEM_RE = re.compile(r"^(\s*)([-*+]|\d+[.)])\s+(.+?)\s*$")
+BLOCKQUOTE_RE = re.compile(r"^\s*>\s?(.*)$")
 TABLE_SEPARATOR_RE = re.compile(r"^\s*\|?\s*:?-{3,}:?\s*(?:\|\s*:?-{3,}:?\s*)+\|?\s*$")
+LINK_RE = re.compile(r"^\[([^\]]+)\]\(([^)\s]+)(?:\s+\"([^\"]*)\")?\)$")
+IMAGE_TOKEN_RE = re.compile(r"^!\[([^\]]*)\]\(([^)\s]+)(?:\s+\"([^\"]*)\")?\)$")
+INLINE_TOKEN_RE = re.compile(
+    r"(`[^`\n]+`|!\[[^\]]*\]\([^)]+\)|\[[^\]]+\]\([^)]+\)|"
+    r"\*\*[^*\n]+(?:\*[^*\n]+)*\*\*|__[^_\n]+(?:_[^_\n]+)*__|"
+    r"\*[^*\n]+\*|_[^_\n]+_)"
+)
 GLOSSARY_KEY_RE = re.compile(r"[^a-z0-9]+")
 CHINESE_TEXT_RE = re.compile(r"[\u3400-\u9fff]")
 CONTROL_CHAR_RE = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
@@ -36,6 +47,8 @@ MAX_TABLE_ROWS = 200
 MAX_TABLE_COLUMNS = 20
 MAX_TABLE_CELL_CHARS = 2_000
 MAX_CODE_BLOCK_CHARS = 200_000
+ORIGINAL_ROW_TARGET_CHARS = 420
+ORIGINAL_ROW_MIN_CHARS = 140
 IRREGULAR_INFLECTIONS = {
     "be": ("am", "are", "is", "was", "were", "been", "being"),
     "do": ("does", "did", "done", "doing"),
@@ -93,6 +106,7 @@ class Metadata:
     title: str
     source_url: str
     fetched_at: str = ""
+    published_at: str = ""
 
 
 @dataclass
@@ -101,6 +115,8 @@ class Block:
 
     type: str
     text: str = ""
+    html: str = ""
+    markdown: str = ""
     level: int = 0
     language: str = ""
     code: str = ""
@@ -108,6 +124,8 @@ class Block:
     alt: str = ""
     caption: str = ""
     rows: list[list[str]] = field(default_factory=list)
+    html_rows: list[list[str]] = field(default_factory=list)
+    markdown_rows: list[list[str]] = field(default_factory=list)
 
 
 @dataclass
@@ -191,6 +209,7 @@ def extract_metadata(lines: list[str]) -> Metadata:
     title = ""
     source_url = ""
     fetched_at = ""
+    published_at = ""
     h1_count = 0
     for line in lines:
         match = HEADING_RE.match(line)
@@ -204,12 +223,16 @@ def extract_metadata(lines: list[str]) -> Metadata:
             source_url = source_match.group(1)
         if fetched_match:
             fetched_at = fetched_match.group(1)
+        if not published_at:
+            published_match = PUBLISHED_RE.match(line.strip())
+            if published_match:
+                published_at = clean_text(published_match.group(1))
     if not title:
         raise ConversionError("Markdown title is missing.")
     if not source_url:
         raise ConversionError("Source URL metadata is missing.")
     validate_metadata(source_url, fetched_at)
-    return Metadata(title=title, source_url=source_url, fetched_at=fetched_at)
+    return Metadata(title=title, source_url=source_url, fetched_at=fetched_at, published_at=published_at)
 
 
 def validate_metadata(source_url: str, fetched_at: str) -> None:
@@ -237,7 +260,7 @@ def parse_blocks(lines: list[str]) -> list[Block]:
         if not line.strip():
             index += 1
             continue
-        if SOURCE_RE.match(line) or FETCHED_RE.match(line):
+        if SOURCE_RE.match(line) or FETCHED_RE.match(line) or is_published_line(line):
             index += 1
             continue
         next_index = parse_next_block(lines, index, blocks)
@@ -254,7 +277,14 @@ def parse_next_block(lines: list[str], index: int, blocks: list[Block]) -> int:
         return parse_code_block(lines, index, fence.group(1), blocks)
     heading = HEADING_RE.match(line)
     if heading:
-        blocks.append(Block(type="heading", level=len(heading.group(1)), text=strip_inline_markdown(heading.group(2))))
+        blocks.append(
+            Block(
+                type="heading",
+                level=len(heading.group(1)),
+                text=strip_inline_markdown(heading.group(2)),
+                html=render_inline_markdown(heading.group(2)),
+            )
+        )
         return index + 1
     image = IMAGE_RE.match(line)
     if image:
@@ -263,6 +293,10 @@ def parse_next_block(lines: list[str], index: int, blocks: list[Block]) -> int:
         return index + 1
     if looks_like_table(lines, index):
         return parse_table_block(lines, index, blocks)
+    if LIST_ITEM_RE.match(line):
+        return parse_list_block(lines, index, blocks)
+    if BLOCKQUOTE_RE.match(line):
+        return parse_blockquote(lines, index, blocks)
     return parse_paragraph(lines, index, blocks)
 
 
@@ -299,9 +333,13 @@ def parse_table_block(lines: list[str], index: int, blocks: list[Block]) -> int:
             table_lines.append(lines[cursor])
         cursor += 1
     rows = [parse_table_row(line) for line in table_lines]
+    html_rows = [parse_table_html_row(line) for line in table_lines]
+    markdown_rows = [parse_table_markdown_row(line) for line in table_lines]
     rows = [row for row in rows if row]
+    html_rows = [row for row in html_rows if row]
+    markdown_rows = [row for row in markdown_rows if row]
     validate_table_rows(rows)
-    blocks.append(Block(type="table", rows=rows))
+    blocks.append(Block(type="table", rows=rows, html_rows=html_rows, markdown_rows=markdown_rows))
     return cursor
 
 
@@ -310,6 +348,20 @@ def parse_table_row(line: str) -> list[str]:
 
     value = line.strip().strip("|")
     return [strip_inline_markdown(cell) for cell in value.split("|")]
+
+
+def parse_table_html_row(line: str) -> list[str]:
+    """Parse one Markdown table row into safe inline HTML cells."""
+
+    value = line.strip().strip("|")
+    return [render_inline_markdown(cell.strip()) for cell in value.split("|")]
+
+
+def parse_table_markdown_row(line: str) -> list[str]:
+    """Parse one Markdown table row while preserving inline Markdown markers."""
+
+    value = line.strip().strip("|")
+    return [cell.strip() for cell in value.split("|")]
 
 
 def validate_table_rows(rows: list[list[str]]) -> None:
@@ -343,16 +395,62 @@ def validate_image_src(src: str) -> None:
 
 
 def parse_paragraph(lines: list[str], index: int, blocks: list[Block]) -> int:
-    """Parse a paragraph, list item group, or blockquote into prose."""
+    """Parse a paragraph into prose and safe HTML."""
 
     parts: list[str] = []
+    raw_parts: list[str] = []
     cursor = index
     while cursor < len(lines) and can_continue_paragraph(lines[cursor]):
         parts.append(clean_markdown_line(lines[cursor]))
+        raw_parts.append(lines[cursor].strip())
         cursor += 1
     text = strip_inline_markdown(" ".join(part for part in parts if part))
     if text and not is_boilerplate(text):
-        blocks.append(Block(type="paragraph", text=text))
+        raw = " ".join(part for part in raw_parts if part)
+        blocks.append(Block(type="paragraph", text=text, html=f"<p>{render_inline_markdown(raw)}</p>", markdown=raw))
+    return cursor
+
+
+def parse_list_block(lines: list[str], index: int, blocks: list[Block]) -> int:
+    """Parse a consecutive Markdown list into one source block."""
+
+    items: list[str] = []
+    ordered = False
+    cursor = index
+    while cursor < len(lines):
+        match = LIST_ITEM_RE.match(lines[cursor])
+        if not match:
+            break
+        marker = match.group(2)
+        if not items:
+            ordered = bool(re.match(r"\d+[.)]", marker))
+        elif ordered != bool(re.match(r"\d+[.)]", marker)):
+            break
+        items.append(match.group(3))
+        cursor += 1
+    text = clean_text(" ".join(strip_inline_markdown(item) for item in items))
+    if text and not is_boilerplate(text):
+        tag = "ol" if ordered else "ul"
+        item_html = "".join(f"<li>{render_inline_markdown(item)}</li>" for item in items)
+        blocks.append(Block(type="paragraph", text=text, html=f"<{tag}>{item_html}</{tag}>", markdown="\n".join(items)))
+    return cursor
+
+
+def parse_blockquote(lines: list[str], index: int, blocks: list[Block]) -> int:
+    """Parse a consecutive Markdown blockquote into one source block."""
+
+    quote_lines: list[str] = []
+    cursor = index
+    while cursor < len(lines):
+        match = BLOCKQUOTE_RE.match(lines[cursor])
+        if not match:
+            break
+        quote_lines.append(match.group(1))
+        cursor += 1
+    raw = " ".join(line.strip() for line in quote_lines if line.strip())
+    text = strip_inline_markdown(raw)
+    if text and not SOURCE_RE.match(f"> {raw}") and not FETCHED_RE.match(f"> {raw}") and not is_boilerplate(text):
+        blocks.append(Block(type="paragraph", text=text, html=f"<blockquote>{render_inline_markdown(raw)}</blockquote>", markdown=raw))
     return cursor
 
 
@@ -361,7 +459,90 @@ def can_continue_paragraph(line: str) -> bool:
 
     if not line.strip():
         return False
-    return not (HEADING_RE.match(line) or FENCE_RE.match(line) or IMAGE_RE.match(line))
+    if is_published_line(line):
+        return False
+    return not (
+        HEADING_RE.match(line)
+        or FENCE_RE.match(line)
+        or IMAGE_RE.match(line)
+        or LIST_ITEM_RE.match(line)
+        or BLOCKQUOTE_RE.match(line)
+    )
+
+
+def render_inline_markdown(value: str) -> str:
+    """Render supported inline Markdown into safe HTML."""
+
+    text = str(value or "")
+    output: list[str] = []
+    cursor = 0
+    for match in INLINE_TOKEN_RE.finditer(text):
+        output.append(html.escape(text[cursor:match.start()]))
+        output.append(render_inline_token(match.group(0)))
+        cursor = match.end()
+    output.append(html.escape(text[cursor:]))
+    return "".join(output)
+
+
+def render_inline_token(token: str) -> str:
+    """Render one inline Markdown token."""
+
+    if token.startswith("`") and token.endswith("`"):
+        return f"<code>{html.escape(token[1:-1])}</code>"
+    if token.startswith("!["):
+        return render_inline_image(token)
+    if token.startswith("["):
+        return render_inline_link(token)
+    if token.startswith(("**", "__")) and token.endswith(("**", "__")):
+        return f"<strong>{render_inline_markdown(token[2:-2])}</strong>"
+    if token.startswith(("*", "_")) and token.endswith(("*", "_")):
+        return f"<em>{render_inline_markdown(token[1:-1])}</em>"
+    return html.escape(token)
+
+
+def render_inline_link(token: str) -> str:
+    """Render one Markdown link with safe attributes."""
+
+    match = LINK_RE.match(token)
+    if not match:
+        return html.escape(token)
+    label, href, title = match.groups()
+    if not is_safe_link_href(href):
+        return render_inline_markdown(label)
+    title_attr = f' title="{html.escape(title, quote=True)}"' if title else ""
+    return (
+        f'<a href="{html.escape(href, quote=True)}" target="_blank" '
+        f'rel="noopener"{title_attr}>{render_inline_markdown(label)}</a>'
+    )
+
+
+def render_inline_image(token: str) -> str:
+    """Render one inline Markdown image with safe attributes."""
+
+    match = IMAGE_TOKEN_RE.match(token)
+    if not match:
+        return html.escape(token)
+    alt, src, title = match.groups()
+    try:
+        validate_image_src(src)
+    except ConversionError:
+        return html.escape(alt)
+    title_attr = f' title="{html.escape(title, quote=True)}"' if title else ""
+    return (
+        f'<img src="{html.escape(src, quote=True)}" alt="{html.escape(alt, quote=True)}"'
+        f'{title_attr} loading="lazy" decoding="async">'
+    )
+
+
+def is_safe_link_href(href: str) -> bool:
+    """Allow normal document links while rejecting script-like protocols."""
+
+    value = href.strip()
+    if not value:
+        return False
+    if re.match(r"^[a-zA-Z][a-zA-Z0-9+.-]*:", value):
+        return value.startswith(("http://", "https://", "mailto:"))
+    return True
 
 
 def clean_markdown_line(line: str) -> str:
@@ -370,6 +551,12 @@ def clean_markdown_line(line: str) -> str:
     value = re.sub(r"^\s*>\s?", "", line)
     value = re.sub(r"^\s*(?:[-*+]|\d+[.)])\s+", "", value)
     return value.strip()
+
+
+def is_published_line(line: str) -> bool:
+    """Return true for source publication-date lines kept as metadata."""
+
+    return bool(PUBLISHED_RE.match(line.strip()))
 
 
 def is_boilerplate(text: str) -> bool:
@@ -446,6 +633,7 @@ def build_learning_data(
             "title": article.metadata.title,
             "sourceUrl": article.metadata.source_url,
             "fetchedAt": article.metadata.fetched_at,
+            "publishedAt": article.metadata.published_at,
         },
         "article": build_article_context(article),
         "hero": build_hero(article, translate),
@@ -476,6 +664,7 @@ def build_article_context(article: Article) -> dict[str, object]:
         "title": article.metadata.title,
         "sourceUrl": article.metadata.source_url,
         "fetchedAt": article.metadata.fetched_at,
+        "publishedAt": article.metadata.published_at,
         "tags": infer_article_tags(article),
         "anchors": anchors,
     }
@@ -854,21 +1043,336 @@ def build_original(article: Article, translate: Translator) -> dict[str, object]
 
     groups = []
     for index, section in enumerate(split_top_level_sections(article, include_media=True), 1):
-        rows = [original_row(block, translate) for block in section["blocks"]]
-        groups.append({"id": f"og-{index}", "group": section["title"], "rows": [row for row in rows if row]})
-    return {"title": f"{article.metadata.title} · 原文全文对照", "meta": article.metadata.source_url, "groups": groups}
+        rows = original_rows(section["blocks"], translate)
+        groups.append({"id": f"og-{index}", "group": section["title"], "rows": rows})
+    return {"title": f"{original_display_title(article)} · 原文全文对照", "meta": article.metadata.source_url, "groups": groups}
+
+
+def original_display_title(article: Article) -> str:
+    """Return original-view title text, optionally annotated with publication date."""
+
+    published = clean_text(article.metadata.published_at)
+    if not published:
+        return article.metadata.title
+    return f"{article.metadata.title} · {published}"
+
+
+def original_rows(blocks: list[Block], translate: Translator) -> list[dict[str, object]]:
+    """Merge consecutive source paragraphs before translating original-view rows."""
+
+    rows: list[dict[str, object]] = []
+    pending_blocks: list[Block] = []
+
+    def flush_paragraphs() -> None:
+        if not pending_blocks:
+            return
+        rows.extend(chunk_original_blocks(pending_blocks, translate))
+        pending_blocks.clear()
+
+    for block in blocks:
+        if block.type == "paragraph":
+            pending_blocks.append(block)
+            continue
+        flush_paragraphs()
+        row = original_row(block, translate)
+        if row:
+            rows.append(row)
+    flush_paragraphs()
+    return rows
+
+
+def chunk_original_blocks(blocks: list[Block], translate: Translator) -> list[dict[str, object]]:
+    """Split long original prose into readable comparison rows."""
+
+    rows: list[dict[str, object]] = []
+    current: list[Block] = []
+    current_size = 0
+    for block in blocks:
+        pieces = split_original_block(block)
+        for piece in pieces:
+            size = len(clean_text(piece.text))
+            if current and current_size + size > ORIGINAL_ROW_TARGET_CHARS:
+                rows.append(original_bilingual_row(current, translate))
+                current = []
+                current_size = 0
+            current.append(piece)
+            current_size += size
+            if size >= ORIGINAL_ROW_TARGET_CHARS:
+                rows.append(original_bilingual_row(current, translate))
+                current = []
+                current_size = 0
+    if current:
+        rows.append(original_bilingual_row(current, translate))
+    return rows
+
+
+def split_original_block(block: Block) -> list[Block]:
+    """Split one long paragraph block without changing media/table/code blocks."""
+
+    if not is_plain_paragraph_block(block) or len(clean_text(block.text)) <= ORIGINAL_ROW_TARGET_CHARS:
+        return [block]
+    markdown_parts = split_markdown_prose(block.markdown or block.text)
+    if len(markdown_parts) <= 1:
+        return [block]
+    pieces = []
+    for part in markdown_parts:
+        text = strip_inline_markdown(part)
+        if not text:
+            continue
+        pieces.append(
+            Block(
+                type="paragraph",
+                text=text,
+                html=f"<p>{render_inline_markdown(part)}</p>",
+                markdown=part,
+            )
+        )
+    return pieces or [block]
+
+
+def is_plain_paragraph_block(block: Block) -> bool:
+    """Return true when a paragraph can be safely split as prose."""
+
+    html_value = block.html.lstrip()
+    return block.type == "paragraph" and html_value.startswith("<p>")
+
+
+def original_bilingual_row(blocks: list[Block], translate: Translator) -> dict[str, object]:
+    """Build one original-view bilingual row from one or more prose blocks."""
+
+    paragraphs = [block.text for block in blocks]
+    source_text = "\n\n".join(paragraphs)
+    source_html = "\n".join(block.html or f"<p>{render_inline_markdown(block.text)}</p>" for block in blocks)
+    return {
+        "type": "bilingual",
+        "en": source_text,
+        "html": source_html,
+        "zh": translate_original_group(source_text, paragraphs, translate),
+        "zhHtml": translate_original_blocks(blocks, translate),
+    }
+
+
+def translate_original_blocks(blocks: list[Block], translate: Translator) -> str:
+    """Translate source prose blocks while preserving their block styles."""
+
+    return "\n".join(render_translated_block(block, translate) for block in blocks)
+
+
+def render_translated_block(block: Block, translate: Translator) -> str:
+    """Render one translated block with safe structural HTML."""
+
+    try:
+        markdown = block.markdown or block.text
+        html_value = block.html.lstrip()
+        if html_value.startswith("<blockquote"):
+            return f"<blockquote>{render_translated_inline_markdown(markdown, translate)}</blockquote>"
+        if html_value.startswith("<ul") or html_value.startswith("<ol"):
+            tag = "ol" if html_value.startswith("<ol") else "ul"
+            items = [item for item in markdown.splitlines() if clean_text(item)]
+            translated_items = "".join(
+                f"<li>{render_translated_inline_markdown(item, translate)}</li>"
+                for item in items
+            )
+            return f"<{tag}>{translated_items}</{tag}>"
+        return f"<p>{render_translated_inline_markdown(markdown, translate)}</p>"
+    except ConversionError:
+        return f"<p>{html.escape(translate(block.text))}</p>"
+
+
+def render_translated_inline_markdown(value: str, translate: Translator) -> str:
+    """Translate inline Markdown text while preserving supported inline styles."""
+
+    text = str(value or "")
+    if not INLINE_TOKEN_RE.search(text):
+        return html.escape(translate(strip_inline_markdown(text)))
+    output: list[str] = []
+    cursor = 0
+    for match in INLINE_TOKEN_RE.finditer(text):
+        output.append(render_translated_text_segment(text[cursor:match.start()], translate))
+        output.append(render_translated_inline_token(match.group(0), translate))
+        cursor = match.end()
+    output.append(render_translated_text_segment(text[cursor:], translate))
+    return "".join(output)
+
+
+def render_translated_text_segment(value: str, translate: Translator) -> str:
+    """Translate a plain inline text segment."""
+
+    text = clean_text(value)
+    if text and not re.search(r"[A-Za-z0-9]", text):
+        return html.escape(value)
+    return html.escape(translate(text)) if text else html.escape(value)
+
+
+def render_translated_inline_token(token: str, translate: Translator) -> str:
+    """Translate one inline Markdown token without changing its style tag."""
+
+    if token.startswith("`") and token.endswith("`"):
+        return f"<code>{html.escape(token[1:-1])}</code>"
+    if token.startswith("!["):
+        return render_inline_image(token)
+    if token.startswith("["):
+        return render_translated_inline_link(token, translate)
+    if token.startswith(("**", "__")) and token.endswith(("**", "__")):
+        return f"<strong>{render_translated_inline_markdown(token[2:-2], translate)}</strong>"
+    if token.startswith(("*", "_")) and token.endswith(("*", "_")):
+        return f"<em>{render_translated_inline_markdown(token[1:-1], translate)}</em>"
+    return html.escape(token)
+
+
+def render_translated_inline_link(token: str, translate: Translator) -> str:
+    """Translate a Markdown link label while preserving the href."""
+
+    match = LINK_RE.match(token)
+    if not match:
+        return html.escape(token)
+    label, href, title = match.groups()
+    if not is_safe_link_href(href):
+        return render_translated_inline_markdown(label, translate)
+    title_attr = f' title="{html.escape(title, quote=True)}"' if title else ""
+    return (
+        f'<a href="{html.escape(href, quote=True)}" target="_blank" '
+        f'rel="noopener"{title_attr}>{render_translated_inline_markdown(label, translate)}</a>'
+    )
+
+
+def translated_html_to_text(value: str) -> str:
+    """Return readable Chinese text from generated translated HTML."""
+
+    text = re.sub(r"<[^>]+>", " ", value)
+    return clean_text(html.unescape(text))
+
+
+def split_markdown_prose(markdown_text: str) -> list[str]:
+    """Split Markdown prose at sentence and clause boundaries."""
+
+    text = clean_text(markdown_text)
+    if len(text) <= ORIGINAL_ROW_TARGET_CHARS:
+        return [text]
+    segments = prose_segments(text)
+    chunks: list[str] = []
+    current = ""
+    for segment in segments:
+        candidate = clean_text(f"{current} {segment}" if current else segment)
+        if current and len(candidate) > ORIGINAL_ROW_TARGET_CHARS:
+            chunks.append(current)
+            current = segment
+        else:
+            current = candidate
+    if current:
+        chunks.append(current)
+    return [chunk for item in chunks for chunk in split_oversized_segment(item)]
+
+
+def prose_segments(text: str) -> list[str]:
+    """Return sentence-like Markdown segments without splitting inline links/code."""
+
+    boundaries = prose_boundaries(text)
+    segments: list[str] = []
+    start = 0
+    for boundary in boundaries:
+        segment = clean_text(text[start:boundary])
+        if segment:
+            segments.append(segment)
+        start = boundary
+    tail = clean_text(text[start:])
+    if tail:
+        segments.append(tail)
+    return segments or [text]
+
+
+def prose_boundaries(text: str) -> list[int]:
+    """Find natural split positions outside inline Markdown tokens."""
+
+    boundaries: list[int] = []
+    bracket_depth = 0
+    paren_depth = 0
+    in_code = False
+    for index, char in enumerate(text):
+        if char == "`":
+            in_code = not in_code
+            continue
+        if in_code:
+            continue
+        if char == "[":
+            bracket_depth += 1
+        elif char == "]" and bracket_depth:
+            bracket_depth -= 1
+        elif char == "(":
+            paren_depth += 1
+        elif char == ")" and paren_depth:
+            paren_depth -= 1
+        if bracket_depth or paren_depth:
+            continue
+        next_char = text[index + 1] if index + 1 < len(text) else ""
+        previous = boundaries[-1] if boundaries else 0
+        distance = index - previous
+        primary = char in ".!?" and (not next_char or next_char.isspace())
+        secondary = char in ";:，,、—–" and distance >= ORIGINAL_ROW_MIN_CHARS
+        if primary or secondary:
+            boundaries.append(index + 1)
+    return boundaries
+
+
+def split_oversized_segment(text: str) -> list[str]:
+    """Split very long single sentences at safe whitespace when possible."""
+
+    if len(text) <= ORIGINAL_ROW_TARGET_CHARS:
+        return [text]
+    chunks: list[str] = []
+    rest = text
+    while len(rest) > ORIGINAL_ROW_TARGET_CHARS:
+        split_at = rest.rfind(" ", ORIGINAL_ROW_MIN_CHARS, ORIGINAL_ROW_TARGET_CHARS)
+        if split_at <= 0:
+            break
+        chunks.append(rest[:split_at].strip())
+        rest = rest[split_at:].strip()
+    if rest:
+        chunks.append(rest)
+    return chunks or [text]
+
+
+def translate_original_group(source_text: str, paragraphs: list[str], translate: Translator) -> str:
+    """Translate one merged original paragraph, with deterministic fallback for previews."""
+
+    try:
+        translated = translate(source_text)
+    except ConversionError:
+        if len(paragraphs) <= 1:
+            raise
+        return "\n\n".join(translate(paragraph) for paragraph in paragraphs)
+    if CHINESE_TEXT_RE.search(translated) or len(paragraphs) <= 1:
+        return translated
+    return "\n\n".join(translate(paragraph) for paragraph in paragraphs)
 
 
 def original_row(block: Block, translate: Translator) -> dict[str, object]:
     """Convert a source block to an original-view row."""
 
     if block.type == "paragraph":
-        return {"type": "bilingual", "en": block.text, "zh": translate(block.text)}
+        zh_html = render_translated_block(block, translate)
+        return {
+            "type": "bilingual",
+            "en": block.text,
+            "html": block.html or f"<p>{render_inline_markdown(block.text)}</p>",
+            "zh": translate(block.text),
+            "zhHtml": zh_html,
+        }
+    if block.type == "heading":
+        level = min(max(block.level, 3), 6)
+        return {
+            "type": "heading",
+            "text": block.text,
+            "level": level,
+            "html": f"<h{level}>{block.html or render_inline_markdown(block.text)}</h{level}>",
+        }
     if block.type == "table":
         return {
             "type": "table",
             "rows": block.rows,
+            "htmlRows": block.html_rows,
             "zhRows": translate_table_rows(block.rows, translate),
+            "zhHtmlRows": translate_table_html_rows(block.markdown_rows or block.rows, translate),
         }
     if block.type == "image":
         return {"type": "image", "src": block.src, "alt": block.alt, "caption": block.caption}
@@ -888,17 +1392,30 @@ def translate_table_rows(rows: list[object], translate: Translator) -> list[list
     return translated
 
 
+def translate_table_html_rows(rows: list[object], translate: Translator) -> list[list[str]]:
+    """Translate each table cell while preserving inline Markdown styling."""
+
+    translated = []
+    for row in rows:
+        if not isinstance(row, list):
+            continue
+        translated.append([render_translated_inline_markdown(str(cell), translate) for cell in row])
+    return translated
+
+
 def split_top_level_sections(article: Article, include_media: bool = False) -> list[dict[str, object]]:
     """Group original-view content under Markdown level-two headings."""
 
     sections: list[dict[str, object]] = []
-    current = {"title": article.metadata.title, "blocks": []}
+    current = {"title": original_display_title(article), "blocks": []}
     for block in article.blocks:
         if block.type == "heading":
             if block.level == 2:
                 if current["blocks"]:
                     sections.append(current)
                 current = {"title": block.text, "blocks": []}
+            elif include_media and block.level > 2:
+                current["blocks"].append(block)
             continue
         if include_media or block.type == "paragraph":
             current["blocks"].append(block)
@@ -1188,19 +1705,12 @@ def iter_original_rows(data: dict[str, object]) -> Iterable[dict[str, object]]:
         yield from rows
 
 
-def identity_translator(text: str) -> str:
-    """Testing/demo translator; production callers should inject real Chinese."""
-
-    return f"中文：{text}"
-
-
 def build_parser() -> argparse.ArgumentParser:
     """Build CLI parser."""
 
     parser = argparse.ArgumentParser(description="Convert normalized Markdown to bilingual-reader data.")
     parser.add_argument("markdown_file", type=Path, help="Markdown file generated by web-markdown.")
     parser.add_argument("--output", type=Path, help="Optional JSON output path.")
-    parser.add_argument("--demo-translator", action="store_true", help="Use a demo translator for local structural tests.")
     return parser
 
 
@@ -1210,12 +1720,7 @@ def main(argv: Optional[list[str]] = None) -> int:
     args = build_parser().parse_args(argv)
     try:
         article = parse_markdown(args.markdown_file.read_text(encoding="utf-8"))
-        data: Union[dict[str, object], Article]
-        if args.demo_translator:
-            data = build_learning_data(article, identity_translator)
-        else:
-            data = article
-        payload = json.dumps(asdict(data) if isinstance(data, Article) else data, ensure_ascii=False, indent=2)
+        payload = json.dumps(asdict(article), ensure_ascii=False, indent=2)
         if args.output:
             args.output.write_text(payload + "\n", encoding="utf-8")
         else:

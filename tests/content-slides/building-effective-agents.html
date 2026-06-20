@@ -275,10 +275,21 @@
         gap: 28px;
       }
 
+      .grid-2:has(> .card:first-child):has(> .card:nth-child(2):last-child) {
+        max-width: 1120px;
+        margin-inline: auto;
+      }
+
       .grid-3 {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
         gap: 24px;
+      }
+
+      .grid-3:has(> :nth-child(4):last-child) {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        max-width: 1120px;
+        margin-inline: auto;
       }
 
       .card {

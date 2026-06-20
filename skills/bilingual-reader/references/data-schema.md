@@ -132,7 +132,7 @@ The parser and renderer must fail with a clear error before producing artifacts 
      }}
   ],
 
-  "original": { // “原文”视图：完整逐段对照
+  "original": { // “原文”视图：连续正文按大段落整体对照
     "title": "Building Effective Agents · 原文全文对照",
     "meta": "Anthropic Engineering · 2024-12-19",
     "groups": [
@@ -142,7 +142,7 @@ The parser and renderer must fail with a clear error before producing artifacts 
           "caption": "Source caption or short context."},
          {"type": "table", "rows": [["English content", "中文翻译"], ["Agent", "智能体"]],
           "zhRows": [["英文内容", "中文翻译"], ["智能体", "智能体"]]},
-         {"en": "Full paragraph EN.", "zh": "整段中文。"}
+         {"en": "Merged source paragraphs EN.", "zh": "合并后的整段中文。"}
        ]}
     ]
   },
@@ -185,7 +185,7 @@ For normal article-length source material, generate data for every supported lea
 - `quiz[]` with article-grounded questions, answer index, wrong-answer reason, and source evidence
 - One `sections[]` item with `type: "cards"` when the source supports card-style comparison
 - One `sections[]` item with `type: "summary"`
-- `original.groups` with paragraph-aligned English and Chinese rows, plus meaningful source images when accessible
+- `original.groups` with consecutive prose paragraphs merged into larger English/Chinese rows, plus meaningful source images when accessible
 - `footer.sourceUrl` and `footer.sourceText`
 - `glossary.groupDesc`, `glossary.dict`, and `glossary.autowrap`
 
@@ -244,9 +244,9 @@ comes from or directly explains the article.
   emit unconstrained natural image dimensions. If an image is referenced but inaccessible, state the
   gap instead of inventing a replacement.
 - **Escaping in JSON**: backslashes in regex need doubling (`\\b`), quotes inside text need `\"`.
-- **CEFR grading**: build the glossary from the article content and learner needs. Aim for a spread
-  across B1→C2 plus a `术语` (domain terms) group. 40–60 words is a good target for a medium
-  article when enough source terms exist; use fewer for short material and never add unrelated
-  filler words.
+- **CEFR grading**: build the glossary from the article content and learner needs. Aim for a broad
+  spread across B1→C2 plus a `术语` (domain terms) group. 60–90 words is a good target for a
+  medium article when enough source terms exist; long articles may include up to 120 high-value
+  entries. Use fewer for short material and never add unrelated filler words.
 - If the compact-result exception applies, optional section types can be omitted entirely. If
   there is no `quiz`/`cards`/`summary` section, those features simply do not render.

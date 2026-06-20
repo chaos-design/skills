@@ -21,7 +21,7 @@ Always generate `data.json` before HTML rendering. `index.html` must not depend 
 - Do not hide source content in `window.BILINGUAL_READER_DATA`, `window.DATA`, JSON blobs, `fetch()`, module imports, generated render functions, or external files.
 - Inline CSS in `<style>`.
 - Inline only the JavaScript needed for interactions: view switching, DOM-derived tooltip placement, pronunciation, quiz feedback, theme switching, anchors, and reading progress.
-- A third-party code highlighting SDK may enhance code blocks, but code content must remain visible as normal `<pre><code>` HTML when the SDK is unavailable.
+- Keep the approved third-party code highlighting SDK for syntax-highlighted code blocks, while ensuring code content remains visible as normal `<pre><code>` HTML when the SDK is unavailable.
 - The page must open directly from `file://`.
 - Format the generated HTML with 2-space indentation for HTML/CSS/JavaScript while preserving source code block indentation exactly.
 
@@ -29,7 +29,7 @@ Always generate `data.json` before HTML rendering. `index.html` must not depend 
 
 - Hero with title, source metadata, and bilingual hook only. Do not include stats, metrics, counters, dashboard numbers, or `stats` / `stat` class blocks in the hero.
 - Summary view with a primary guide card, secondary summary cards, source-grounded logic framework, comprehension quiz, bilingual sections, one final summary module, and section cards when the source supports them.
-- Original view with source metadata, content tags, section anchors, original paragraphs, source images, source code blocks, and source tables in reading order.
+- Original view with source metadata, content tags, section anchors, consecutive original paragraphs merged into larger translation units, source images, source code blocks, and source tables in reading order.
 - Glossary view grouped by `B1`, `B2`, `C1`, `C2`, and `术语`.
 - Footer source link exactly as `原文：<a href="SOURCE_URL" target="_blank" rel="noopener">《SOURCE_TITLE》</a>`.
 - Anchor navigation through `nav#toc`, with click-to-scroll and active-state tracking.

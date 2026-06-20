@@ -150,8 +150,8 @@ structure: 卷轴顶栏 + 印章封面 + 宣纸卷帙双列对照 + 朱砂批注
   .gloss-group{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:26px 0 14px; padding-bottom:10px; border-bottom:1px solid var(--border)}
   .gloss-group .gg-desc{font-size:15px; color:var(--text); font-weight:700; letter-spacing:1px}
   .gloss-group .gg-count{display:inline-flex; align-items:center; margin-left:6px; padding:2px 9px; border:1px solid color-mix(in srgb,var(--accent2) 24%,var(--border)); border-radius:999px; background:color-mix(in srgb,var(--accent2) 10%,transparent); font-size:12px; font-weight:800; line-height:1.4; color:var(--muted)}
-  .gloss-grid-inner{--gloss-card-min:240px; --gloss-card-max:340px; display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,var(--gloss-card-min)),var(--gloss-card-max))); justify-content:start; gap:16px; margin-bottom:14px}
-  .gloss-item{width:100%; min-width:0; max-width:var(--gloss-card-max); background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); padding:18px 20px}
+  .gloss-grid-inner{--gloss-card-min:240px; display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,var(--gloss-card-min)),1fr)); grid-auto-rows:1fr; align-items:stretch; gap:16px; margin-bottom:14px}
+  .gloss-item{width:100%; height:100%; min-width:0; display:flex; flex-direction:column; background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); padding:18px 20px}
   .gloss-item .grow{display:flex; align-items:center; gap:10px}
   .gloss-item .word,.gloss-item .gw{display:inline-block; font-weight:900; color:var(--accent); font-size:23px; line-height:1.05; letter-spacing:.08em; text-shadow:0 0 12px color-mix(in srgb,var(--accent) 24%,transparent)}
   .gloss-item .gsub{display:flex; align-items:center; gap:10px; margin-top:6px}

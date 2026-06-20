@@ -16,6 +16,7 @@ from urllib.request import Request, urlopen
 try:
     from markdown_to_data import (
         Article,
+        ConversionError,
         autowrap_pattern,
         build_learning_data,
         display_pos,
@@ -26,6 +27,7 @@ except ImportError:
     sys.path.insert(0, str(Path(__file__).resolve().parent))
     from markdown_to_data import (
         Article,
+        ConversionError,
         autowrap_pattern,
         build_learning_data,
         display_pos,
@@ -307,15 +309,18 @@ def escape(value: object) -> str:
     return html.escape(str(value), quote=True)
 
 
-def translate_demo(text: str) -> str:
-    """Return a deterministic, source-specific Chinese translation."""
+def translate_curated(text: str) -> str:
+    """Return a curated Chinese translation or fail before emitting fake data."""
 
     value = re.sub(r"\s+", " ", text).strip()
     if value in TRANSLATION_HINTS:
         return TRANSLATION_HINTS[value]
     if value in OPENAI_AGENT_TRANSLATIONS:
         return OPENAI_AGENT_TRANSLATIONS[value]
-    return value
+    raise ConversionError(
+        "Missing reviewed Chinese translation for source text. "
+        "Provide a reviewed data.json with --data-file instead of generating unreviewed bilingual data."
+    )
 
 
 def article_text_for_glossary(article: Article) -> str:
@@ -513,7 +518,7 @@ def validate_generation_options(
 def build_data_from_article(article: Article) -> dict[str, object]:
     """Build preview data from a parsed article."""
 
-    return build_learning_data(article, translate_demo, build_glossary=glossary_builder)
+    return build_learning_data(article, translate_curated, build_glossary=glossary_builder)
 
 
 def render_hero(data: dict[str, object], template_name: str) -> str:
@@ -1002,6 +1007,9 @@ def render_original_row(row: dict[str, object], mode: str, images: dict[str, str
     """Render one original-view row, preserving media order."""
 
     row_type = row.get("type")
+    if row_type == "heading":
+        heading_html = safe_original_html(row.get("html"), row.get("text", ""))
+        return f'<div class="og-subheading md-source">{heading_html}</div>'
     if row_type == "image":
         source = inline_image(str(row["src"]), images, inline_images)
         caption = media_caption(row)
@@ -1016,14 +1024,27 @@ def render_original_row(row: dict[str, object], mode: str, images: dict[str, str
     if row_type == "table":
         return render_source_table_pair(
             list(row.get("rows", [])),
+            list(row.get("htmlRows") or []),
             list(row.get("zhRows") or []),
+            list(row.get("zhHtmlRows") or []),
         )
-    pair = {"en": str(row.get("en", "")), "zh": str(row.get("zh", ""))}
-    if mode == "evidence":
-        return render_evidence_row(pair, 0)
-    if mode == "atlas":
-        return render_atlas_row(pair, 0)
-    return f'<div class="og-row"><div class="en">{escape(pair["en"])}</div><div class="zh">{escape(pair["zh"])}</div></div>'
+    source_html = safe_original_html(row.get("html"), row.get("en", ""))
+    zh_html = safe_original_html(row.get("zhHtml"), row.get("zh", ""))
+    zh = str(row.get("zh", ""))
+    return f'<div class="og-row"><div class="en md-source">{source_html}</div><div class="zh md-source">{zh_html or escape(zh)}</div></div>'
+
+
+def safe_original_html(value: object, fallback: object) -> str:
+    """Return generated Markdown HTML, falling back to escaped text for edited data."""
+
+    content = str(value or "").strip()
+    if not content:
+        return escape(str(fallback or ""))
+    if re.search(r"<\s*/?\s*(?:script|style|iframe|object|embed|form|input|button)\b", content, re.IGNORECASE):
+        return escape(str(fallback or ""))
+    if re.search(r"\son[a-z]+\s*=", content, re.IGNORECASE) or re.search(r"javascript\s*:", content, re.IGNORECASE):
+        return escape(str(fallback or ""))
+    return content
 
 
 def render_code_block(code: str, language: str) -> str:
@@ -1045,35 +1066,43 @@ def render_source_table(rows: list[object]) -> str:
       </div>"""
 
 
-def render_source_table_pair(rows: list[object], translated_rows: list[object]) -> str:
+def render_source_table_pair(
+    rows: list[object],
+    html_rows: list[object],
+    translated_rows: list[object],
+    translated_html_rows: list[object] | None = None,
+) -> str:
     """Render one table as a whole bilingual comparison block."""
 
     source = normalize_table_rows(rows)
     if not source:
         return ""
-    translated = normalize_table_rows(translated_rows) or source
-    width = max(len(source[0]), len(translated[0]))
-    source = normalize_table_width(source, width)
+    source_html = normalize_table_rows(html_rows) or source
+    translated_html = normalize_table_rows(translated_html_rows or [])
+    translated = translated_html or normalize_table_rows(translated_rows) or source
+    width = max(len(source[0]), len(source_html[0]), len(translated[0]))
+    source_html = normalize_table_width(source_html, width)
     translated = normalize_table_width(translated, width)
     return f"""
       <div class="og-row og-table-row">
         <div class="en og-table-cell">
-          {render_table_html(source)}
+          {render_table_html(source_html, escape_cells=False)}
         </div>
         <div class="zh og-table-cell">
-          {render_table_html(translated)}
+          {render_table_html(translated, escape_cells=not translated_html)}
         </div>
       </div>"""
 
 
-def render_table_html(normalized: list[list[str]]) -> str:
+def render_table_html(normalized: list[list[str]], escape_cells: bool = True) -> str:
     """Render normalized rows as a semantic table."""
 
     header = normalized[0]
     body_rows = normalized[1:]
-    head_html = "".join(f"<th>{escape(cell)}</th>" for cell in header)
+    render_cell = escape if escape_cells else str
+    head_html = "".join(f"<th>{render_cell(cell)}</th>" for cell in header)
     body_html = "".join(
-        "<tr>" + "".join(f"<td>{escape(cell)}</td>" for cell in row) + "</tr>"
+        "<tr>" + "".join(f"<td>{render_cell(cell)}</td>" for cell in row) + "</tr>"
         for row in body_rows
     )
     body = f"<tbody>{body_html}</tbody>" if body_rows else ""
@@ -1133,7 +1162,7 @@ def render_original_intro(data: dict[str, object], original: dict[str, object]) 
 
     hero = data.get("hero", {})
     metadata = data.get("metadata", {})
-    title = str(hero.get("title") or original.get("title") or metadata.get("title") or "").strip()
+    title = str(original.get("title") or hero.get("title") or metadata.get("title") or "").strip()
     summary = original_summary_text(data)
     summary_html = f'<p class="zh">{escape(summary)}</p>' if summary else ""
     return f"""
@@ -1259,7 +1288,9 @@ def static_overrides() -> str:
   .study-table{display:grid;gap:10px}.study-row{display:grid;grid-template-columns:48px 1fr 1fr;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;background:var(--panel);margin-bottom:10px}
   .study-row .no{display:grid;place-items:center;background:var(--accent);color:var(--accent-ink);font-weight:900}.study-row .en,.study-row .zh{padding:15px 18px}.study-row .en{color:var(--en);border-right:1px solid var(--border)}.study-row .zh{color:var(--zh);background:color-mix(in srgb,var(--panel2) 72%,transparent)}
   .og-h{scroll-margin-top:92px}.og-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:stretch;border:1px solid color-mix(in srgb,var(--accent2) 22%,var(--border));border-radius:calc(var(--radius) + 2px);overflow:hidden;margin-bottom:14px;background:var(--panel);box-shadow:0 10px 26px rgba(0,0,0,.08)}
+  .og-subheading{margin:18px 0 10px;padding:0 4px;color:var(--text)}.og-subheading h3,.og-subheading h4,.og-subheading h5,.og-subheading h6{margin:0;color:var(--text);line-height:1.25}.og-subheading h3{font-size:20px}.og-subheading h4{font-size:18px}.og-subheading h5,.og-subheading h6{font-size:16px}
   .og-row .en,.og-row .zh{min-width:0;padding:18px 22px}.og-row .en{color:var(--en);border-right:1px solid var(--border);font-size:15px;line-height:1.85}.og-row .zh{color:var(--zh);background:color-mix(in srgb,var(--panel2) 72%,transparent);font-size:15px;line-height:1.85}
+  .md-source p{margin:0 0 12px}.md-source p:last-child{margin-bottom:0}.md-source ul,.md-source ol{margin:0 0 12px 1.35em;padding:0}.md-source li{margin:4px 0;padding-left:2px}.md-source blockquote{margin:0 0 12px;padding:10px 14px;border-left:3px solid var(--accent2);border-radius:0 var(--radius-sm) var(--radius-sm) 0;background:color-mix(in srgb,var(--accent2) 10%,transparent);color:var(--en)}.md-source a,.source-table a{color:var(--accent2);text-decoration:none;border-bottom:1px solid color-mix(in srgb,var(--accent2) 44%,transparent);cursor:pointer}.md-source a:hover,.source-table a:hover{color:var(--accent);border-bottom-color:var(--accent)}.md-source strong{color:var(--text);font-weight:800}.md-source em{color:color-mix(in srgb,var(--en) 84%,var(--accent2));font-style:italic}.md-source code,.source-table code{padding:2px 5px;border:1px solid color-mix(in srgb,var(--accent2) 24%,var(--border));border-radius:6px;background:color-mix(in srgb,#000 28%,var(--panel2));color:var(--accent2);font-size:.92em}.md-source img{display:block;max-width:min(720px,100%);max-height:405px;margin:12px auto;border-radius:calc(var(--radius) - 4px);object-fit:contain;background:#fff}
   #originalSection .w{color:#4169ff;text-decoration:none!important;cursor:text!important}#originalSection .w::after{right:-5px;top:.05em;width:4px;height:4px;background:#9b6bff;box-shadow:0 0 0 2px rgba(142,91,255,.16)}#originalSection .w:hover{color:#8e55ff;text-decoration:none!important;cursor:text!important}
   .source-figure{max-width:min(880px,92%);margin:24px auto;padding:14px;border:1px solid color-mix(in srgb,var(--accent2) 28%,var(--border));border-radius:var(--radius);background:var(--panel);overflow:hidden;text-align:center}
   .source-figure img{display:block;width:min(720px,100%);height:405px;max-width:100%;margin:0 auto;border-radius:calc(var(--radius) - 4px);background:#fff;object-fit:contain}.source-figure figcaption{margin-top:10px;color:var(--muted);font-size:13px;line-height:1.55}.source-figure a{color:var(--accent2)}
@@ -1269,8 +1300,8 @@ def static_overrides() -> str:
   #glossary{display:none}#glossary.show{display:block}body.gloss-open #glossary{display:block}body.gloss-open .wrap{width:100vw;max-width:none;margin:0;padding:28px 56px 80px 24px}
   .gloss-group{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
   .gloss-group .gg-count{display:inline-flex;align-items:center;margin-left:6px;padding:2px 9px;border:1px solid color-mix(in srgb,var(--accent2) 24%,var(--border));border-radius:999px;background:color-mix(in srgb,var(--accent2) 10%,transparent);color:var(--muted);font-size:12px;font-weight:800;line-height:1.4}
-  .gloss-grid-inner{--gloss-card-min:240px;--gloss-card-max:340px;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,var(--gloss-card-min)),var(--gloss-card-max)));justify-content:start;gap:12px}
-  .gloss-item{width:100%;min-width:0;max-width:var(--gloss-card-max)}
+  .gloss-grid-inner{--gloss-card-min:240px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,var(--gloss-card-min)),1fr));grid-auto-rows:1fr;align-items:stretch;gap:12px}
+  .gloss-item{width:100%;height:100%;min-width:0;display:flex;flex-direction:column}
   .tip .pos,.gloss-item .pos,.gloss-item .gpos{background:color-mix(in srgb,var(--accent2) 92%,#000);color:#fff;font-weight:800;font-style:normal}
   html[data-theme="light"] .tip .pos,html[data-theme="light"] .gloss-item .pos,html[data-theme="light"] .gloss-item .gpos{background:color-mix(in srgb,var(--accent2) 16%,#fff);color:#073763}
   .quiz-list{display:grid;gap:14px}.quiz .fb strong{color:var(--accent)}.quiz .fb .why{display:block;margin-top:4px;color:var(--muted)}
