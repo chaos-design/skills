@@ -21,6 +21,7 @@ try:
         build_learning_data,
         display_pos,
         parse_markdown,
+        source_contains_word_or_inflection,
         validate_learning_data,
     )
 except ImportError:
@@ -32,6 +33,7 @@ except ImportError:
         build_learning_data,
         display_pos,
         parse_markdown,
+        source_contains_word_or_inflection,
         validate_learning_data,
     )
 
@@ -335,11 +337,10 @@ def article_text_for_glossary(article: Article) -> str:
     return " ".join(parts).casefold()
 
 
-def word_occurs_in_source(word: str, source_text: str) -> bool:
+def word_occurs_in_source(word: str, pos: str, source_text: str) -> bool:
     """Check whether a glossary word genuinely occurs in the article."""
 
-    pattern = autowrap_pattern(word)
-    return bool(re.search(pattern, source_text, re.IGNORECASE))
+    return source_contains_word_or_inflection(word, pos, source_text)
 
 
 def glossary_builder(article: Article) -> list[dict[str, str]]:
@@ -358,7 +359,7 @@ def glossary_builder(article: Article) -> list[dict[str, str]]:
         }
         for word, level, ipa, pos, definition, example, example_zh in GLOSSARY
         if level in {"B1", "B2", "C1", "C2", "术语"}
-        and word_occurs_in_source(word, source_text)
+        and word_occurs_in_source(word, pos, source_text)
     ]
 
 
@@ -513,6 +514,74 @@ def validate_generation_options(
         raise ValueError(f"--output-dir must be a directory: {output_dir}")
     if template_name == "":
         raise ValueError("--template must not be empty.")
+
+
+def output_slug(path: Path, used_slugs: set[str]) -> str:
+    """Return a stable output folder name for one input file."""
+
+    source_path = Path(path)
+    slug_source = source_path.parent.name if source_path.stem.casefold() == "data" else source_path.stem
+    slug = re.sub(r"[^a-z0-9]+", "-", slug_source.casefold()).strip("-") or "source"
+    candidate = slug
+    suffix = 2
+    while candidate in used_slugs:
+        candidate = f"{slug}-{suffix}"
+        suffix += 1
+    used_slugs.add(candidate)
+    return candidate
+
+
+def generate_multiple_previews(
+    markdown_files: list[Path],
+    output_dir: Path,
+    inline_images: bool = True,
+    template_name: str | None = "compact-study",
+    data_only: bool = False,
+) -> None:
+    """Generate one independent output folder per Markdown source."""
+
+    if not markdown_files:
+        raise ValueError("At least one markdown_file is required.")
+    output_dir = Path(output_dir).expanduser().resolve()
+    if output_dir.exists() and not output_dir.is_dir():
+        raise ValueError(f"--output-dir must be a directory: {output_dir}")
+    used_slugs: set[str] = set()
+    for markdown_file in markdown_files:
+        source_path = validate_input_file(markdown_file, "Markdown source")
+        child_output_dir = output_dir / output_slug(source_path, used_slugs)
+        generate_previews(
+            source_path,
+            child_output_dir,
+            inline_images=inline_images,
+            template_name=template_name,
+            data_only=data_only,
+        )
+
+
+def generate_multiple_data_previews(
+    data_files: list[Path],
+    output_dir: Path,
+    inline_images: bool = True,
+    template_name: str | None = "compact-study",
+) -> None:
+    """Generate one independent output folder per reviewed data source."""
+
+    if not data_files:
+        raise ValueError("At least one --data-file is required.")
+    output_dir = Path(output_dir).expanduser().resolve()
+    if output_dir.exists() and not output_dir.is_dir():
+        raise ValueError(f"--output-dir must be a directory: {output_dir}")
+    used_slugs: set[str] = set()
+    for data_file in data_files:
+        source_path = validate_input_file(data_file, "Reviewed data file", max_bytes=MAX_JSON_BYTES)
+        child_output_dir = output_dir / output_slug(source_path, used_slugs)
+        generate_previews(
+            None,
+            child_output_dir,
+            inline_images=inline_images,
+            template_name=template_name,
+            data_file=source_path,
+        )
 
 
 def build_data_from_article(article: Article) -> dict[str, object]:
@@ -1157,12 +1226,39 @@ def original_summary_text(data: dict[str, object]) -> str:
     return ""
 
 
+def title_without_trailing_date(title: str, metadata: dict[str, object]) -> str:
+    """Remove date-like suffixes from display titles."""
+
+    value = re.sub(r"\s+", " ", title).strip()
+    if not value:
+        return ""
+    date_values = [
+        str(metadata.get("publishedAt") or "").strip(),
+        str(metadata.get("fetchedAt") or "").strip(),
+    ]
+    for date_value in date_values:
+        if not date_value:
+            continue
+        patterns = [
+            rf"\s*[·|\-–—]\s*{re.escape(date_value)}\s*$",
+            rf"\s*\(\s*{re.escape(date_value)}\s*\)\s*$",
+        ]
+        for pattern in patterns:
+            value = re.sub(pattern, "", value).strip()
+    return re.sub(
+        r"\s*[·|\-–—]\s*(?:[A-Z][a-z]{2,8}\s+\d{1,2},\s+\d{4}|\d{4}-\d{2}-\d{2}(?:\s+\d{2}:\d{2}:\d{2})?)\s*$",
+        "",
+        value,
+    ).strip()
+
+
 def render_original_intro(data: dict[str, object], original: dict[str, object]) -> str:
     """Render the original tab header using only article-related metadata."""
 
     hero = data.get("hero", {})
     metadata = data.get("metadata", {})
-    title = str(original.get("title") or hero.get("title") or metadata.get("title") or "").strip()
+    raw_title = str(original.get("title") or hero.get("title") or metadata.get("title") or "").strip()
+    title = title_without_trailing_date(raw_title, metadata)
     summary = original_summary_text(data)
     summary_html = f'<p class="zh">{escape(summary)}</p>' if summary else ""
     return f"""
@@ -1749,11 +1845,16 @@ def generate_previews(
     template_name: str | None = "compact-study",
     data_file: Path | None = None,
     data_only: bool = False,
+    stdout_html: bool = False,
 ) -> None:
     """Generate data and preview pages for one template by default."""
 
     output_dir = Path(output_dir).expanduser().resolve()
     validate_generation_options(markdown_file, output_dir, template_name, data_file, data_only)
+    if stdout_html and data_only:
+        raise ValueError("--stdout-html cannot be combined with --data-only.")
+    if stdout_html and template_name is None:
+        raise ValueError("--stdout-html requires one selected template; do not combine it with --all-templates.")
     if data_file:
         data = load_reviewed_data(data_file)
     elif markdown_file:
@@ -1769,6 +1870,12 @@ def generate_previews(
         print("generated=data.json review_required=1")
         return
     templates = selected_templates(template_name)
+    if stdout_html:
+        page = render_page(data, str(templates[0]["name"]), image_cache=image_cache, inline_images=inline_images)
+        sys.stdout.write(page)
+        if not page.endswith("\n"):
+            sys.stdout.write("\n")
+        return
     for template in templates:
         name = str(template["name"])
         page_dir = output_dir / name
@@ -1783,13 +1890,23 @@ def build_parser() -> argparse.ArgumentParser:
     """Build CLI parser."""
 
     parser = argparse.ArgumentParser(description="Render static bilingual-reader preview pages.")
-    parser.add_argument("markdown_file", type=Path, nargs="?", help="Normalized Markdown source.")
+    parser.add_argument("markdown_files", type=Path, nargs="*", help="Normalized Markdown source file(s).")
     parser.add_argument("--output-dir", type=Path, required=True, help="Directory for generated previews.")
     parser.add_argument("--template", default="compact-study", help="Template name to render; defaults to compact-study.")
     parser.add_argument("--all-templates", action="store_true", help="Render every available template.")
     parser.add_argument("--no-inline-images", action="store_true", help="Keep source image URLs instead of data URIs.")
     parser.add_argument("--data-only", action="store_true", help="Write data.json for human review without rendering HTML.")
-    parser.add_argument("--data-file", type=Path, help="Reviewed data.json to validate and render instead of parsing Markdown.")
+    parser.add_argument(
+        "--data-file",
+        type=Path,
+        action="append",
+        help="Reviewed data.json to validate and render instead of parsing Markdown. Repeat for multiple inputs.",
+    )
+    parser.add_argument(
+        "--stdout-html",
+        action="store_true",
+        help="Write the selected complete standalone HTML document to stdout with no status text.",
+    )
     return parser
 
 
@@ -1801,14 +1918,42 @@ def main(argv: list[str] | None = None) -> int:
         if args.all_templates and args.template != "compact-study":
             raise ValueError("--all-templates cannot be combined with --template.")
         template_name = None if args.all_templates else args.template
-        generate_previews(
-            args.markdown_file,
-            args.output_dir,
-            inline_images=not args.no_inline_images,
-            template_name=template_name,
-            data_file=args.data_file,
-            data_only=args.data_only,
-        )
+        data_files = args.data_file or []
+        input_count = len(args.markdown_files) + len(data_files)
+        if args.markdown_files and data_files:
+            raise ValueError("Use either --data-file or markdown_file, not both.")
+        if input_count > 1:
+            if args.stdout_html:
+                raise ValueError("--stdout-html requires exactly one input.")
+            if data_files:
+                if args.data_only:
+                    raise ValueError("--data-only is only valid when generating data from Markdown.")
+                generate_multiple_data_previews(
+                    data_files,
+                    args.output_dir,
+                    inline_images=not args.no_inline_images,
+                    template_name=template_name,
+                )
+            else:
+                generate_multiple_previews(
+                    args.markdown_files,
+                    args.output_dir,
+                    inline_images=not args.no_inline_images,
+                    template_name=template_name,
+                    data_only=args.data_only,
+                )
+        else:
+            markdown_file = args.markdown_files[0] if args.markdown_files else None
+            data_file = data_files[0] if data_files else None
+            generate_previews(
+                markdown_file,
+                args.output_dir,
+                inline_images=not args.no_inline_images,
+                template_name=template_name,
+                data_file=data_file,
+                data_only=args.data_only,
+                stdout_html=args.stdout_html,
+            )
     except Exception as exc:
         print(f"static_reader failed: {exc}", file=sys.stderr)
         return 1

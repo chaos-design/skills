@@ -14,6 +14,7 @@ Generate by default:
 1. `index.html` - a self-contained, human-editable bilingual reading page.
 
 Always generate `data.json` before HTML rendering. `index.html` must not depend on `data.json` at runtime, but it must be rendered from the reviewed `data.json` so translation and summary corrections are preserved.
+If the delivery target is stdout or chat instead of a file, emit the same complete standalone HTML document only: no Markdown code fences, no prose explanation, no status lines, and no surrounding formatting.
 
 ## Static HTML Requirements
 
@@ -23,6 +24,7 @@ Always generate `data.json` before HTML rendering. `index.html` must not depend 
 - Inline only the JavaScript needed for interactions: view switching, DOM-derived tooltip placement, pronunciation, quiz feedback, theme switching, anchors, and reading progress.
 - Keep the approved third-party code highlighting SDK for syntax-highlighted code blocks, while ensuring code content remains visible as normal `<pre><code>` HTML when the SDK is unavailable.
 - The page must open directly from `file://`.
+- The page must include a complete document shell: `<!DOCTYPE html>`, `<html>`, `<head>`, and `<body>`.
 - Format the generated HTML with 2-space indentation for HTML/CSS/JavaScript while preserving source code block indentation exactly.
 
 ## Required Page Content
@@ -73,3 +75,4 @@ After Markdown approval and parser conversion:
 4. If validating all indexed templates, use `scripts/static_reader.py --data-file <reviewed-data.json>` and render each template as `tests/bilingual-reader/<template>/index.html`, plus `tests/bilingual-reader/index.html`.
 5. Do not describe the selected template as a `default` choice.
 6. Do not replace all templates with one generic stylesheet; reuse the selected template's CSS direction.
+7. When a complete HTML document must be written to stdout, select exactly one template and run `scripts/static_reader.py --data-file <reviewed-data.json> --output-dir <output-dir> --template <template-name> --stdout-html`. This mode must not print progress, summaries, Markdown, or code fences.

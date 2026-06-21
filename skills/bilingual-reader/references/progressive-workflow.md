@@ -69,3 +69,11 @@ After the corrected data is saved, render from that reviewed artifact:
 ```bash
 python3 skills/bilingual-reader/scripts/static_reader.py --data-file <output-dir>/data.json --output-dir <output-dir>
 ```
+
+If the user explicitly requires the HTML content itself as the only output, render one selected template to stdout instead of printing file-generation status:
+
+```bash
+python3 skills/bilingual-reader/scripts/static_reader.py --data-file <output-dir>/data.json --output-dir <output-dir> --template compact-study --stdout-html
+```
+
+This stdout mode must output only the complete standalone HTML document. Do not add Markdown fences, explanatory text, progress logs, or any non-HTML wrapper.

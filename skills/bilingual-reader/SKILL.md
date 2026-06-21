@@ -116,3 +116,6 @@ Load resources in this order only:
 - Produce `data.json` after Markdown approval and before HTML rendering.
 - Produce `index.html` only after `data.json` has passed manual translation and summary review.
 - Keep the approved Markdown, reviewed `data.json`, and generated HTML in the same resolved output directory.
+- The final HTML artifact must be a complete standalone HTML document with `<!DOCTYPE html>`, `<html>`, `<head>`, and `<body>`, and it must open directly from `file://` without runtime data files.
+- If the user asks to output the HTML content in chat or stdout, output only the raw HTML document content. Do not wrap it in Markdown fences, headings, explanations, logs, status lines, or any non-HTML text.
+- For script-based pure output, use `scripts/static_reader.py --data-file <output-dir>/data.json --output-dir <output-dir> --template <template-name> --stdout-html`; this mode writes only the selected complete HTML document to stdout.

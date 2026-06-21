@@ -44,6 +44,93 @@ Reference architecture for generating the slide deck. Every deck uses a fixed 16
             padding: var(--slide-padding);
             gap: var(--content-gap);
         }
+        .slide-content.is-thin {
+            justify-content: center;
+            align-items: stretch;
+        }
+        .slide-content[data-layout-density="dense"] {
+            --content-gap: 24px;
+        }
+        .slide-content[data-layout-density="dense"] h2 {
+            font-size: calc(var(--heading-size) * 0.86);
+            line-height: 1.1;
+        }
+        .slide-content[data-layout-density="dense"] p,
+        .slide-content[data-layout-density="dense"] li {
+            font-size: calc(var(--body-size) * 0.9);
+            line-height: 1.32;
+        }
+        .slide-layout {
+            width: 100%;
+            min-height: 0;
+            display: grid;
+            gap: var(--content-gap);
+            align-items: center;
+        }
+        .slide-layout.split {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        .slide-layout.split.is-reversed {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        .module-grid {
+            width: 100%;
+            display: grid;
+            gap: var(--content-gap);
+            align-items: stretch;
+        }
+        .module-grid[data-count="2"],
+        .module-grid[data-count="4"] {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        .module-grid[data-count="3"],
+        .module-grid[data-count="6"] {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+        .module-grid > * {
+            min-width: 0;
+            height: 100%;
+        }
+        .slide:nth-of-type(odd) .slide-layout.split[data-alternate="auto"] .visual-panel {
+            order: 2;
+        }
+        .slide:nth-of-type(even) .slide-layout.split[data-alternate="auto"] .visual-panel {
+            order: -1;
+        }
+        .bounded-panel,
+        .visual-panel,
+        .text-panel {
+            min-width: 0;
+            min-height: 0;
+            max-height: calc(1080px - (var(--slide-padding) * 2));
+            overflow: hidden;
+        }
+        .bounded-copy {
+            max-width: 1160px;
+            overflow-wrap: anywhere;
+        }
+        .visual-panel figure {
+            display: grid;
+            gap: 18px;
+            max-height: 100%;
+        }
+        .visual-panel img,
+        .visual-panel svg {
+            width: 100%;
+            max-height: 700px;
+            object-fit: contain;
+        }
+        .visual-panel figcaption {
+            font-size: calc(var(--body-size) * 0.72);
+            line-height: 1.38;
+            color: var(--text-secondary, rgba(255, 255, 255, 0.72));
+        }
+        .visual-panel .image-source {
+            margin-top: -8px;
+            font-size: calc(var(--body-size) * 0.52);
+            line-height: 1.25;
+            color: var(--text-tertiary, color-mix(in srgb, var(--text-secondary, rgba(255, 255, 255, 0.72)) 68%, transparent));
+        }
         .title-slide {
             display: flex;
             flex-direction: column;
@@ -118,6 +205,7 @@ Reference architecture for generating the slide deck. Every deck uses a fixed 16
          * <a href="https://example.com" target="_blank" rel="noopener noreferrer">https://example.com</a>
          * Article/source credits use:
          * 原文：<a href="https://example.com" target="_blank" rel="noopener">《Source Title》</a>
+         * Use the original English source title inside 《》 when available; do not translate it.
          * Leave URLs in code, terminal commands, config snippets, placeholders, and illustrative
          * examples as plain text. Keep trailing punctuation outside any generated link.
          */
@@ -421,17 +509,26 @@ Pick the layout that fits the content. All are authored at 1920×1080.
 - **Title** — `h1` (`--title-size`) + optional subtitle/source inside a centered `.title-block`. The first slide's main title must be related to the article's actual theme or central thesis, not a generic deck label, filename, or raw URL slug. If helpful, add a subtitle or concise grounded personal framing line, but keep it faithful to the source. Place the title block in the middle of the stage by default.
 - **Bullet list** — `h2` heading + `<ul>` of `.reveal` items. Keep to density-mode limits (≤3 low, ≤8 high).
 - **Statement / quote** — one large centered line; use for a punchy idea or pulled quote with attribution.
-- **Two-column** — `display:grid; grid-template-columns: 1fr 1fr` for text + image, or compare/contrast.
+- **Two-column** — `display:grid; grid-template-columns: repeat(2, minmax(0, 1fr))` for text + image, or compare/contrast. When two peer modules appear on one slide, both columns must take equal width and align to the same top/bottom rhythm; do not leave one side empty.
+- **Alternating split layout** — use `.slide-layout.split` with `data-alternate="auto"` when several adjacent slides repeat text + visual modules. Odd/even slides may mirror the visual panel to create rhythm, but override with `.is-reversed` or explicit order when source reading order or image legibility matters more. Alternation changes order only; it must not make one column wider than the other or create a blank right side.
 - **Stat / hero number** — one giant number (`font-size: 240px`) + a short caption.
-- **Card grid** — use a centered grid for 3–6 parallel items. Avoid a fixed `repeat(3, 1fr)` when the item count is even: 2 and 4 cards must be centered as balanced two-column groups, and 6 cards may use a balanced 3×2 grid. For 4 cards, prefer `grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: <comfortable width>; margin-inline: auto;` so the layout becomes 2×2 instead of 3+1 with a left-aligned orphan.
+- **Equal module grid** — when a slide has multiple peer modules, divide the available width evenly. Use `.module-grid[data-count="2"]`, `[data-count="3"]`, `[data-count="4"]`, or `[data-count="6"]` where practical. Two modules use 1×2, three use 1×3, four use 2×2, and six use 3×2. For five modules, use a balanced 3+2 composition with the second row centered, or split into two slides if equal alignment would be awkward.
+- **Card grid** — use a centered grid for 3–6 parallel items. Avoid a fixed `repeat(3, 1fr)` when the item count is even: 2 and 4 cards must be centered as balanced two-column groups, and 6 cards may use a balanced 3×2 grid. For 4 cards, prefer `grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: <comfortable width>; margin-inline: auto;` so the layout becomes 2×2 instead of 3+1 with a left-aligned orphan. Never allow an even number of modules to leave the final row half-empty or left-biased.
+- **Thin content slide** — when a slide has only a title plus one short paragraph, one quote, one image with a short caption, or no more than three concise bullets, add `is-thin` to `.slide-content` and compose the content around the vertical center of the canvas. Use centered or balanced internal modules as appropriate, but keep body text readable and avoid excess top whitespace.
+- **Image with optional caption** — do not add a standalone description block for generated slides. Pair meaningful images with a concise, professional caption only when it improves comprehension or source attribution. Use editorial phrasing such as “图示展示了……的结构关系”, “该截图用于说明……的界面状态”, or “图中标注强调……”. Do not use casual formulas like “这张图说什么 / 做什么 / 对应什么”, and do not anthropomorphize images as if they are speaking or acting.
+- **Complete content slide** — a slide must not consist of a single word, bare acronym, orphan section label, or unfinished fragment. Fold isolated terms into an explanatory slide. If a source section is too large, split it into multiple complete slides with specific part titles rather than ending with “...”, “etc.”, “continued”, or an unfinished bullet.
+- **Overflow prevention** — keep text modules in `.bounded-panel` / `.bounded-copy` and images in `.visual-panel`. Use `data-layout-density="dense"` only for moderate compression; if meaningful content still exceeds the visible area, split the slide. Do not use scroll containers, hidden overflow as a content strategy, unreadably small type, or cropped screenshots/diagrams.
 - **Corner radius** — use moderate radii (`12-28px`) for cards, panels, quote blocks, stat blocks, terminal blocks, and image frames when the style supports it. Keep `--module-radius: 0` or very small radii for Brutalist, Swiss, editorial-grid, table-rule, or intentionally hard-edged geometric presets.
 
 Common pitfalls:
 - Never use `display:none/block` to hide slides — only `.active`/`.visible` from viewport-base.css.
 - `.slide-content` uses `display:flex`; that's why `display`-based slide switching breaks. Stick to visibility/opacity.
 - Negate CSS functions with `calc(-1 * clamp(...))`, never `-clamp(...)`.
-- Review visible `http://` and `https://` URLs before linking. Source credits, citations, references, and official docs should be anchors with matching `href`, `target="_blank"`, and `rel="noopener noreferrer"`; URLs inside code, terminal commands, config snippets, placeholders, or illustrative examples should remain plain text. Article/source credits should use exactly `原文：<a href="SOURCE_URL" target="_blank" rel="noopener">《SOURCE_TITLE》</a>`.
+- Review visible `http://` and `https://` URLs before linking. Source credits, citations, references, and official docs should be anchors with matching `href`, `target="_blank"`, and `rel="noopener noreferrer"`; URLs inside code, terminal commands, config snippets, placeholders, or illustrative examples should remain plain text. Article/source credits should use exactly `原文：<a href="SOURCE_URL" target="_blank" rel="noopener">《SOURCE_TITLE》</a>`, with the original English source title inside `《》` when available. Image source credits are optional; when shown, render them as low-emphasis microcopy rather than normal captions.
+- Do not render visible `Description`, `描述`, generated-by text, or skill-name explanations in the final deck unless that wording is part of the source material.
+- Do not create asymmetric peer-module layouts where content occupies the left side while the right side is blank, shorter without reason, or visually unaligned. If modules are peers, equalize their width and align their edges; if one module needs emphasis, make it a deliberate hero layout rather than pretending it is a peer grid.
 - Do not round everything mechanically. Round content modules where it improves the composition, but preserve sharp corners for square chrome buttons, ruled tables, grid lines, and presets whose identity depends on hard edges.
+- Before finalizing HTML, inspect every `.slide` at the fixed 1920×1080 stage size. Any slide with clipped text, clipped labels, overlapping cards, content entering the bottom control zone, or a meaningful visual crop must be repaired by splitting or repositioning content.
 
 ---
 
@@ -687,6 +784,8 @@ Process images and diagrams before embedding. The final deliverable is a **singl
 
 **Decide before you embed.** Only visuals selected by the Phase 2 visual asset decision in `SKILL.md` belong on a slide. Prefer reusing original source visuals whenever they carry information, context, or tone. Drop site chrome, generic stock photography, decorative filler, generated substitutes, duplicates/thumbnails, broken or unclear-licensed assets, and emoji-style icons. Keep charts, diagrams, dataflows, infographics, screenshots/UI captures, hero/cover art, portraits attached to quoted people, maps/timelines/scanned figures, existing legacy flowchart files, and Mermaid diagrams whose information is hard to retype. Preserve the original image content and the source's caption/alt text on the rendered figure.
 
+Image source credits are optional. Use them only when they materially clarify provenance, licensing, or evidence. When included, separate the explanatory caption from the source credit and render the credit with `.image-source` or an equivalent very small, low-contrast style.
+
 Legacy flowcharts:
 - Existing flowchart image/vector files may be used directly; do not redraw them just to match the deck style.
 - Do not restyle a source image into a different scene, generate a visually similar replacement, or invent missing labels, legends, people, products, screenshots, chart values, or backgrounds.
@@ -724,7 +823,8 @@ Placement:
     <img src="data:image/png;base64,..."
          alt="Source caption or concise factual description grounded in the image"
          class="slide-image screenshot">
-    <figcaption>Source caption, credit, or a factual note grounded in visible image content</figcaption>
+    <figcaption>Optional concise caption grounded in visible image content</figcaption>
+    <p class="image-source">Source: optional image provenance in very small type</p>
 </figure>
 ```
 ```css
@@ -737,4 +837,4 @@ Placement:
 
 Every generated deck that contains `<img>` elements must include the global image lightbox from the base template. Users should be able to click any slide image to inspect the original embedded source at a larger size. The lightbox must stay outside `.deck-stage`, use the image's `currentSrc || src`, preserve original aspect ratio with `object-fit: contain`, and close on backdrop click, close-button click, or `Escape`.
 
-Fit every image or rendered diagram inside the 1920×1080 stage. If a slide is already full, move the visual to its own slide. Never reuse the same image on multiple slides (logos on title + closing are fine). Before delivery, view each visual at presentation size and confirm text labels are readable, the original information is complete, no generated replacement slipped in, and no frame, mask, crop, or background color makes the content hard to read. Any caption or explanation added around the image must be supported by visible image details, source-provided alt/caption text, or nearby source prose.
+Fit every image or rendered diagram inside the 1920×1080 stage. If a slide is already full, move the visual to its own slide. Never reuse the same image on multiple slides (logos on title + closing are fine). Before delivery, view each visual at presentation size and confirm text labels are readable, the original information is complete, no generated replacement slipped in, and no frame, mask, crop, or background color makes the content hard to read. Captions are optional; any caption or explanation added around the image must be necessary for comprehension and supported by visible image details, source-provided alt/caption text, or nearby source prose.

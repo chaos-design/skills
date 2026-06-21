@@ -88,6 +88,13 @@ The script checks:
      must be traceable to the approved Markdown.
    - Generated explanations must not introduce URLs that do not appear in the source.
    - Numbers in summaries and explanations are flagged when not clearly present in the source.
+5. **Glossary grading and source backing**
+   - Every `glossary.entries[].level` must be one of `B1`, `B2`, `C1`, `C2`, or `术语`. A missing
+     or out-of-range level is an error (`data.glossary_invalid_level`).
+   - Every glossary `word` must occur as a whole word or phrase in the approved Markdown source.
+     Words not found in the source are an error (`data.glossary_not_source_backed`).
+   - Level labels must reflect the word's real English difficulty; mislabeled grades must be fixed
+     during `data.json` review.
 
 The script can catch structural fabrication, copied placeholders, missing translations, and many
 source mismatch cases. It cannot prove every factual statement automatically. Every run therefore

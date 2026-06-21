@@ -17,6 +17,10 @@ GitHub：<https://github.com/chaos-design/skills>
 - 内置多套索引化视觉模板，模型会根据文章语气、内容密度、用户意图和语言学习需求进行选择。
 - 最终 HTML 内联全部数据、CSS 和 JavaScript，无 CDN、无外部字体、无本地服务依赖，可离线执行。
 
+## 文档
+
+- [数据处理流程图](./references/data-processing-flow.md) 说明从原始来源接入到 Markdown、已审 `data.json`、静态 HTML、词汇表、原文内容和产物审查的完整链路。
+
 ## 模板图库
 
 模板从 `assets/templates/templates.json` 中选择。用户未指定模板时，模型会根据文章内容、用户意图、语气、密度和语言需求，从索引模板中自行选择，不存在需要用户显式选择的 `default` 模板定义。

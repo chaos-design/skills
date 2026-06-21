@@ -179,6 +179,10 @@
         justify-content: center;
         gap: var(--content-gap);
       }
+      .slide-content.is-thin {
+        justify-content: center;
+        align-items: stretch;
+      }
 
       .title-slide {
         justify-content: center;
@@ -752,7 +756,7 @@
         </section>
 
         <section class="slide">
-          <div class="slide-content">
+          <div class="slide-content is-thin">
             <div class="kicker-row reveal"><span class="pill">Agents</span>开放式问题的自主系统</div>
             <h2 class="reveal">Agents 适合无法预测步骤数、也无法硬编码路径的问题</h2>
             <div class="grid-2">

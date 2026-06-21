@@ -89,6 +89,8 @@ POS_ABBREVIATIONS = (
     "v",
 )
 
+GLOSSARY_LEVELS = ("B1", "B2", "C1", "C2", "术语")
+
 BOILERPLATE_PHRASES = (
     "introduction what is an agent? when should you build an agent? agent design foundations guardrails conclusion",
     "try chatgpt",
@@ -773,6 +775,26 @@ def normalize_text_list(value: object) -> list[str]:
     return [text for item in value if (text := clean_text(str(item)))]
 
 
+def normalize_glossary_level(level: object) -> str:
+    """Return a valid CEFR/term level, rejecting unknown grade labels."""
+
+    value = clean_text(str(level or ""))
+    if not value:
+        raise ConversionError(
+            "Glossary entry is missing an English level; use one of "
+            f"{', '.join(GLOSSARY_LEVELS)}."
+        )
+    if value in GLOSSARY_LEVELS:
+        return value
+    upper = value.upper()
+    if upper in GLOSSARY_LEVELS:
+        return upper
+    raise ConversionError(
+        f"Glossary level is not a supported CEFR/term level: {value}. "
+        f"Use one of {', '.join(GLOSSARY_LEVELS)}."
+    )
+
+
 def build_glossary_contract(entries: list[dict[str, str]]) -> dict[str, object]:
     """Build the complete glossary shape consumed by templates and runtime."""
 
@@ -788,7 +810,7 @@ def build_glossary_contract(entries: list[dict[str, str]]) -> dict[str, object]:
             "w": word,
             "ipa": str(entry.get("ipa", "")),
             "pos": display_pos(word, str(entry.get("pos", ""))),
-            "level": str(entry.get("level") or "术语"),
+            "level": normalize_glossary_level(entry.get("level")),
             "def": str(entry.get("definitionZh", "")),
             "eg": str(entry.get("collocationExample", "")),
             "egzh": str(entry.get("exampleZh", "")),
@@ -1045,7 +1067,7 @@ def build_original(article: Article, translate: Translator) -> dict[str, object]
     for index, section in enumerate(split_top_level_sections(article, include_media=True), 1):
         rows = original_rows(section["blocks"], translate)
         groups.append({"id": f"og-{index}", "group": section["title"], "rows": rows})
-    return {"title": f"{original_display_title(article)} · 原文全文对照", "meta": article.metadata.source_url, "groups": groups}
+    return {"title": f"{original_display_title(article)}", "meta": article.metadata.source_url, "groups": groups}
 
 
 def original_display_title(article: Article) -> str:
@@ -1504,6 +1526,7 @@ def validate_learning_data(data: dict[str, object]) -> None:
     if glossary.get("entries") and (not glossary.get("dict") or not glossary.get("autowrap")):
         raise ConversionError("Glossary runtime dict/autowrap data is missing.")
     validate_glossary_runtime(glossary)
+    validate_glossary_source_words(glossary, data)
 
 
 def validate_metadata_object(metadata: object, path: str) -> None:
@@ -1661,7 +1684,109 @@ def validate_glossary_entry(entry: dict[str, str]) -> None:
     missing = [key for key in required if not str(entry.get(key, "")).strip()]
     if missing:
         raise ConversionError(f"Glossary entry is missing required fields: {', '.join(missing)}.")
+    level = clean_text(str(entry.get("level", "")))
+    if level not in GLOSSARY_LEVELS:
+        raise ConversionError(
+            f"Glossary entry level must be one of {', '.join(GLOSSARY_LEVELS)}: "
+            f"{entry.get('word', '')} -> {level or '(missing)'}."
+        )
     validate_chinese_text(entry.get("definitionZh", ""), "glossary.entries[].definitionZh")
+
+
+def validate_glossary_source_words(glossary: object, data: dict[str, object]) -> None:
+    """Ensure every glossary word is backed by visible original source text."""
+
+    if not isinstance(glossary, dict):
+        return
+    source_text = glossary_source_text(data)
+    seen: set[str] = set()
+    for path, word, pos in iter_glossary_words(glossary):
+        normalized_word = clean_text(str(word))
+        if not normalized_word:
+            continue
+        key = normalized_word.casefold()
+        if key in seen:
+            continue
+        seen.add(key)
+        if not source_contains_word_or_inflection(normalized_word, str(pos), source_text):
+            raise ConversionError(f"{path} must come from original source text: {normalized_word}.")
+
+
+def iter_glossary_words(glossary: dict[str, object]) -> Iterable[tuple[str, str, str]]:
+    """Yield user-visible glossary words with part-of-speech from entries and dict."""
+
+    entries = glossary.get("entries", [])
+    if isinstance(entries, list):
+        for index, entry in enumerate(entries):
+            if isinstance(entry, dict):
+                yield f"glossary.entries[{index}].word", str(entry.get("word", "")), str(entry.get("pos", ""))
+    dictionary = glossary.get("dict", {})
+    if isinstance(dictionary, dict):
+        for key, entry in dictionary.items():
+            if isinstance(entry, dict):
+                yield f"glossary.dict.{key}.w", str(entry.get("w", "")), str(entry.get("pos", ""))
+
+
+def glossary_source_text(data: dict[str, object]) -> str:
+    """Collect searchable text from the original-view source content only."""
+
+    parts: list[str] = []
+    for row in iter_original_rows(data):
+        row_type = str(row.get("type", ""))
+        if row_type == "bilingual":
+            parts.append(str(row.get("en", "")))
+            parts.append(html_to_text(str(row.get("html", ""))))
+        elif row_type == "table":
+            rows = row.get("rows", [])
+            if isinstance(rows, list):
+                for table_row in rows:
+                    if isinstance(table_row, list):
+                        parts.append(" ".join(str(cell) for cell in table_row))
+        elif row_type == "code":
+            parts.append(str(row.get("code", "")))
+        elif row_type == "image":
+            parts.append(str(row.get("alt", "")))
+            parts.append(str(row.get("caption", "")))
+    return clean_text(" ".join(part for part in parts if part))
+
+
+def html_to_text(value: str) -> str:
+    """Convert a small HTML fragment to searchable plain text."""
+
+    without_tags = re.sub(r"<[^>]+>", " ", value)
+    return html.unescape(without_tags)
+
+
+def source_contains_exact_word(word: str, source_text: str) -> bool:
+    """Return true when the displayed glossary word appears in source text."""
+
+    if not source_text:
+        return False
+    escaped = re.escape(clean_text(word))
+    escaped = re.sub(r"\\\s+", r"\\s+", escaped)
+    if re.match(r"^[A-Za-z0-9]", word) and re.search(r"[A-Za-z0-9]$", word):
+        pattern = rf"(?<![A-Za-z0-9]){escaped}(?![A-Za-z0-9])"
+    else:
+        pattern = escaped
+    return bool(re.search(pattern, source_text, re.IGNORECASE))
+
+
+def source_contains_word_or_inflection(word: str, pos: str, source_text: str) -> bool:
+    """Return true when a glossary word appears in source as lemma or inflected form.
+
+    Single English words are matched against their common inflected forms (plural,
+    third-person, past, participle) using the same expansion as autowrap so that a
+    lemma like `node` is still considered source-backed when the article only writes
+    `nodes`. Phrases and non-alphabetic tokens fall back to exact whole-word matching.
+    """
+
+    cleaned = clean_text(word)
+    if re.fullmatch(r"[A-Za-z]+", cleaned):
+        return any(
+            source_contains_exact_word(form, source_text)
+            for form in inflected_word_forms(cleaned, pos)
+        )
+    return source_contains_exact_word(cleaned, source_text)
 
 
 def validate_glossary_runtime(glossary: object) -> None:

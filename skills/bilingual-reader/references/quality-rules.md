@@ -35,7 +35,19 @@ Load this document only after the user has approved the normalized Markdown.
 - Do not use plausible but unsupported background knowledge to fill gaps in the article. The close-reading layer may explain the source, but it must not add new claims.
 - Quiz questions must include correct answer, wrong-answer reason, and source evidence.
 - The glossary should use high-value words, collocations, and domain terms from the article.
-- Use CEFR levels `B1`, `B2`, `C1`, `C2`, and `术语`.
+- Build the glossary by **selecting words from the approved source, then grading them by English level**. Never invent words. The required process is:
+  1. Scan the approved Markdown body, headings, tables, image captions, and code-block comments/strings for candidate words and phrases. Every glossary word must appear verbatim in that source text.
+  2. Discard trivial high-frequency words that a beginner already knows (typical A1/A2 basics such as `the`, `make`, `people`, `important`). Keep words that genuinely challenge a learner or carry domain meaning.
+  3. Grade each remaining word by its real CEFR difficulty and tag it with the correct level. Do not guess or default a level; the tag must reflect the word's actual difficulty.
+  4. Tag domain-specific or proper-noun terms (APIs, product names, acronyms, jargon) as `术语` instead of forcing a CEFR band.
+- A single-word lemma is treated as source-backed when the source contains it or one of its
+  natural inflected forms (plural, third-person, past tense, participle), matching the autowrap
+  inflection rules. Use the dictionary lemma as the glossary `word` even when the source only writes
+  an inflected form (for example keep `node` when the source says `nodes`, or `resolve` when the
+  source says `resolving`). Multiword and hyphenated terms must match the source verbatim.
+- Use CEFR levels `B1`, `B2`, `C1`, `C2`, and `术语`. These are the only allowed values; entries with a missing or out-of-range level are rejected by `markdown_to_data.validate_glossary_entry` and flagged by `review_artifacts.py` (`data.glossary_invalid_level`).
+- Level accuracy is a hard requirement. Mislabeled levels (for example tagging a C1 word as B1, or grading a basic word as C2) must be corrected during `data.json` review.
+- The `collocationExample` should reuse source-backed wording so the example stays faithful to how the word is used in the article.
 - Medium articles should include 60-90 useful glossary entries when enough source terms exist. Long articles may include up to 120 high-value entries. Do not pad unrelated terms.
 - Normal glossary entries need `w`, `ipa`, `pos`, `level`, `def`, `eg`, and `egzh`.
 - `术语` entries may leave `ipa` empty and use `pos: "术语"`.

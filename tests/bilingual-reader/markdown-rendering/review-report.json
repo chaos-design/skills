@@ -2,18 +2,10 @@
   "status": "pass",
   "counts": {
     "error": 0,
-    "warning": 1,
+    "warning": 0,
     "info": 1
   },
   "issues": [
-    {
-      "severity": "warning",
-      "code": "markdown.h1_count",
-      "artifact": "markdown",
-      "path": "tests/bilingual-reader/a-practical-guide-to-building-ai-agents.md",
-      "message": "H1 标题数量不是 1。",
-      "suggestion": "保留一个来源主标题。"
-    },
     {
       "severity": "info",
       "code": "content.manual_review_required",

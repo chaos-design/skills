@@ -133,7 +133,7 @@ The parser and renderer must fail with a clear error before producing artifacts 
   ],
 
   "original": { // “原文”视图：连续正文按大段落整体对照
-    "title": "Building Effective Agents · 原文全文对照",
+    "title": "Building Effective Agents",
     "meta": "Anthropic Engineering · 2024-12-19",
     "groups": [
       {"group": "Introduction · 引言",
@@ -244,9 +244,14 @@ comes from or directly explains the article.
   emit unconstrained natural image dimensions. If an image is referenced but inaccessible, state the
   gap instead of inventing a replacement.
 - **Escaping in JSON**: backslashes in regex need doubling (`\\b`), quotes inside text need `\"`.
-- **CEFR grading**: build the glossary from the article content and learner needs. Aim for a broad
-  spread across B1→C2 plus a `术语` (domain terms) group. 60–90 words is a good target for a
-  medium article when enough source terms exist; long articles may include up to 120 high-value
-  entries. Use fewer for short material and never add unrelated filler words.
+- **CEFR grading**: build the glossary by selecting words from the approved source first, then
+  grading each by its real English difficulty. Every `w` must appear verbatim in the source text
+  (body, headings, tables, captions, or code). Drop trivial A1/A2 basics, keep challenging or
+  domain words, and tag each with its accurate level. `level` must be one of `{B1,B2,C1,C2,术语}`;
+  missing or out-of-range levels are rejected by `validate_glossary_entry` and flagged by
+  `review_artifacts.py`. Do not default or guess a level. Aim for a broad spread across B1→C2 plus
+  a `术语` (domain terms) group. 60–90 words is a good target for a medium article when enough
+  source terms exist; long articles may include up to 120 high-value entries. Use fewer for short
+  material and never add unrelated filler or off-source words.
 - If the compact-result exception applies, optional section types can be omitted entirely. If
   there is no `quiz`/`cards`/`summary` section, those features simply do not render.

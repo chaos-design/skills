@@ -1,0 +1,18 @@
+{
+  "status": "pass",
+  "counts": {
+    "error": 0,
+    "warning": 0,
+    "info": 1
+  },
+  "issues": [
+    {
+      "severity": "info",
+      "code": "content.manual_review_required",
+      "artifact": "data",
+      "path": "tests/bilingual-reader/openai/data.json",
+      "message": "事实准确性和是否胡编乱造仍需人工审查最终确认。",
+      "suggestion": "逐句对照 Markdown 审阅翻译、总结、quiz 和 glossary。"
+    }
+  ]
+}

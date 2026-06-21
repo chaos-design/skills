@@ -17,6 +17,10 @@ GitHub: <https://github.com/chaos-design/skills>
 - Includes indexed visual templates selected from article tone, content density, user intent, and language-learning needs.
 - Produces final HTML with all data, CSS, and JavaScript inlined. No CDN, remote font, local server, `fetch()`, or module import is required for offline execution.
 
+## Documentation
+
+- [Data processing flow](./references/data-processing-flow.md) explains the complete pipeline from raw source intake to Markdown, reviewed `data.json`, static HTML, glossary, original content, and artifact review.
+
 ## Template Gallery
 
 Templates are selected from `assets/templates/templates.json`. If the user does not name a template, the model chooses one from the indexed templates based on the article, user intent, tone, density, and language needs.

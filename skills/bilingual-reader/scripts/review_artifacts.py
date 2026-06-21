@@ -14,10 +14,22 @@ from pathlib import Path
 from typing import Any, Iterable
 
 try:
-    from markdown_to_data import ConversionError, parse_markdown, validate_learning_data
+    from markdown_to_data import (
+        GLOSSARY_LEVELS,
+        ConversionError,
+        parse_markdown,
+        source_contains_word_or_inflection,
+        validate_learning_data,
+    )
 except ImportError:
     sys.path.insert(0, str(Path(__file__).resolve().parent))
-    from markdown_to_data import ConversionError, parse_markdown, validate_learning_data
+    from markdown_to_data import (
+        GLOSSARY_LEVELS,
+        ConversionError,
+        parse_markdown,
+        source_contains_word_or_inflection,
+        validate_learning_data,
+    )
 
 
 CONTROL_CHAR_RE = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
@@ -107,6 +119,19 @@ def compact_text(value: object) -> str:
     text = re.sub(r"<[^>]+>", " ", str(value or ""))
     text = re.sub(r"[^A-Za-z0-9\u3400-\u9fff]+", " ", text)
     return re.sub(r"\s+", " ", text).strip().casefold()
+
+
+def glossary_source_text(value: object) -> str:
+    """Normalize source text for glossary matching, preserving word-internal punctuation.
+
+    Unlike `compact_text`, this keeps hyphens and apostrophes so multiword and
+    hyphenated glossary terms such as `all-or-nothing` or `human-in-the-loop` are
+    matched against their verbatim source form rather than a punctuation-stripped one.
+    """
+
+    text = re.sub(r"<[^>]+>", " ", str(value or ""))
+    text = re.sub(r"[^A-Za-z0-9\u3400-\u9fff'\-]+", " ", text)
+    return re.sub(r"\s+", " ", text).strip()
 
 
 def source_contains(source_text: str, candidate: object, min_words: int = 4) -> bool:
@@ -215,6 +240,7 @@ def review_data(path: Path, markdown_text: str, issues: list[Issue]) -> dict[str
     review_data_text_fields(data, path, issues)
     if markdown_text:
         review_source_fidelity(data, compact_text(markdown_text), path, issues)
+        review_glossary_quality(data, glossary_source_text(markdown_text), path, issues)
     else:
         add_issue(issues, "warning", "content.no_markdown_reference", "data", str(path), "未提供 Markdown，无法做来源忠实性自动比对。", "同时传入 `--markdown`。")
     return data
@@ -280,6 +306,50 @@ def review_glossary_runtime(data: dict[str, Any], path: Path, issues: list[Issue
             re.compile(str(pattern))
         except re.error as exc:
             add_issue(issues, "error", "data.glossary_bad_regex", "data", f"glossary.autowrap[{index}]", str(exc), "修正 autowrap 正则。")
+
+
+def review_glossary_quality(data: dict[str, Any], source_text: str, path: Path, issues: list[Issue]) -> None:
+    """Check glossary CEFR levels and that every word comes from the source."""
+
+    glossary = data.get("glossary", {})
+    if not isinstance(glossary, dict):
+        return
+    entries = glossary.get("entries", [])
+    if not isinstance(entries, list):
+        return
+    seen: set[str] = set()
+    for index, entry in enumerate(entries):
+        if not isinstance(entry, dict):
+            continue
+        word = str(entry.get("word", "")).strip()
+        level = str(entry.get("level", "")).strip()
+        pos = str(entry.get("pos", ""))
+        if level not in GLOSSARY_LEVELS:
+            add_issue(
+                issues,
+                "error",
+                "data.glossary_invalid_level",
+                "data",
+                f"glossary.entries[{index}].level",
+                f"词汇等级不合法：{word or '(空)'} -> {level or '(缺失)'}。",
+                f"仅使用 {', '.join(GLOSSARY_LEVELS)}，并按真实英语难度标注。",
+            )
+        if not word:
+            continue
+        key = word.casefold()
+        if key in seen:
+            continue
+        seen.add(key)
+        if not source_contains_word_or_inflection(word, pos, source_text):
+            add_issue(
+                issues,
+                "error",
+                "data.glossary_not_source_backed",
+                "data",
+                f"glossary.entries[{index}].word",
+                f"词汇未在 Markdown 原文中出现：{word}。",
+                "只收录原文中真实出现的词、短语或术语，删除凭空生成的词条。",
+            )
 
 
 def walk_values(value: Any, prefix: str = "$") -> Iterable[tuple[str, Any]]:

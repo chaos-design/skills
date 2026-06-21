@@ -102,6 +102,38 @@
         gap: 4px;
         padding: 12px;
       }
+      .domain-label {
+        position: sticky;
+        top: 34px;
+        z-index: 15;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin: 8px -12px 2px;
+        padding: 6px 14px;
+        background: rgba(255, 255, 255, 0.96);
+        backdrop-filter: blur(8px);
+        border-bottom: 1px solid rgba(208, 213, 221, 0.7);
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .domain-label:first-child {
+        margin-top: 0;
+      }
+      .domain-count {
+        min-width: 22px;
+        padding: 1px 7px;
+        border-radius: 999px;
+        background: #eef2ff;
+        color: var(--accent);
+        font-size: 10px;
+        text-align: center;
+        letter-spacing: 0;
+      }
       a.card {
         display: block;
         min-height: 0;
@@ -219,124 +251,99 @@
       <div class="content">
         <section class="section">
           <h2>
-            <span class="badge">14</span>
-            Bilingual Reader OpenAI
+            <span class="badge">19</span>
+            Bilingual Reader
           </h2>
           <div class="grid">
-            <a class="card" href="bilingual-reader/aurora-dashboard/index.html">
-              <div class="name">aurora-dashboard</div>
+            <div class="domain-label">
+              <span>openai</span>
+              <span class="domain-count">14</span>
+            </div>
+            <a class="card" href="bilingual-reader/openai/aurora-dashboard/index.html">
+              <div class="name">openai · aurora-dashboard</div>
               <div class="desc">
-                Glassmorphism dashboard with luminous aurora gradients and metric-heavy panels.
+                Glassmorphism dashboard with luminous aurora gradients.
               </div>
             </a>
-            <a class="card" href="bilingual-reader/blueprint-grid/index.html">
-              <div class="name">blueprint-grid</div>
-              <div class="desc">
-                Engineering blueprint on a dark cyan grid with specification-table reading rows.
-              </div>
+            <a class="card" href="bilingual-reader/openai/blueprint-grid/index.html">
+              <div class="name">openai · blueprint-grid</div>
+              <div class="desc">Engineering blueprint on a dark cyan grid.</div>
             </a>
-            <a class="card" href="bilingual-reader/broadsheet/index.html">
-              <div class="name">broadsheet</div>
-              <div class="desc">
-                Vintage newspaper broadsheet with masthead rules, columns, and editorial hierarchy.
-              </div>
+            <a class="card" href="bilingual-reader/openai/broadsheet/index.html">
+              <div class="name">openai · broadsheet</div>
+              <div class="desc">Vintage newspaper broadsheet layout.</div>
             </a>
-            <a class="card" href="bilingual-reader/card-atlas/index.html">
-              <div class="name">card-atlas</div>
-              <div class="desc">
-                Anchored article atlas with a sticky source card and numbered bilingual reading
-                cards.
-              </div>
+            <a class="card" href="bilingual-reader/openai/card-atlas/index.html">
+              <div class="name">openai · card-atlas</div>
+              <div class="desc">Anchored article atlas with bilingual reading cards.</div>
             </a>
-            <a class="card" href="bilingual-reader/command-center/index.html">
-              <div class="name">command-center</div>
-              <div class="desc">
-                Kinetic command-center mosaic with a slim control dock and staggered reading stream.
-              </div>
+            <a class="card" href="bilingual-reader/openai/command-center/index.html">
+              <div class="name">openai · command-center</div>
+              <div class="desc">Kinetic command-center mosaic.</div>
             </a>
-            <a class="card" href="bilingual-reader/compact-study/index.html">
-              <div class="name">compact-study</div>
-              <div class="desc">
-                High-density study sheet optimized for efficient bilingual review and vocabulary
-                scanning.
-              </div>
+            <a class="card" href="bilingual-reader/openai/compact-study/index.html">
+              <div class="name">openai · compact-study</div>
+              <div class="desc">High-density study sheet.</div>
             </a>
-            <a class="card" href="bilingual-reader/editorial-split/index.html">
-              <div class="name">editorial-split</div>
-              <div class="desc">
-                Magazine-style split layout with oversized typography and wide bilingual columns.
-              </div>
+            <a class="card" href="bilingual-reader/openai/editorial-split/index.html">
+              <div class="name">openai · editorial-split</div>
+              <div class="desc">Magazine-style split layout.</div>
             </a>
-            <a class="card" href="bilingual-reader/gradient-magazine/index.html">
-              <div class="name">gradient-magazine</div>
-              <div class="desc">
-                Colorful magazine treatment with vivid gradients, asymmetric hero composition, and
-                energetic cards.
-              </div>
+            <a class="card" href="bilingual-reader/openai/gradient-magazine/index.html">
+              <div class="name">openai · gradient-magazine</div>
+              <div class="desc">Vivid gradients and asymmetric magazine composition.</div>
             </a>
-            <a class="card" href="bilingual-reader/ink-scroll/index.html">
-              <div class="name">ink-scroll</div>
-              <div class="desc">
-                Dark Chinese ink-wash scroll with seal accents, rice-paper panels, and literary
-                pacing.
-              </div>
+            <a class="card" href="bilingual-reader/openai/ink-scroll/index.html">
+              <div class="name">openai · ink-scroll</div>
+              <div class="desc">Dark Chinese ink-wash scroll style.</div>
             </a>
-            <a class="card" href="bilingual-reader/kanban-flow/index.html">
-              <div class="name">kanban-flow</div>
-              <div class="desc">
-                Modern SaaS kanban board with project stats, workflow columns, and pill badges.
-              </div>
+            <a class="card" href="bilingual-reader/openai/kanban-flow/index.html">
+              <div class="name">openai · kanban-flow</div>
+              <div class="desc">Modern SaaS kanban board.</div>
             </a>
-            <a class="card" href="bilingual-reader/midnight-lab/index.html">
-              <div class="name">midnight-lab</div>
-              <div class="desc">
-                Terminal-style midnight lab notebook with evidence blocks and assertion-like
-                quizzes.
-              </div>
+            <a class="card" href="bilingual-reader/openai/midnight-lab/index.html">
+              <div class="name">openai · midnight-lab</div>
+              <div class="desc">Terminal-style midnight lab notebook.</div>
             </a>
-            <a class="card" href="bilingual-reader/mono-focus/index.html">
-              <div class="name">mono-focus</div>
-              <div class="desc">
-                Monospace dossier workspace with command-line panels and scanline navigation.
-              </div>
+            <a class="card" href="bilingual-reader/openai/mono-focus/index.html">
+              <div class="name">openai · mono-focus</div>
+              <div class="desc">Monospace dossier workspace.</div>
             </a>
-            <a class="card" href="bilingual-reader/paper-notes/index.html">
-              <div class="name">paper-notes</div>
-              <div class="desc">
-                Soft paper-note timeline that turns bilingual reading into a route of learning
-                stops.
-              </div>
+            <a class="card" href="bilingual-reader/openai/paper-notes/index.html">
+              <div class="name">openai · paper-notes</div>
+              <div class="desc">Soft paper-note learning route.</div>
             </a>
-            <a class="card" href="bilingual-reader/synthwave-arcade/index.html">
-              <div class="name">synthwave-arcade</div>
-              <div class="desc">
-                Retro synthwave arcade interface with neon scanlines, grid horizon, and level
-                panels.
-              </div>
+            <a class="card" href="bilingual-reader/openai/synthwave-arcade/index.html">
+              <div class="name">openai · synthwave-arcade</div>
+              <div class="desc">Retro synthwave arcade interface.</div>
             </a>
-          </div>
-        </section>
-        <section class="section">
-          <h2>
-            <span class="badge">4</span>
-            Bilingual Reader · Anthropic
-          </h2>
-          <div class="grid">
-            <a class="card" href="bilingual-reader/anthropic-agents/compact-study/index.html">
+            <div class="domain-label">
+              <span>anthropic</span>
+              <span class="domain-count">4</span>
+            </div>
+            <a class="card" href="bilingual-reader/anthropic/compact-study/index.html">
               <div class="name">anthropic · compact-study</div>
               <div class="desc">高密度学习页，使用已审阅中文译文与真实原文结构。</div>
             </a>
-            <a class="card" href="bilingual-reader/anthropic-agents/aurora-dashboard/index.html">
+            <a class="card" href="bilingual-reader/anthropic/aurora-dashboard/index.html">
               <div class="name">anthropic · aurora-dashboard</div>
               <div class="desc">深色科技风仪表盘式双语阅读预览。</div>
             </a>
-            <a class="card" href="bilingual-reader/anthropic-agents/midnight-lab/index.html">
+            <a class="card" href="bilingual-reader/anthropic/midnight-lab/index.html">
               <div class="name">anthropic · midnight-lab</div>
               <div class="desc">实验室风格的深色技术阅读界面。</div>
             </a>
-            <a class="card" href="bilingual-reader/anthropic-agents/editorial-split/index.html">
+            <a class="card" href="bilingual-reader/anthropic/editorial-split/index.html">
               <div class="name">anthropic · editorial-split</div>
               <div class="desc">杂志分栏风格的中英对照阅读页面。</div>
+            </a>
+            <div class="domain-label">
+              <span>fixtures</span>
+              <span class="domain-count">1</span>
+            </div>
+            <a class="card" href="bilingual-reader/markdown-rendering/index.html">
+              <div class="name">markdown-rendering</div>
+              <div class="desc">Markdown 渲染边界 fixture。</div>
             </a>
           </div>
         </section>
@@ -664,11 +671,11 @@
     </main>
     <section class="preview" aria-label="测试页面预览窗口">
       <div class="preview-bar">
-        <div class="current" id="currentName">aurora-dashboard</div>
+        <div class="current" id="currentName">openai · aurora-dashboard</div>
         <a
           class="open-link"
           id="openStandalone"
-          href="bilingual-reader/aurora-dashboard/index.html"
+          href="bilingual-reader/openai/aurora-dashboard/index.html"
           target="_blank"
           rel="noopener"
         >
@@ -678,7 +685,7 @@
       <iframe
         id="previewFrame"
         title="Skills 测试输出预览"
-        src="bilingual-reader/aurora-dashboard/index.html"
+        src="bilingual-reader/openai/aurora-dashboard/index.html"
         tabindex="0"
       ></iframe>
     </section>
@@ -687,7 +694,7 @@
       const frame = document.getElementById('previewFrame');
       const currentName = document.getElementById('currentName');
       const openStandalone = document.getElementById('openStandalone');
-      const fallback = 'bilingual-reader/aurora-dashboard/index.html';
+      const fallback = 'bilingual-reader/openai/aurora-dashboard/index.html';
       function cardLabel(card) {
         return card.querySelector('.name')?.textContent.trim() || card.getAttribute('href');
       }
