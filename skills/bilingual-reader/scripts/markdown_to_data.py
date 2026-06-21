@@ -27,7 +27,7 @@ FETCHED_AT_RE = re.compile(r"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$")
 PUBLISHED_RE = re.compile(r"^(?:Published|Date|发布时间)[:：]?\s+(.+?)\s*$", re.IGNORECASE)
 HEADING_RE = re.compile(r"^(#{1,6})\s+(.+?)\s*$")
 IMAGE_RE = re.compile(r"^!\[([^\]]*)\]\(([^)\s]+)(?:\s+\"([^\"]*)\")?\)\s*$")
-FENCE_RE = re.compile(r"^```([A-Za-z0-9_+.-]*)\s*$")
+FENCE_RE = re.compile(r"^\s{0,3}```([A-Za-z0-9_+.-]*)\s*$")
 LIST_ITEM_RE = re.compile(r"^(\s*)([-*+]|\d+[.)])\s+(.+?)\s*$")
 BLOCKQUOTE_RE = re.compile(r"^\s*>\s?(.*)$")
 TABLE_SEPARATOR_RE = re.compile(r"^\s*\|?\s*:?-{3,}:?\s*(?:\|\s*:?-{3,}:?\s*)+\|?\s*$")
@@ -307,8 +307,8 @@ def parse_code_block(lines: list[str], index: int, language: str, blocks: list[B
 
     code_lines: list[str] = []
     cursor = index + 1
-    while cursor < len(lines) and not lines[cursor].startswith("```"):
-        code_lines.append(lines[cursor])
+    while cursor < len(lines) and not FENCE_RE.match(lines[cursor]):
+        code_lines.append(remove_code_fence_indent(lines[cursor]))
         cursor += 1
     if cursor >= len(lines):
         raise ConversionError("Unclosed fenced code block.")
@@ -317,6 +317,12 @@ def parse_code_block(lines: list[str], index: int, language: str, blocks: list[B
         raise ConversionError("Code block is too large for stable rendering.")
     blocks.append(Block(type="code", language=language, code=code))
     return cursor + 1
+
+
+def remove_code_fence_indent(line: str) -> str:
+    """Remove Markdown fence indentation while preserving code indentation."""
+
+    return re.sub(r"^ {0,3}", "", line)
 
 
 def looks_like_table(lines: list[str], index: int) -> bool:
