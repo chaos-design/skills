@@ -13,48 +13,6 @@ Create HTML slide decks from articles, notes, documents, images, or PPT-style so
 
 Do not delete or modify files inside `assets/runtime/`.
 
-## Workflow Overview
-
-Use this checkpointed workflow when the skill output is a publishable article-style artifact. Keep checkpoints explicit and stop at each checkpoint until the user confirms the listed decisions.
-
-```
-Phase 0  Intake
-         Decide whether this skill applies and identify the initial article type.
-  🔽
-Phase 1  Source -> Markdown
-         Convert URL/PDF/DOCX/MD/text into source.md + extraction-notes.md.
-         The main agent runs a 5-item inline checklist; only complex or low-confidence sources escalate to a SubAgent.
-  🔽
-Phase 2  Editorial Planning
-         Create one plan.md with four sections: Brief / Outline / Theme / Assets.
-         The main agent self-checks inline; no SubAgent and no review file.
-  🔽
-Phase 3  Plan Checkpoint
-         Checkpoint 1 must stop. Confirm five items one by one:
-         article type with standard retention ratio / theme / layout / image mode / cover.
-  🔽
-Phase 4  First Spread
-         Build the hero, first section, and one representative visual block. Create the scaffold here.
-         First Spread Reviewer SubAgent writes review/first-spread-review.md.
-         Checkpoint 2 must stop. Confirm two items one by one:
-         acceptance result / development mode A or B.
-  🔽
-Phase 5  Full Article Build
-         Generate the complete web article. Default to one agent; isolate by section only for very long articles.
-         Section Reviewer SubAgent returns pass/fail in the message and does not write a review file.
-  🔽
-Phase 6  Final Review
-         Run Editorial / Visual / Technical final review and write review/final-review.md.
-  🔽
-Phase 7  Repair
-         Apply minimal-slice repairs. Write repair-log.md only when repairs are made.
-  🔽
-Phase 8  Delivery
-         Checkpoint 3 must stop. Confirm the delivery decision one by one.
-         Deliver article.html plus a short editorial note.
-```
-
-
 ## Workflow
 
 1. **Confirm purpose and mood.** Ask one concise question only when the deck purpose, audience, or tone is genuinely unclear.

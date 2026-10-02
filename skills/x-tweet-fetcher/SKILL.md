@@ -6,55 +6,11 @@ description: >
   Includes camofox_search() for zero-cost Google search without API keys.
   Basic tweet fetching: zero dependencies. Replies/timelines/search: requires Camofox.
   NEW: X-Tracker for tweet growth monitoring with burst detection.
-  Field reports and agent-use questions are routed through Agent Waystation #22 Teahouse:
-  https://github.com/ythx-101/openclaw-qa/discussions/22
 ---
 
 # X Tweet Fetcher
 
 Fetch tweets from X/Twitter without authentication. Supports tweet content, reply threads, user timelines, Chinese platforms, and tweet growth tracking. 
-
-## Workflow Overview
-
-Use this checkpointed workflow when the skill output is a publishable article-style artifact. Keep checkpoints explicit and stop at each checkpoint until the user confirms the listed decisions.
-
-```
-Phase 0  Intake
-         Decide whether this skill applies and identify the initial article type.
-    🔽
-Phase 1  Source -> Markdown
-         Convert URL/PDF/DOCX/MD/text into source.md + extraction-notes.md.
-         The main agent runs a 5-item inline checklist; only complex or low-confidence sources escalate to a SubAgent.
-  🔽
-Phase 2  Editorial Planning
-         Create one plan.md with four sections: Brief / Outline / Theme / Assets.
-         The main agent self-checks inline; no SubAgent and no review file.
-  🔽
-Phase 3  Plan Checkpoint
-         Checkpoint 1 must stop. Confirm five items one by one:
-         article type with standard retention ratio / theme / layout / image mode / cover.
-  🔽
-Phase 4  First Spread
-         Build the hero, first section, and one representative visual block. Create the scaffold here.
-         First Spread Reviewer SubAgent writes review/first-spread-review.md.
-         Checkpoint 2 must stop. Confirm two items one by one:
-         acceptance result / development mode A or B.
-  🔽
-Phase 5  Full Article Build
-         Generate the complete web article. Default to one agent; isolate by section only for very long articles.
-         Section Reviewer SubAgent returns pass/fail in the message and does not write a review file.
-  🔽
-Phase 6  Final Review
-         Run Editorial / Visual / Technical final review and write review/final-review.md.
-  🔽
-Phase 7  Repair
-         Apply minimal-slice repairs. Write repair-log.md only when repairs are made.
-  🔽
-Phase 8  Delivery
-         Checkpoint 3 must stop. Confirm the delivery decision one by one.
-         Deliver article.html plus a short editorial note.
-```
-
 
 ## Feature Overview
 
@@ -269,19 +225,39 @@ for reply in result.get("replies", []):
 x-tweet-fetcher/
 ├── SKILL.md                    # This file
 ├── README.md                   # GitHub page with full docs
-├── scripts/
-│   ├── fetch_tweet.py          # Main fetcher (tweet + replies + timeline)
-│   ├── fetch_china.py          # Chinese platform fetcher
-│   ├── camofox_client.py       # Camofox REST API client + camofox_search()
-│   └── x-profile-analyzer.py   # User profile analysis (AI-powered)
-└── CHANGELOG.md
+├── README.zh-CN.md             # Chinese documentation
+├── LICENSE                     # Apache-2.0
+├── manifest.json               # Skill metadata and compatibility matrix
+├── VERSION                     # Single source of truth for the skill version
+└── scripts/
+    ├── fetch_tweet.py          # Main fetcher (tweet + replies + timeline)
+    ├── fetch_china.py          # Chinese platform fetcher
+    ├── camofox_client.py       # Camofox REST API client + camofox_search()
+    ├── tweet_growth.py         # X-Tracker sampling and burst detection core
+    ├── tweet_growth_cli.py     # X-Tracker command-line interface
+    ├── x-profile-analyzer.py   # User profile analysis (AI-powered)
+    ├── nitter_client.py        # Nitter frontend client for replies/timelines
+    ├── playwright_client.py    # Playwright-based rendering client
+    ├── sogou_wechat.py         # Sogou WeChat article search
+    ├── x_discover.py           # Keyword-based X/Twitter discovery
+    ├── x_mentions_nitter.py    # Mention timeline reader
+    ├── arxiv_author_finder.py  # arXiv author to Twitter account resolver
+    ├── paper_recommend.py      # Paper recommendation helper
+    ├── paper_to_obsidian.py    # Paper to Obsidian note converter
+    ├── to_obsidian.py          # Generic URL to Obsidian note converter
+    ├── common.py               # Shared HTTP and GitHub helpers
+    ├── config.py               # Shared endpoint constants
+    ├── growth_config.py        # X-Tracker thresholds and weights
+    └── version_check.py        # Optional background update check
 ```
 
 ## Requirements
 
 - **Basic**: Python 3.7+, no external packages, no API keys
 - **Advanced**: Camofox running on localhost:9377
-- **Profile Analyzer**: MiniMax M2.5 API key (for AI analysis)
+- **Profile Analyzer**: an AI API key, resolved in this order:
+  `MINIMAX_API_KEY`, OpenClaw `auth-profiles.json`, then `OPENAI_API_KEY`
+  (with optional `OPENAI_BASE_URL` and `OPENAI_MODEL` overrides)
 
 ---
 
