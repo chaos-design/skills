@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="en" data-theme="document" data-mode="auto">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="generator" content="html-brief" />
+<meta name="description" content="What the draft looked like before the check ran" />
+<title>Writing check, line by line</title>
+<style>
+
+*,*::before,*::after{box-sizing:border-box}
+:root{
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hiragino Sans GB','Microsoft YaHei',Roboto,sans-serif;
+  --serif:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,'Songti SC','Noto Serif CJK SC',serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace;
+  --radius:10px;
+}
+:root{  --bg:#f7f8fa;
+  --panel:#ffffff;
+  --panel-2:#f2f4f7;
+  --ink:#14181f;
+  --muted:#5b6675;
+  --line:#dfe3e8;
+  --line-strong:#bfc6d0;
+  --accent:#1d4ed8;
+  --accent-soft:#e8effd;
+  --ok:#127a45;
+  --warn:#8a5a06;
+  --bad:#b4232c;
+  --code-bg:#f4f6f8;
+  --node:#ffffff;
+  --node-line:#98a2b0;
+  --grid-line:#e9edf2;}
+@media (prefers-color-scheme:dark){:root:not([data-mode='light']){  --bg:#0e1319;
+  --panel:#151b23;
+  --panel-2:#1b222c;
+  --ink:#e6edf3;
+  --muted:#96a3b3;
+  --line:#26303d;
+  --line-strong:#3a4759;
+  --accent:#7aa9ff;
+  --accent-soft:#1b2740;
+  --ok:#4cc38a;
+  --warn:#d9a441;
+  --bad:#f87171;
+  --code-bg:#10161d;
+  --node:#1b222c;
+  --node-line:#415067;
+  --grid-line:#182029;}}
+:root[data-mode='dark']{  --bg:#0e1319;
+  --panel:#151b23;
+  --panel-2:#1b222c;
+  --ink:#e6edf3;
+  --muted:#96a3b3;
+  --line:#26303d;
+  --line-strong:#3a4759;
+  --accent:#7aa9ff;
+  --accent-soft:#1b2740;
+  --ok:#4cc38a;
+  --warn:#d9a441;
+  --bad:#f87171;
+  --code-bg:#10161d;
+  --node:#1b222c;
+  --node-line:#415067;
+  --grid-line:#182029;}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);
+  font-size:16px;line-height:1.62;-webkit-font-smoothing:antialiased}
+a{color:var(--accent);text-decoration:underline;text-decoration-color:var(--line-strong);text-underline-offset:2px}
+a:hover{text-decoration-color:var(--accent)}
+code,kbd{font-family:var(--mono);font-size:.9em}
+.doc{max-width:1180px;margin:0 auto;padding:30px 22px 76px}
+.masthead{display:flex;gap:24px;align-items:flex-end;justify-content:space-between;
+  flex-wrap:wrap;border-bottom:2px solid var(--line-strong);padding-bottom:16px;margin-bottom:20px}
+.eyebrow{margin:0 0 6px;font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--muted);font-family:var(--mono)}
+h1{margin:0;font-size:clamp(24px,3.4vw,34px);line-height:1.2;font-weight:700;letter-spacing:-.01em}
+.masthead-text{min-width:0;flex:1 1 320px}
+.subtitle{margin:8px 0 0;color:var(--muted);font-size:16px;max-width:70ch;overflow-wrap:anywhere}
+.stamp{margin:10px 0 0;color:var(--muted);font-size:12px;font-family:var(--mono);overflow-wrap:anywhere}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap}
+.toolbar button{font:inherit;font-size:12px;padding:6px 11px;border-radius:999px;
+  border:1px solid var(--line-strong);background:var(--panel);color:var(--ink);cursor:pointer}
+.toolbar button:hover{border-color:var(--accent);color:var(--accent)}
+.toolbar button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.panels{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:start}
+.panel{min-width:0;background:var(--panel);border:1px solid var(--line);
+  border-radius:var(--radius);padding:16px 18px 18px;overflow-wrap:break-word}
+.panel.span-2{grid-column:1/-1}
+.panel-head{margin:0 0 12px;font-size:19px;line-height:1.3;font-weight:700}
+.panel-body>:first-child{margin-top:0}
+.panel-body>:last-child{margin-bottom:0}
+.panel p{margin:0 0 10px}
+h3.sub,h4.sub,h5.sub,h6.sub{margin:16px 0 8px;font-size:15px;font-weight:700}
+h4.sub{font-size:14px}
+h5.sub,h6.sub{font-size:13px;color:var(--muted)}
+ul.list,ol.list{margin:0 0 12px;padding-left:20px}
+ul.list li,ol.list li{margin:0 0 4px}
+blockquote.quote{margin:0 0 12px;padding:2px 0 2px 14px;border-left:3px solid var(--line-strong);
+  color:var(--muted)}
+pre.code{position:relative;margin:0 0 12px;padding:12px 14px;background:var(--code-bg);
+  border:1px solid var(--line);border-radius:8px;overflow-x:auto;font-size:13px;line-height:1.55}
+pre.code code{white-space:pre}
+.code-lang{position:absolute;top:6px;right:10px;font-size:10px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--muted)}
+.table-wrap{overflow-x:auto;margin:0 0 12px}
+table.table{width:100%;border-collapse:collapse;font-size:14px}
+table.table th,table.table td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+table.table th{font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);
+  font-weight:600;border-bottom:1px solid var(--line-strong)}
+table.table tr:last-child td{border-bottom:none}
+.mark{font-weight:700}
+.mark-ok{color:var(--ok)}
+.mark-no{color:var(--bad)}
+.mark-warn{color:var(--warn)}
+.callout{display:flex;gap:12px;margin:0 0 12px;padding:12px 14px;border-radius:8px;
+  border:1px solid var(--line);background:var(--panel-2)}
+.callout-tag{flex:0 0 auto;font-family:var(--mono);font-size:10px;letter-spacing:.1em;
+  text-transform:uppercase;padding:2px 8px;border-radius:999px;align-self:flex-start;
+  border:1px solid currentColor;color:var(--muted)}
+.callout-body{min-width:0}
+.callout-body>:first-child{margin-top:0}
+.callout-body>:last-child{margin-bottom:0}
+.callout-title{display:block;margin-bottom:2px}
+.callout-warn{border-left:3px solid var(--warn)}
+.callout-warn .callout-tag{color:var(--warn)}
+.callout-danger{border-left:3px solid var(--bad)}
+.callout-danger .callout-tag{color:var(--bad)}
+.callout-tip,.callout-key{border-left:3px solid var(--ok)}
+.callout-tip .callout-tag,.callout-key .callout-tag{color:var(--ok)}
+.callout-key{background:var(--accent-soft)}
+.callout-note .callout-tag{color:var(--accent)}
+.limits{display:grid;gap:14px}
+.limit-name{font-size:14px}
+.limit-head{display:flex;justify-content:space-between;gap:12px;align-items:baseline}
+.limit-value{font-family:var(--mono);font-size:13px;color:var(--muted)}
+.limit-track{height:8px;margin:6px 0 4px;background:var(--panel-2);border-radius:999px;
+  border:1px solid var(--line);overflow:hidden}
+.limit-fill{display:block;height:100%;background:var(--accent)}
+.limit-fill.limit-warn{background:var(--warn)}
+.limit-fill.limit-bad{background:var(--bad)}
+.limit-foot{display:flex;gap:10px;font-size:12px;color:var(--muted)}
+.limit-pct{font-family:var(--mono);font-weight:700;color:var(--accent)}
+.limit-pct.limit-warn{color:var(--warn)}
+.limit-pct.limit-bad{color:var(--bad)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px}
+.stat{border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--panel-2);
+  display:flex;flex-direction:column;gap:2px}
+.stat-name{font-size:12px;color:var(--muted)}
+.stat-value{font-size:22px;font-weight:700;letter-spacing:-.01em}
+.stat-delta{font-size:12px;font-family:var(--mono);color:var(--muted)}
+.stat-delta.stat-ok{color:var(--ok)}
+.stat-delta.stat-warn{color:var(--warn)}
+.stat-delta.stat-no{color:var(--bad)}
+dl.kv{display:grid;gap:0;margin:0}
+.kv-row{display:grid;grid-template-columns:minmax(90px,32%) 1fr;gap:10px;padding:7px 0;
+  border-bottom:1px solid var(--line)}
+.kv-row:last-child{border-bottom:none}
+.kv dt{color:var(--muted);font-size:13px}
+.kv dd{margin:0;font-size:14px}
+.annot-block{margin:0 0 12px}
+.annot-sentence{margin:0;font-size:16px;line-height:2}
+.annot{border-bottom:2px solid currentColor;padding-bottom:1px}
+.annot-mark{font-size:9px;margin-left:2px;vertical-align:super;font-family:var(--mono)}
+.annot-bad{color:var(--bad)}
+.annot-warn{color:var(--warn)}
+.annot-good{color:var(--ok)}
+.annot-fix{color:var(--accent)}
+.annot-legend{margin:10px 0 0;padding-left:20px;font-size:13px;color:var(--muted)}
+.annot-legend li{margin:0 0 4px}
+.annot-legend span{display:inline-block;min-width:16px;font-family:var(--mono);font-size:10px;
+  color:var(--muted)}
+.diagram{margin:0 0 12px;padding:6px 0;overflow-x:auto}
+.diagram svg{max-width:100%;height:auto;display:block}
+.diagram .node{fill:var(--node);stroke:var(--node-line);stroke-width:1.2}
+.diagram .node-emph{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.6}
+.diagram .node-tree-root{stroke:var(--accent)}
+.diagram .node-label{fill:var(--ink)}
+.diagram .edge{fill:none;stroke:var(--node-line);stroke-width:1.4}
+.diagram .edge-dashed{stroke-dasharray:5 4}
+.diagram .edge-bold{stroke-width:2.4}
+.diagram .edge-head{fill:var(--node-line);stroke:none}
+.diagram .edge-label{fill:var(--muted);font-family:var(--sans)}
+.diagram .edge-label-bg{fill:var(--panel);stroke:none}
+.diagram .lifeline{stroke:var(--line-strong);stroke-width:1.2;stroke-dasharray:4 4;fill:none}
+.diagram .participant{fill:var(--node);stroke:var(--accent);stroke-width:1.2}
+.diagram .note-box{fill:var(--panel-2);stroke:var(--line-strong);stroke-width:1;stroke-dasharray:3 3}
+.diagram .activation{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1}
+.diagram .frag{fill:none;stroke:var(--muted);stroke-width:1;stroke-dasharray:4 4}
+.diagram .frag-tab{fill:var(--panel-2);stroke:var(--muted);stroke-width:1}
+.diagram .frag-label{fill:var(--ink)}
+.diagram .frag-divider{stroke:var(--line-strong);stroke-width:1;fill:none}
+.diagram .flow-group rect{fill:none;stroke:var(--line-strong);stroke-width:1;stroke-dasharray:5 4}
+.diagram .group-label{fill:var(--muted);font-family:var(--mono);letter-spacing:.06em}
+.diagram .tl-spine{stroke:var(--line-strong);stroke-width:1.5;fill:none}
+.diagram .tl-card{fill:var(--panel-2);stroke:var(--line);stroke-width:1}
+.diagram .tl-card-hl{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.4}
+.diagram .tl-dot{fill:var(--panel);stroke:var(--node-line);stroke-width:1.6}
+.diagram .tl-dot-hl{fill:var(--accent);stroke:var(--accent)}
+.diagram .tl-date{fill:var(--muted);font-family:var(--mono)}
+.diagram .tl-desc{fill:var(--muted)}
+.colophon{margin-top:26px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+  font-size:12px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.colophon code{font-size:11px}
+@media (max-width:880px){
+  .panels{grid-template-columns:minmax(0,1fr)}
+  .panel.span-2{grid-column:auto}
+  .doc{padding:20px 14px 56px}
+  .masthead{align-items:flex-start}
+  .kv-row{grid-template-columns:minmax(0,1fr)}
+  /* Keep diagrams at their natural size and let the figure scroll. */
+  .diagram{margin-left:-18px;margin-right:-18px;padding:6px 18px}
+  .diagram svg{max-width:none}
+}
+@media (prefers-reduced-motion:no-preference){
+  .panel{transition:border-color .15s ease}
+}
+@media print{
+  body{background:#fff}
+  .doc{max-width:none;padding:0}
+  .toolbar{display:none}
+  .panel{break-inside:avoid;border-color:#ccc}
+  .diagram{break-inside:avoid}
+}
+
+</style>
+</head>
+<body>
+<div class="doc">
+<header class="masthead">
+<div class="masthead-text">
+<p class="eyebrow">HTML Brief</p>
+<h1>Writing check, line by line</h1>
+<p class="subtitle">What the draft looked like before the check ran</p>
+<p class="stamp">Generated 2026-10-04 17:45:00 (UTC+8) · Source: examples/writing-check.md</p>
+</div>
+<div class="toolbar" role="group"><button type="button" data-act="theme" data-label-bp="Theme · Blueprint" data-label-doc="Theme · Document">Theme · Document</button><button type="button" data-act="mode" data-label-auto="Mode · Auto" data-label-light="Mode · Light" data-label-dark="Mode · Dark">Mode · Auto</button><button type="button" data-act="copy" data-label-on="Copy source" data-label-off="Copied" data-label-error="Copy failed">Copy source</button></div>
+</header>
+<main class="panels">
+  <section class="panel span-2" id="panel-1">
+<h2 class="panel-head">Annotated sentence</h2>
+    <div class="panel-body"><div class="annot-block"><p class="annot-sentence">The <span class="annot annot-bad" data-note="1">service<sup class="annot-mark">1</sup></span> <span class="annot annot-warn" data-note="2">was restarted<sup class="annot-mark">2</sup></span> by the operator before the <span class="annot annot-fix" data-note="3">retry budget expired<sup class="annot-mark">3</sup></span>, and <span class="annot annot-good" data-note="4">alerts fired within one minute<sup class="annot-mark">4</sup></span>.</p></div><aside class="callout callout-note"><span class="callout-tag">Note</span><div class="callout-body"><strong class="callout-title">The check reads machine-checkable rules only</strong><p>Sentence length, passive voice, wordy pairs, empty verbs in Chinese and stock
+phrases. A callout with a blank quote line gets a title; one without it stays
+a single body paragraph, however the source wraps it.</p></div></aside></div>
+  </section>
+  <section class="panel span-2" id="panel-2">
+<h2 class="panel-head">Findings from one draft</h2>
+    <div class="panel-body"><div class="limits"><div class="limit"><div class="limit-head"><span class="limit-name">Sentence length</span><span class="limit-value">34 words</span></div><div class="limit-track"><span class="limit-fill limit-bad" style="width:100%"></span></div><div class="limit-foot"><span class="limit-pct limit-bad">100%</span><span class="limit-note">limit is 25 words</span></div></div><div class="limit"><div class="limit-head"><span class="limit-name">Passive voice</span><span class="limit-value">3</span></div><div class="limit-track"><span class="limit-fill limit-ok" style="width:45%"></span></div><div class="limit-foot"><span class="limit-pct limit-ok">45%</span><span class="limit-note">limit is 0</span></div></div><div class="limit"><div class="limit-head"><span class="limit-name">Wordy pairs</span><span class="limit-value">2</span></div><div class="limit-track"><span class="limit-fill limit-ok" style="width:30%"></span></div><div class="limit-foot"><span class="limit-pct limit-ok">30%</span><span class="limit-note">in order to, prior to</span></div></div><div class="limit"><div class="limit-head"><span class="limit-name">Stock phrases</span><span class="limit-value">1</span></div><div class="limit-track"><span class="limit-fill limit-ok" style="width:20%"></span></div><div class="limit-foot"><span class="limit-pct limit-ok">20%</span><span class="limit-note">赋能</span></div></div></div><aside class="callout callout-tip"><span class="callout-tag">Tip</span><div class="callout-body"><p>Run with <code>--check warn</code> while drafting. Switch to <code>--check strict</code> when
+the brief ships, so a page is never produced from a draft that still has
+findings.</p></div></aside></div>
+  </section>
+  <section class="panel span-2" id="panel-3">
+<h2 class="panel-head">Shortest rewrite</h2>
+    <div class="panel-body"><ol class="list"><li>Name the actor: the operator restarted the service.</li><li>Cut the length: the retry budget expired first.</li><li>Replace the pair: use <code>before</code>, not <code>prior to</code>.</li></ol><figure class="diagram" role="img" aria-label="Shortest rewrite flow diagram"><svg viewBox="0 0 630.0 130.0" width="630.0" height="130.0" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"><title>Shortest rewrite flow diagram</title><g transform="translate(44.0,76.0)"><path class="edge edge-solid" d="M 84.0 19.0 C 119.1 19.0, 126.9 19.0, 162.0 19.0" /><polygon class="edge-head" points="162.0,19.0 154.0,22.4 154.0,15.6" /><path class="edge edge-solid" d="M 246.0 19.0 C 281.1 19.0, 288.9 19.0, 324.0 19.0" /><polygon class="edge-head" points="324.0,19.0 316.0,22.4 316.0,15.6" /><path class="edge edge-solid" d="M 408.0 19.0 L -19.0 19.0 Q -28.0 19.0 -19.0 19.0 L 0.0 19.0" /><polygon class="edge-head" points="0.0,19.0 -8.0,22.4 -8.0,15.6" /><path class="edge edge-solid" d="M 408.0 19.0 C 443.1 19.0, 450.9 19.0, 486.0 19.0" /><polygon class="edge-head" points="486.0,19.0 478.0,22.4 478.0,15.6" /><rect class="edge-label-bg" x="96.2" y="-2.0" width="53.7" height="14" rx="4" /><text class="edge-label" x="123.0" y="6.0" font-size="11.5" text-anchor="middle" dominant-baseline="middle" style="fill:var(--muted)">findings</text><rect class="edge-label-bg" x="240.9" y="-30.0" width="88.2" height="14" rx="4" /><text class="edge-label" x="285.0" y="-22.0" font-size="11.5" text-anchor="middle" dominant-baseline="middle" style="fill:var(--muted)">line, rule, hint</text><rect class="edge-label-bg" x="135.2" y="-57.0" width="109.6" height="14" rx="4" /><text class="edge-label" x="190.0" y="-49.0" font-size="11.5" text-anchor="middle" dominant-baseline="middle" style="fill:var(--muted)">one corrected line</text><rect class="edge-label-bg" x="425.5" y="-2.0" width="42.9" height="14" rx="4" /><text class="edge-label" x="447.0" y="6.0" font-size="11.5" text-anchor="middle" dominant-baseline="middle" style="fill:var(--muted)">render</text><rect class="node" x="0.0" y="0.0" width="84.0" height="38.0" rx="6" /><text class="node-label" x="42.0" y="19.0" font-size="12.5" text-anchor="middle" dominant-baseline="middle">draft</text><rect class="node" x="162.0" y="0.0" width="84.0" height="38.0" rx="6" /><text class="node-label" x="204.0" y="19.0" font-size="12.5" text-anchor="middle" dominant-baseline="middle">check</text><rect class="node" x="324.0" y="0.0" width="84.0" height="38.0" rx="6" /><text class="node-label" x="366.0" y="19.0" font-size="12.5" text-anchor="middle" dominant-baseline="middle">agent</text><rect class="node" x="486.0" y="0.0" width="84.0" height="38.0" rx="6" /><text class="node-label" x="528.0" y="19.0" font-size="12.5" text-anchor="middle" dominant-baseline="middle">page</text> data-bbox="-28.0 -60.0 570.0 38.0"</g></svg></figure></div>
+  </section>
+  <section class="panel span-2" id="panel-4">
+<h2 class="panel-head">Commands</h2>
+    <div class="panel-body"><pre class="code"><span class="code-lang">bash</span><code>python3 scripts/html_brief.py check draft.md
+python3 scripts/html_brief.py render draft.md --check strict --out brief.html</code></pre></div>
+  </section>
+</main>
+<footer class="colophon">
+<span>Built with the <code>html-brief</code> skill.</span>
+</footer>
+</div>
+<script type="text/markdown" id="html-brief-source">
+---
+title: Writing check, line by line
+subtitle: What the draft looked like before the check ran
+theme: document
+mode: auto
+---
+
+## Annotated sentence {span=2}
+
+```annot
+The {bad|service} {warn|was restarted} by the operator before the {fix|retry budget expired}, and {good|alerts fired within one minute}.
+```
+
+> note: The check reads machine-checkable rules only
+>
+> Sentence length, passive voice, wordy pairs, empty verbs in Chinese and stock
+> phrases. A callout with a blank quote line gets a title; one without it stays
+> a single body paragraph, however the source wraps it.
+
+## Findings from one draft {span=2}
+
+```limits
+Sentence length | 34 words | 100% | limit is 25 words
+Passive voice | 3 | 45% | limit is 0
+Wordy pairs | 2 | 30% | in order to, prior to
+Stock phrases | 1 | 20% | 赋能
+```
+
+> tip: Run with `--check warn` while drafting. Switch to `--check strict` when
+> the brief ships, so a page is never produced from a draft that still has
+> findings.
+
+## Shortest rewrite {span=2}
+
+1. Name the actor: the operator restarted the service.
+2. Cut the length: the retry budget expired first.
+3. Replace the pair: use `before`, not `prior to`.
+
+```flow LR
+draft -> check: findings
+check -> agent: line, rule, hint
+agent -> draft: one corrected line
+agent -> page: render
+```
+
+## Commands
+
+```bash
+python3 scripts/html_brief.py check draft.md
+python3 scripts/html_brief.py render draft.md --check strict --out brief.html
+```
+</script>
+<script>
+
+(function () {
+  var root = document.documentElement;
+  var store = 'html-brief:view';
+  var modes = ['auto', 'light', 'dark'];
+  var themes = ['blueprint', 'document'];
+  try {
+    var saved = JSON.parse(localStorage.getItem(store) || '{}');
+    if (themes.indexOf(saved.theme) > -1) root.setAttribute('data-theme', saved.theme);
+    if (modes.indexOf(saved.mode) > -1) root.setAttribute('data-mode', saved.mode);
+  } catch (error) {}
+  var buttons = Array.prototype.slice.call(document.querySelectorAll('.toolbar button'));
+  function persist() {
+    try {
+      localStorage.setItem(
+        store,
+        JSON.stringify({ theme: root.getAttribute('data-theme'), mode: root.getAttribute('data-mode') })
+      );
+    } catch (error) {}
+  }
+  function relabel(button, text) {
+    if (text) button.textContent = text;
+  }
+  function cycle(list, current) {
+    var index = list.indexOf(current);
+    return list[(index + 1) % list.length];
+  }
+  function copySource(button) {
+    var node = document.getElementById('html-brief-source');
+    var text = node ? node.textContent : '';
+    function done(ok) {
+      relabel(button, ok ? button.getAttribute('data-label-off') : button.getAttribute('data-label-error'));
+      window.setTimeout(function () {
+        relabel(button, button.getAttribute('data-label-on'));
+      }, 1600);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { done(true); },
+        function () { done(false); }
+      );
+      return;
+    }
+    var area = document.createElement('textarea');
+    area.value = text;
+    area.setAttribute('readonly', '');
+    area.style.position = 'fixed';
+    area.style.opacity = '0';
+    document.body.appendChild(area);
+    area.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (error) { ok = false; }
+    document.body.removeChild(area);
+    done(ok);
+  }
+  buttons.forEach(function (button) {
+    button.addEventListener('click', function () {
+      var act = button.getAttribute('data-act');
+      if (act === 'theme') {
+        var next = cycle(themes, root.getAttribute('data-theme'));
+        root.setAttribute('data-theme', next);
+        relabel(
+          button,
+          next === 'blueprint'
+            ? button.getAttribute('data-label-bp')
+            : button.getAttribute('data-label-doc')
+        );
+        persist();
+        return;
+      }
+      if (act === 'mode') {
+        var mode = cycle(modes, root.getAttribute('data-mode'));
+        root.setAttribute('data-mode', mode);
+        relabel(button, button.getAttribute('data-label-' + mode));
+        persist();
+        return;
+      }
+      if (act === 'copy') copySource(button);
+    });
+  });
+})();
+
+</script>
+</body>
+</html>

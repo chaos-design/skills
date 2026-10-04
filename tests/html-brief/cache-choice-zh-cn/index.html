@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="document" data-mode="auto">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="generator" content="html-brief" />
+<meta name="description" content="Redis 与 Memcached 在本服务的取舍" />
+<title>缓存选型评审</title>
+<style>
+
+*,*::before,*::after{box-sizing:border-box}
+:root{
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hiragino Sans GB','Microsoft YaHei',Roboto,sans-serif;
+  --serif:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,'Songti SC','Noto Serif CJK SC',serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace;
+  --radius:10px;
+}
+:root{  --bg:#f7f8fa;
+  --panel:#ffffff;
+  --panel-2:#f2f4f7;
+  --ink:#14181f;
+  --muted:#5b6675;
+  --line:#dfe3e8;
+  --line-strong:#bfc6d0;
+  --accent:#1d4ed8;
+  --accent-soft:#e8effd;
+  --ok:#127a45;
+  --warn:#8a5a06;
+  --bad:#b4232c;
+  --code-bg:#f4f6f8;
+  --node:#ffffff;
+  --node-line:#98a2b0;
+  --grid-line:#e9edf2;}
+@media (prefers-color-scheme:dark){:root:not([data-mode='light']){  --bg:#0e1319;
+  --panel:#151b23;
+  --panel-2:#1b222c;
+  --ink:#e6edf3;
+  --muted:#96a3b3;
+  --line:#26303d;
+  --line-strong:#3a4759;
+  --accent:#7aa9ff;
+  --accent-soft:#1b2740;
+  --ok:#4cc38a;
+  --warn:#d9a441;
+  --bad:#f87171;
+  --code-bg:#10161d;
+  --node:#1b222c;
+  --node-line:#415067;
+  --grid-line:#182029;}}
+:root[data-mode='dark']{  --bg:#0e1319;
+  --panel:#151b23;
+  --panel-2:#1b222c;
+  --ink:#e6edf3;
+  --muted:#96a3b3;
+  --line:#26303d;
+  --line-strong:#3a4759;
+  --accent:#7aa9ff;
+  --accent-soft:#1b2740;
+  --ok:#4cc38a;
+  --warn:#d9a441;
+  --bad:#f87171;
+  --code-bg:#10161d;
+  --node:#1b222c;
+  --node-line:#415067;
+  --grid-line:#182029;}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);
+  font-size:16px;line-height:1.62;-webkit-font-smoothing:antialiased}
+a{color:var(--accent);text-decoration:underline;text-decoration-color:var(--line-strong);text-underline-offset:2px}
+a:hover{text-decoration-color:var(--accent)}
+code,kbd{font-family:var(--mono);font-size:.9em}
+.doc{max-width:1180px;margin:0 auto;padding:30px 22px 76px}
+.masthead{display:flex;gap:24px;align-items:flex-end;justify-content:space-between;
+  flex-wrap:wrap;border-bottom:2px solid var(--line-strong);padding-bottom:16px;margin-bottom:20px}
+.eyebrow{margin:0 0 6px;font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--muted);font-family:var(--mono)}
+h1{margin:0;font-size:clamp(24px,3.4vw,34px);line-height:1.2;font-weight:700;letter-spacing:-.01em}
+.masthead-text{min-width:0;flex:1 1 320px}
+.subtitle{margin:8px 0 0;color:var(--muted);font-size:16px;max-width:70ch;overflow-wrap:anywhere}
+.stamp{margin:10px 0 0;color:var(--muted);font-size:12px;font-family:var(--mono);overflow-wrap:anywhere}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap}
+.toolbar button{font:inherit;font-size:12px;padding:6px 11px;border-radius:999px;
+  border:1px solid var(--line-strong);background:var(--panel);color:var(--ink);cursor:pointer}
+.toolbar button:hover{border-color:var(--accent);color:var(--accent)}
+.toolbar button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.panels{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:start}
+.panel{min-width:0;background:var(--panel);border:1px solid var(--line);
+  border-radius:var(--radius);padding:16px 18px 18px;overflow-wrap:break-word}
+.panel.span-2{grid-column:1/-1}
+.panel-head{margin:0 0 12px;font-size:19px;line-height:1.3;font-weight:700}
+.panel-body>:first-child{margin-top:0}
+.panel-body>:last-child{margin-bottom:0}
+.panel p{margin:0 0 10px}
+h3.sub,h4.sub,h5.sub,h6.sub{margin:16px 0 8px;font-size:15px;font-weight:700}
+h4.sub{font-size:14px}
+h5.sub,h6.sub{font-size:13px;color:var(--muted)}
+ul.list,ol.list{margin:0 0 12px;padding-left:20px}
+ul.list li,ol.list li{margin:0 0 4px}
+blockquote.quote{margin:0 0 12px;padding:2px 0 2px 14px;border-left:3px solid var(--line-strong);
+  color:var(--muted)}
+pre.code{position:relative;margin:0 0 12px;padding:12px 14px;background:var(--code-bg);
+  border:1px solid var(--line);border-radius:8px;overflow-x:auto;font-size:13px;line-height:1.55}
+pre.code code{white-space:pre}
+.code-lang{position:absolute;top:6px;right:10px;font-size:10px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--muted)}
+.table-wrap{overflow-x:auto;margin:0 0 12px}
+table.table{width:100%;border-collapse:collapse;font-size:14px}
+table.table th,table.table td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+table.table th{font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);
+  font-weight:600;border-bottom:1px solid var(--line-strong)}
+table.table tr:last-child td{border-bottom:none}
+.mark{font-weight:700}
+.mark-ok{color:var(--ok)}
+.mark-no{color:var(--bad)}
+.mark-warn{color:var(--warn)}
+.callout{display:flex;gap:12px;margin:0 0 12px;padding:12px 14px;border-radius:8px;
+  border:1px solid var(--line);background:var(--panel-2)}
+.callout-tag{flex:0 0 auto;font-family:var(--mono);font-size:10px;letter-spacing:.1em;
+  text-transform:uppercase;padding:2px 8px;border-radius:999px;align-self:flex-start;
+  border:1px solid currentColor;color:var(--muted)}
+.callout-body{min-width:0}
+.callout-body>:first-child{margin-top:0}
+.callout-body>:last-child{margin-bottom:0}
+.callout-title{display:block;margin-bottom:2px}
+.callout-warn{border-left:3px solid var(--warn)}
+.callout-warn .callout-tag{color:var(--warn)}
+.callout-danger{border-left:3px solid var(--bad)}
+.callout-danger .callout-tag{color:var(--bad)}
+.callout-tip,.callout-key{border-left:3px solid var(--ok)}
+.callout-tip .callout-tag,.callout-key .callout-tag{color:var(--ok)}
+.callout-key{background:var(--accent-soft)}
+.callout-note .callout-tag{color:var(--accent)}
+.limits{display:grid;gap:14px}
+.limit-name{font-size:14px}
+.limit-head{display:flex;justify-content:space-between;gap:12px;align-items:baseline}
+.limit-value{font-family:var(--mono);font-size:13px;color:var(--muted)}
+.limit-track{height:8px;margin:6px 0 4px;background:var(--panel-2);border-radius:999px;
+  border:1px solid var(--line);overflow:hidden}
+.limit-fill{display:block;height:100%;background:var(--accent)}
+.limit-fill.limit-warn{background:var(--warn)}
+.limit-fill.limit-bad{background:var(--bad)}
+.limit-foot{display:flex;gap:10px;font-size:12px;color:var(--muted)}
+.limit-pct{font-family:var(--mono);font-weight:700;color:var(--accent)}
+.limit-pct.limit-warn{color:var(--warn)}
+.limit-pct.limit-bad{color:var(--bad)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px}
+.stat{border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--panel-2);
+  display:flex;flex-direction:column;gap:2px}
+.stat-name{font-size:12px;color:var(--muted)}
+.stat-value{font-size:22px;font-weight:700;letter-spacing:-.01em}
+.stat-delta{font-size:12px;font-family:var(--mono);color:var(--muted)}
+.stat-delta.stat-ok{color:var(--ok)}
+.stat-delta.stat-warn{color:var(--warn)}
+.stat-delta.stat-no{color:var(--bad)}
+dl.kv{display:grid;gap:0;margin:0}
+.kv-row{display:grid;grid-template-columns:minmax(90px,32%) 1fr;gap:10px;padding:7px 0;
+  border-bottom:1px solid var(--line)}
+.kv-row:last-child{border-bottom:none}
+.kv dt{color:var(--muted);font-size:13px}
+.kv dd{margin:0;font-size:14px}
+.annot-block{margin:0 0 12px}
+.annot-sentence{margin:0;font-size:16px;line-height:2}
+.annot{border-bottom:2px solid currentColor;padding-bottom:1px}
+.annot-mark{font-size:9px;margin-left:2px;vertical-align:super;font-family:var(--mono)}
+.annot-bad{color:var(--bad)}
+.annot-warn{color:var(--warn)}
+.annot-good{color:var(--ok)}
+.annot-fix{color:var(--accent)}
+.annot-legend{margin:10px 0 0;padding-left:20px;font-size:13px;color:var(--muted)}
+.annot-legend li{margin:0 0 4px}
+.annot-legend span{display:inline-block;min-width:16px;font-family:var(--mono);font-size:10px;
+  color:var(--muted)}
+.diagram{margin:0 0 12px;padding:6px 0;overflow-x:auto}
+.diagram svg{max-width:100%;height:auto;display:block}
+.diagram .node{fill:var(--node);stroke:var(--node-line);stroke-width:1.2}
+.diagram .node-emph{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.6}
+.diagram .node-tree-root{stroke:var(--accent)}
+.diagram .node-label{fill:var(--ink)}
+.diagram .edge{fill:none;stroke:var(--node-line);stroke-width:1.4}
+.diagram .edge-dashed{stroke-dasharray:5 4}
+.diagram .edge-bold{stroke-width:2.4}
+.diagram .edge-head{fill:var(--node-line);stroke:none}
+.diagram .edge-label{fill:var(--muted);font-family:var(--sans)}
+.diagram .edge-label-bg{fill:var(--panel);stroke:none}
+.diagram .lifeline{stroke:var(--line-strong);stroke-width:1.2;stroke-dasharray:4 4;fill:none}
+.diagram .participant{fill:var(--node);stroke:var(--accent);stroke-width:1.2}
+.diagram .note-box{fill:var(--panel-2);stroke:var(--line-strong);stroke-width:1;stroke-dasharray:3 3}
+.diagram .activation{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1}
+.diagram .frag{fill:none;stroke:var(--muted);stroke-width:1;stroke-dasharray:4 4}
+.diagram .frag-tab{fill:var(--panel-2);stroke:var(--muted);stroke-width:1}
+.diagram .frag-label{fill:var(--ink)}
+.diagram .frag-divider{stroke:var(--line-strong);stroke-width:1;fill:none}
+.diagram .flow-group rect{fill:none;stroke:var(--line-strong);stroke-width:1;stroke-dasharray:5 4}
+.diagram .group-label{fill:var(--muted);font-family:var(--mono);letter-spacing:.06em}
+.diagram .tl-spine{stroke:var(--line-strong);stroke-width:1.5;fill:none}
+.diagram .tl-card{fill:var(--panel-2);stroke:var(--line);stroke-width:1}
+.diagram .tl-card-hl{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.4}
+.diagram .tl-dot{fill:var(--panel);stroke:var(--node-line);stroke-width:1.6}
+.diagram .tl-dot-hl{fill:var(--accent);stroke:var(--accent)}
+.diagram .tl-date{fill:var(--muted);font-family:var(--mono)}
+.diagram .tl-desc{fill:var(--muted)}
+.colophon{margin-top:26px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+  font-size:12px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.colophon code{font-size:11px}
+@media (max-width:880px){
+  .panels{grid-template-columns:minmax(0,1fr)}
+  .panel.span-2{grid-column:auto}
+  .doc{padding:20px 14px 56px}
+  .masthead{align-items:flex-start}
+  .kv-row{grid-template-columns:minmax(0,1fr)}
+  /* Keep diagrams at their natural size and let the figure scroll. */
+  .diagram{margin-left:-18px;margin-right:-18px;padding:6px 18px}
+  .diagram svg{max-width:none}
+}
+@media (prefers-reduced-motion:no-preference){
+  .panel{transition:border-color .15s ease}
+}
+@media print{
+  body{background:#fff}
+  .doc{max-width:none;padding:0}
+  .toolbar{display:none}
+  .panel{break-inside:avoid;border-color:#ccc}
+  .diagram{break-inside:avoid}
+}
+
+</style>
+</head>
+<body>
+<div class="doc">
+<header class="masthead">
+<div class="masthead-text">
+<p class="eyebrow">HTML Brief</p>
+<h1>缓存选型评审</h1>
+<p class="subtitle">Redis 与 Memcached 在本服务的取舍</p>
+<p class="stamp">Generated 2026-10-04 17:45:00 (UTC+8) · Source: examples/cache-choice.zh-cn.md</p>
+</div>
+<div class="toolbar" role="group"><button type="button" data-act="theme" data-label-bp="主题 · Blueprint" data-label-doc="主题 · Document">主题 · Document</button><button type="button" data-act="mode" data-label-auto="明暗 · 自动" data-label-light="明暗 · 亮色" data-label-dark="明暗 · 深色">明暗 · 自动</button><button type="button" data-act="copy" data-label-on="复制源文" data-label-off="已复制" data-label-error="复制失败">复制源文</button></div>
+</header>
+<main class="panels">
+  <section class="panel" id="panel-1">
+<h2 class="panel-head">结论</h2>
+    <div class="panel-body"><aside class="callout callout-key"><span class="callout-tag">关键结论</span><div class="callout-body"><p>选 Redis。读写量由持久化副本与过期语义主导，Memcached 的多线程简单模型不再是最短路径。</p></div></aside><dl class="kv"><div class="kv-row"><dt>场景</dt><dd>会话缓存、计数、排行榜锁</dd></div><div class="kv-row"><dt>读写比</dt><dd>写占三成，且不可丢</dd></div><div class="kv-row"><dt>过期语义</dt><dd>需要按业务键设置不同 TTL</dd></div><div class="kv-row"><dt>运维现状</dt><dd>已有一套 Redis 副本与告警</dd></div></dl></div>
+  </section>
+  <section class="panel span-2" id="panel-2">
+<h2 class="panel-head">取舍对照</h2>
+    <div class="panel-body"><div class="table-wrap"><table class="table"><thead><tr><th style="text-align:left">维度</th><th style="text-align:left">Redis</th><th style="text-align:left">Memcached</th></tr></thead><tbody><tr><td style="text-align:left">数据结构</td><td style="text-align:left"><span class="mark mark-ok">✓</span></td><td style="text-align:left"><span class="mark mark-no">✗</span></td></tr><tr><td style="text-align:left">持久化</td><td style="text-align:left"><span class="mark mark-ok">✓</span></td><td style="text-align:left"><span class="mark mark-no">✗</span></td></tr><tr><td style="text-align:left">按键过期</td><td style="text-align:left"><span class="mark mark-ok">✓</span></td><td style="text-align:left"><span class="mark mark-ok">✓</span></td></tr><tr><td style="text-align:left">简单读取性能</td><td style="text-align:left"><span class="mark mark-warn">!</span></td><td style="text-align:left"><span class="mark mark-ok">✓</span></td></tr><tr><td style="text-align:left">运维复杂度</td><td style="text-align:left"><span class="mark mark-warn">!</span></td><td style="text-align:left"><span class="mark mark-ok">✓</span></td></tr></tbody></table></div></div>
+  </section>
+  <section class="panel span-2" id="panel-3">
+<h2 class="panel-head">请求路径</h2>
+    <div class="panel-body"><figure class="diagram" role="img" aria-label="请求路径 flow diagram"><svg viewBox="0 0 480.0 199.0" width="480.0" height="199.0" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"><title>请求路径 flow diagram</title><g transform="translate(16.0,43.0)"><path class="edge edge-solid" d="M 84.0 59.0 C 119.1 59.0, 126.9 19.0, 162.0 19.0" /><polygon class="edge-head" points="162.0,19.0 154.0,22.4 154.0,15.6" /><path class="edge edge-solid" d="M 246.0 19.0 C 290.1 19.0, 299.9 59.0, 344.0 59.0" /><polygon class="edge-head" points="344.0,59.0 336.0,62.4 336.0,55.6" /><path class="edge edge-solid" d="M 204.0 38.0 L 204.0 95.0 Q 204.0 104.0 195.0 104.0 L 51.0 104.0 Q 42.0 104.0 42.0 95.0 L 42.0 78.0" /><polygon class="edge-head" points="42.0,78.0 45.4,86.0 38.6,86.0" /><path class="edge edge-dashed" d="M 204.0 38.0 L 204.0 109.0 Q 204.0 118.0 195.0 118.0 L 51.0 118.0 Q 42.0 118.0 42.0 109.0 L 42.0 78.0" /><polygon class="edge-head" points="42.0,78.0 45.4,86.0 38.6,86.0" /><path class="edge edge-solid" d="M 84.0 59.0 C 119.1 59.0, 126.9 93.0, 162.0 93.0" /><polygon class="edge-head" points="162.0,93.0 154.0,96.4 154.0,89.6" /><path class="edge edge-solid" d="M 84.0 59.0 C 119.1 59.0, 126.9 19.0, 162.0 19.0" /><polygon class="edge-head" points="162.0,19.0 154.0,22.4 154.0,15.6" /><rect class="edge-label-bg" x="94.3" y="18.0" width="57.3" height="14" rx="4" /><text class="edge-label" x="123.0" y="26.0" font-size="11.5" text-anchor="middle" dominant-baseline="middle" style="fill:var(--muted)">GET key</text><rect class="edge-label-bg" x="278.9" y="18.0" width="32.2" height="14" rx="4" /><text class="edge-label" x="295.0" y="26.0" font-size="11.5" text-anchor="middle" dominant-baseline="middle" style="fill:var(--muted)">read</text><rect class="edge-label-bg" x="111.6" y="107.0" width="22.8" height="14" rx="4" /><text class="edge-label" x="123.0" y="115.0" font-size="11.5" text-anchor="middle" dominant-baseline="middle" style="fill:var(--muted)">hit</text><rect class="edge-label-bg" x="106.9" y="121.0" width="32.2" height="14" rx="4" /><text class="edge-label" x="123.0" y="129.0" font-size="11.5" text-anchor="middle" dominant-baseline="middle" style="fill:var(--muted)">miss</text><rect class="edge-label-bg" x="103.6" y="55.0" width="38.9" height="14" rx="4" /><text class="edge-label" x="123.0" y="63.0" font-size="11.5" text-anchor="middle" dominant-baseline="middle" style="fill:var(--muted)">query</text><rect class="edge-label-bg" x="85.3" y="-24.0" width="75.4" height="14" rx="4" /><text class="edge-label" x="123.0" y="-16.0" font-size="11.5" text-anchor="middle" dominant-baseline="middle" style="fill:var(--muted)">SETEX 300</text><rect class="node" x="0.0" y="40.0" width="84.0" height="38.0" rx="19.0" /><text class="node-label" x="42.0" y="59.0" font-size="12.5" text-anchor="middle" dominant-baseline="middle">API</text><rect class="node" x="162.0" y="0.0" width="84.0" height="38.0" rx="6" /><text class="node-label" x="204.0" y="19.0" font-size="12.5" text-anchor="middle" dominant-baseline="middle">Redis</text><path class="node" d="M 344.0 43.0 A 52.0 9.0 0 0 1 448.0 43.0 L 448.0 75.0 A 52.0 9.0 0 0 1 344.0 75.0 Z M 344.0 43.0 A 52.0 9.0 0 0 0 448.0 43.0" /><text class="node-label" x="396.0" y="59.0" font-size="12.5" text-anchor="middle" dominant-baseline="middle">Replica</text><path class="node" d="M 162.0 77.0 A 52.0 9.0 0 0 1 266.0 77.0 L 266.0 109.0 A 52.0 9.0 0 0 1 162.0 109.0 Z M 162.0 77.0 A 52.0 9.0 0 0 0 266.0 77.0" /><text class="node-label" x="214.0" y="93.0" font-size="12.5" text-anchor="middle" dominant-baseline="middle">MySQL</text> data-bbox="0.0 -27.0 448.0 140.0"</g></svg></figure></div>
+  </section>
+  <section class="panel span-2" id="panel-4">
+<h2 class="panel-head">容量与风险</h2>
+    <div class="panel-body"><div class="limits"><div class="limit"><div class="limit-head"><span class="limit-name">内存水位</span><span class="limit-value">3.1 GiB of 4 GiB</span></div><div class="limit-track"><span class="limit-fill limit-warn" style="width:78%"></span></div><div class="limit-foot"><span class="limit-pct limit-warn">78%</span><span class="limit-note">含会话与热榜</span></div></div><div class="limit"><div class="limit-head"><span class="limit-name">单键 TTL 上限</span><span class="limit-value">24h</span></div><div class="limit-track"><span class="limit-fill limit-ok" style="width:60%"></span></div><div class="limit-foot"><span class="limit-pct limit-ok">60%</span><span class="limit-note">排行榜需要长 TTL</span></div></div><div class="limit"><div class="limit-head"><span class="limit-name">写放大</span><span class="limit-value">3.4x</span></div><div class="limit-track"><span class="limit-fill limit-ok" style="width:35%"></span></div><div class="limit-foot"><span class="limit-pct limit-ok">35%</span><span class="limit-note">AOF everysec 计入</span></div></div></div><div class="stats"><div class="stat"><span class="stat-name">命中率</span><span class="stat-value">94%</span><span class="stat-delta stat-warn">-2%</span></div><div class="stat"><span class="stat-name">p99 读取</span><span class="stat-value">1.8ms</span><span class="stat-delta stat-warn">+0.3ms</span></div><div class="stat"><span class="stat-name">副本延迟</span><span class="stat-value">0.4ms</span><span class="stat-delta stat-ok">稳定</span></div></div></div>
+  </section>
+  <section class="panel" id="panel-5">
+<h2 class="panel-head">迁移步骤</h2>
+    <div class="panel-body"><ol class="list"><li>建立按业务键分组的 TTL 清单。</li><li>在预发环境打开 <code>maxmemory-policy noeviction</code>。</li><li>灰度 10% 流量，观察命中率与 p99 读取。</li><li>全量后删除旧的 Memcached 实例，保留一周回滚窗口。</li></ol><aside class="callout callout-warn"><span class="callout-tag">警告</span><div class="callout-body"><p>关闭 volatile-lru 之前先确认所有键都带 TTL。
+否则会退化为 noeviction，并把写入打满。</p></div></aside></div>
+  </section>
+  <section class="panel span-2" id="panel-6">
+<h2 class="panel-head">需要补充的信息</h2>
+    <div class="panel-body"><ul class="list"><li>峰值 QPS 与键平均大小。</li><li>是否需要跨可用区的写入。</li><li>现有 Memcached 集群的退役时间窗口。</li></ul></div>
+  </section>
+</main>
+<footer class="colophon">
+<span>Built with the <code>html-brief</code> skill.</span>
+</footer>
+</div>
+<script type="text/markdown" id="html-brief-source">
+---
+title: 缓存选型评审
+subtitle: Redis 与 Memcached 在本服务的取舍
+theme: document
+mode: auto
+---
+
+## 结论
+
+> key: 选 Redis。读写量由持久化副本与过期语义主导，Memcached 的多线程简单模型不再是最短路径。
+
+```kv
+场景 | 会话缓存、计数、排行榜锁
+读写比 | 写占三成，且不可丢
+过期语义 | 需要按业务键设置不同 TTL
+运维现状 | 已有一套 Redis 副本与告警
+```
+
+## 取舍对照 {span=2}
+
+| 维度 | Redis | Memcached |
+| --- | --- | --- |
+| 数据结构 | 支持 | 不支持 |
+| 持久化 | 支持 | 不支持 |
+| 按键过期 | 支持 | 支持 |
+| 简单读取性能 | warn | ok |
+| 运维复杂度 | warn | ok |
+
+## 请求路径 {span=2}
+
+```flow LR
+(API) -> Redis: GET key
+Redis -> [(Replica)]: read
+Redis --> API: hit
+Redis -.-> API: miss
+API -> [(MySQL)]: query
+API -> Redis: SETEX 300
+```
+
+## 容量与风险 {span=2}
+
+```limits
+内存水位 | 3.1 GiB of 4 GiB | 78% | 含会话与热榜
+单键 TTL 上限 | 24h | 60% | 排行榜需要长 TTL
+写放大 | 3.4x | 35% | AOF everysec 计入
+```
+
+```stat
+命中率 | 94% | -2% | warn
+p99 读取 | 1.8ms | +0.3ms | warn
+副本延迟 | 0.4ms | 稳定 | good
+```
+
+## 迁移步骤
+
+1. 建立按业务键分组的 TTL 清单。
+2. 在预发环境打开 `maxmemory-policy noeviction`。
+3. 灰度 10% 流量，观察命中率与 p99 读取。
+4. 全量后删除旧的 Memcached 实例，保留一周回滚窗口。
+
+> warn: 关闭 volatile-lru 之前先确认所有键都带 TTL。
+> 否则会退化为 noeviction，并把写入打满。
+
+## 需要补充的信息
+
+- 峰值 QPS 与键平均大小。
+- 是否需要跨可用区的写入。
+- 现有 Memcached 集群的退役时间窗口。
+</script>
+<script>
+
+(function () {
+  var root = document.documentElement;
+  var store = 'html-brief:view';
+  var modes = ['auto', 'light', 'dark'];
+  var themes = ['blueprint', 'document'];
+  try {
+    var saved = JSON.parse(localStorage.getItem(store) || '{}');
+    if (themes.indexOf(saved.theme) > -1) root.setAttribute('data-theme', saved.theme);
+    if (modes.indexOf(saved.mode) > -1) root.setAttribute('data-mode', saved.mode);
+  } catch (error) {}
+  var buttons = Array.prototype.slice.call(document.querySelectorAll('.toolbar button'));
+  function persist() {
+    try {
+      localStorage.setItem(
+        store,
+        JSON.stringify({ theme: root.getAttribute('data-theme'), mode: root.getAttribute('data-mode') })
+      );
+    } catch (error) {}
+  }
+  function relabel(button, text) {
+    if (text) button.textContent = text;
+  }
+  function cycle(list, current) {
+    var index = list.indexOf(current);
+    return list[(index + 1) % list.length];
+  }
+  function copySource(button) {
+    var node = document.getElementById('html-brief-source');
+    var text = node ? node.textContent : '';
+    function done(ok) {
+      relabel(button, ok ? button.getAttribute('data-label-off') : button.getAttribute('data-label-error'));
+      window.setTimeout(function () {
+        relabel(button, button.getAttribute('data-label-on'));
+      }, 1600);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { done(true); },
+        function () { done(false); }
+      );
+      return;
+    }
+    var area = document.createElement('textarea');
+    area.value = text;
+    area.setAttribute('readonly', '');
+    area.style.position = 'fixed';
+    area.style.opacity = '0';
+    document.body.appendChild(area);
+    area.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (error) { ok = false; }
+    document.body.removeChild(area);
+    done(ok);
+  }
+  buttons.forEach(function (button) {
+    button.addEventListener('click', function () {
+      var act = button.getAttribute('data-act');
+      if (act === 'theme') {
+        var next = cycle(themes, root.getAttribute('data-theme'));
+        root.setAttribute('data-theme', next);
+        relabel(
+          button,
+          next === 'blueprint'
+            ? button.getAttribute('data-label-bp')
+            : button.getAttribute('data-label-doc')
+        );
+        persist();
+        return;
+      }
+      if (act === 'mode') {
+        var mode = cycle(modes, root.getAttribute('data-mode'));
+        root.setAttribute('data-mode', mode);
+        relabel(button, button.getAttribute('data-label-' + mode));
+        persist();
+        return;
+      }
+      if (act === 'copy') copySource(button);
+    });
+  });
+})();
+
+</script>
+</body>
+</html>

@@ -5,8 +5,8 @@
 Chaos Design Skills is a curated collection of production-oriented agent skills
 maintained at <https://github.com/chaos-design/skills>. The repository packages
 repeatable workflows for content extraction, bilingual reading, slide
-generation, frontend presentation, geographic flow visualization, and social
-content capture.
+generation, frontend presentation, one-page HTML briefs, geographic flow
+visualization, and social content capture.
 
 Each skill is distributed as a standalone folder under `skills/<name>`. A skill
 contains its runtime instructions, supporting scripts, documentation, examples,
@@ -19,6 +19,8 @@ and license file so that agents can install and use it independently.
   published skill.
 - Shared content pipeline through `web-markdown`, which normalizes web content
   before downstream skills process it.
+- `html-brief` renders structured answers as a single offline HTML file, with
+  diagram geometry and themes computed rather than written by the model.
 - Self-contained generated outputs for previews, slides, and reader pages.
 - Repository-level testing conventions under `tests/` for validating generated
   artifacts without mixing outputs from unrelated skills.
@@ -32,6 +34,7 @@ and license file so that agents can install and use it independently.
 | `content-slides` | Converts normalized content into self-contained presentation slides. | [English](./skills/content-slides/README.md) / [中文](./skills/content-slides/README.zh-CN.md) |
 | `frontend-slides` | Generates frontend-oriented slide pages and visual presentation material. | [English](./skills/frontend-slides/README.md) / [中文](./skills/frontend-slides/README.zh-CN.md) |
 | `geo-flow-map` | Produces geographic flow map visualizations from structured movement data. | [English](./skills/geo-flow-map/README.md) / [中文](./skills/geo-flow-map/README.zh-CN.md) |
+| `html-brief` | Renders a complex answer as one self-contained HTML brief: panel grid, flow and sequence diagrams, comparison tables, two themes and a light/dark switch. | [English](./skills/html-brief/README.md) / [中文](./skills/html-brief/README.zh-CN.md) |
 | `web-markdown` | Fetches and converts web content into stable Markdown for other skills. | [English](./skills/web-markdown/README.md) / [中文](./skills/web-markdown/README.zh-CN.md) |
 | `x-tweet-fetcher` | Extracts X/Twitter content for workflows that need social-source input. | [English](./skills/x-tweet-fetcher/README.md) / [中文](./skills/x-tweet-fetcher/README.zh-CN.md) |
 
@@ -44,6 +47,7 @@ npx skills add https://github.com/chaos-design/skills --skill bilingual-reader
 npx skills add https://github.com/chaos-design/skills --skill content-slides
 npx skills add https://github.com/chaos-design/skills --skill frontend-slides
 npx skills add https://github.com/chaos-design/skills --skill geo-flow-map
+npx skills add https://github.com/chaos-design/skills --skill html-brief
 npx skills add https://github.com/chaos-design/skills --skill web-markdown
 npx skills add https://github.com/chaos-design/skills --skill x-tweet-fetcher
 ```
@@ -64,6 +68,14 @@ supported Chinese platform URLs:
 ```bash
 npx skills add https://github.com/chaos-design/skills --skill x-tweet-fetcher
 npx skills add https://github.com/chaos-design/skills --skill web-markdown
+```
+
+`html-brief` needs only the Python 3 standard library, so it installs on its
+own. It accepts Markdown from `web-markdown`, a local document, or pasted text:
+
+```bash
+npx skills add https://github.com/chaos-design/skills --skill web-markdown
+npx skills add https://github.com/chaos-design/skills --skill html-brief
 ```
 
 ## Usage Guide

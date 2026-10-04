@@ -12,16 +12,19 @@ project.
 |   |-- content-slides/
 |   |-- frontend-slides/
 |   |-- geo-flow-map/
+|   |-- html-brief/
 |   |-- web-markdown/
 |   `-- x-tweet-fetcher/
 |-- screenshots/
 |   |-- bilingual-reader/
 |   |-- content-slides/
-|   `-- frontend-slides/
+|   |-- frontend-slides/
+|   `-- html-brief/
 `-- tests/
     |-- bilingual-reader/
     |-- content-slides/
     |-- frontend-slides/
+    |-- html-brief/
     |-- web-markdown/
     `-- index.html
 ```

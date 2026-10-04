@@ -1,0 +1,15 @@
+{
+  "name": "html-brief",
+  "version": "0.1.0",
+  "category": "Presentation · Complex answers → one self-contained HTML brief",
+  "description": "Convert a complex question, review, comparison or explanation into one self-contained HTML brief with computed panel layout, flow and sequence diagrams, comparison tables, two themes and a light/dark switch. The agent writes a short Markdown draft; a bundled zero-dependency Python renderer computes geometry, colors and layout.",
+  "homepage": "https://github.com/chaos-design/skills/tree/main/skills/html-brief",
+  "compat": [
+    "claude-code",
+    "claude-ai",
+    "cursor",
+    "codex-cli",
+    "gemini-cli",
+    "opencode"
+  ]
+}

@@ -1,0 +1,455 @@
+<!doctype html>
+<html lang="en" data-theme="blueprint" data-mode="auto">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="generator" content="html-brief" />
+<meta name="description" content="Four algorithms that changed what the sender is allowed to do" />
+<title>TCP congestion control, 1988 to today</title>
+<style>
+
+*,*::before,*::after{box-sizing:border-box}
+:root{
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hiragino Sans GB','Microsoft YaHei',Roboto,sans-serif;
+  --serif:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,'Songti SC','Noto Serif CJK SC',serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace;
+  --radius:10px;
+}
+:root{  --bg:#f7f8fa;
+  --panel:#ffffff;
+  --panel-2:#f2f4f7;
+  --ink:#14181f;
+  --muted:#5b6675;
+  --line:#dfe3e8;
+  --line-strong:#bfc6d0;
+  --accent:#1d4ed8;
+  --accent-soft:#e8effd;
+  --ok:#127a45;
+  --warn:#8a5a06;
+  --bad:#b4232c;
+  --code-bg:#f4f6f8;
+  --node:#ffffff;
+  --node-line:#98a2b0;
+  --grid-line:#e9edf2;}
+@media (prefers-color-scheme:dark){:root:not([data-mode='light']){  --bg:#0e1319;
+  --panel:#151b23;
+  --panel-2:#1b222c;
+  --ink:#e6edf3;
+  --muted:#96a3b3;
+  --line:#26303d;
+  --line-strong:#3a4759;
+  --accent:#7aa9ff;
+  --accent-soft:#1b2740;
+  --ok:#4cc38a;
+  --warn:#d9a441;
+  --bad:#f87171;
+  --code-bg:#10161d;
+  --node:#1b222c;
+  --node-line:#415067;
+  --grid-line:#182029;}}
+:root[data-mode='dark']{  --bg:#0e1319;
+  --panel:#151b23;
+  --panel-2:#1b222c;
+  --ink:#e6edf3;
+  --muted:#96a3b3;
+  --line:#26303d;
+  --line-strong:#3a4759;
+  --accent:#7aa9ff;
+  --accent-soft:#1b2740;
+  --ok:#4cc38a;
+  --warn:#d9a441;
+  --bad:#f87171;
+  --code-bg:#10161d;
+  --node:#1b222c;
+  --node-line:#415067;
+  --grid-line:#182029;}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);
+  font-size:16px;line-height:1.62;-webkit-font-smoothing:antialiased}
+a{color:var(--accent);text-decoration:underline;text-decoration-color:var(--line-strong);text-underline-offset:2px}
+a:hover{text-decoration-color:var(--accent)}
+code,kbd{font-family:var(--mono);font-size:.9em}
+.doc{max-width:1180px;margin:0 auto;padding:30px 22px 76px}
+.masthead{display:flex;gap:24px;align-items:flex-end;justify-content:space-between;
+  flex-wrap:wrap;border-bottom:2px solid var(--line-strong);padding-bottom:16px;margin-bottom:20px}
+.eyebrow{margin:0 0 6px;font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--muted);font-family:var(--mono)}
+h1{margin:0;font-size:clamp(24px,3.4vw,34px);line-height:1.2;font-weight:700;letter-spacing:-.01em}
+.masthead-text{min-width:0;flex:1 1 320px}
+.subtitle{margin:8px 0 0;color:var(--muted);font-size:16px;max-width:70ch;overflow-wrap:anywhere}
+.stamp{margin:10px 0 0;color:var(--muted);font-size:12px;font-family:var(--mono);overflow-wrap:anywhere}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap}
+.toolbar button{font:inherit;font-size:12px;padding:6px 11px;border-radius:999px;
+  border:1px solid var(--line-strong);background:var(--panel);color:var(--ink);cursor:pointer}
+.toolbar button:hover{border-color:var(--accent);color:var(--accent)}
+.toolbar button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.panels{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:start}
+.panel{min-width:0;background:var(--panel);border:1px solid var(--line);
+  border-radius:var(--radius);padding:16px 18px 18px;overflow-wrap:break-word}
+.panel.span-2{grid-column:1/-1}
+.panel-head{margin:0 0 12px;font-size:19px;line-height:1.3;font-weight:700}
+.panel-body>:first-child{margin-top:0}
+.panel-body>:last-child{margin-bottom:0}
+.panel p{margin:0 0 10px}
+h3.sub,h4.sub,h5.sub,h6.sub{margin:16px 0 8px;font-size:15px;font-weight:700}
+h4.sub{font-size:14px}
+h5.sub,h6.sub{font-size:13px;color:var(--muted)}
+ul.list,ol.list{margin:0 0 12px;padding-left:20px}
+ul.list li,ol.list li{margin:0 0 4px}
+blockquote.quote{margin:0 0 12px;padding:2px 0 2px 14px;border-left:3px solid var(--line-strong);
+  color:var(--muted)}
+pre.code{position:relative;margin:0 0 12px;padding:12px 14px;background:var(--code-bg);
+  border:1px solid var(--line);border-radius:8px;overflow-x:auto;font-size:13px;line-height:1.55}
+pre.code code{white-space:pre}
+.code-lang{position:absolute;top:6px;right:10px;font-size:10px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--muted)}
+.table-wrap{overflow-x:auto;margin:0 0 12px}
+table.table{width:100%;border-collapse:collapse;font-size:14px}
+table.table th,table.table td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+table.table th{font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);
+  font-weight:600;border-bottom:1px solid var(--line-strong)}
+table.table tr:last-child td{border-bottom:none}
+.mark{font-weight:700}
+.mark-ok{color:var(--ok)}
+.mark-no{color:var(--bad)}
+.mark-warn{color:var(--warn)}
+.callout{display:flex;gap:12px;margin:0 0 12px;padding:12px 14px;border-radius:8px;
+  border:1px solid var(--line);background:var(--panel-2)}
+.callout-tag{flex:0 0 auto;font-family:var(--mono);font-size:10px;letter-spacing:.1em;
+  text-transform:uppercase;padding:2px 8px;border-radius:999px;align-self:flex-start;
+  border:1px solid currentColor;color:var(--muted)}
+.callout-body{min-width:0}
+.callout-body>:first-child{margin-top:0}
+.callout-body>:last-child{margin-bottom:0}
+.callout-title{display:block;margin-bottom:2px}
+.callout-warn{border-left:3px solid var(--warn)}
+.callout-warn .callout-tag{color:var(--warn)}
+.callout-danger{border-left:3px solid var(--bad)}
+.callout-danger .callout-tag{color:var(--bad)}
+.callout-tip,.callout-key{border-left:3px solid var(--ok)}
+.callout-tip .callout-tag,.callout-key .callout-tag{color:var(--ok)}
+.callout-key{background:var(--accent-soft)}
+.callout-note .callout-tag{color:var(--accent)}
+.limits{display:grid;gap:14px}
+.limit-name{font-size:14px}
+.limit-head{display:flex;justify-content:space-between;gap:12px;align-items:baseline}
+.limit-value{font-family:var(--mono);font-size:13px;color:var(--muted)}
+.limit-track{height:8px;margin:6px 0 4px;background:var(--panel-2);border-radius:999px;
+  border:1px solid var(--line);overflow:hidden}
+.limit-fill{display:block;height:100%;background:var(--accent)}
+.limit-fill.limit-warn{background:var(--warn)}
+.limit-fill.limit-bad{background:var(--bad)}
+.limit-foot{display:flex;gap:10px;font-size:12px;color:var(--muted)}
+.limit-pct{font-family:var(--mono);font-weight:700;color:var(--accent)}
+.limit-pct.limit-warn{color:var(--warn)}
+.limit-pct.limit-bad{color:var(--bad)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px}
+.stat{border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--panel-2);
+  display:flex;flex-direction:column;gap:2px}
+.stat-name{font-size:12px;color:var(--muted)}
+.stat-value{font-size:22px;font-weight:700;letter-spacing:-.01em}
+.stat-delta{font-size:12px;font-family:var(--mono);color:var(--muted)}
+.stat-delta.stat-ok{color:var(--ok)}
+.stat-delta.stat-warn{color:var(--warn)}
+.stat-delta.stat-no{color:var(--bad)}
+dl.kv{display:grid;gap:0;margin:0}
+.kv-row{display:grid;grid-template-columns:minmax(90px,32%) 1fr;gap:10px;padding:7px 0;
+  border-bottom:1px solid var(--line)}
+.kv-row:last-child{border-bottom:none}
+.kv dt{color:var(--muted);font-size:13px}
+.kv dd{margin:0;font-size:14px}
+.annot-block{margin:0 0 12px}
+.annot-sentence{margin:0;font-size:16px;line-height:2}
+.annot{border-bottom:2px solid currentColor;padding-bottom:1px}
+.annot-mark{font-size:9px;margin-left:2px;vertical-align:super;font-family:var(--mono)}
+.annot-bad{color:var(--bad)}
+.annot-warn{color:var(--warn)}
+.annot-good{color:var(--ok)}
+.annot-fix{color:var(--accent)}
+.annot-legend{margin:10px 0 0;padding-left:20px;font-size:13px;color:var(--muted)}
+.annot-legend li{margin:0 0 4px}
+.annot-legend span{display:inline-block;min-width:16px;font-family:var(--mono);font-size:10px;
+  color:var(--muted)}
+.diagram{margin:0 0 12px;padding:6px 0;overflow-x:auto}
+.diagram svg{max-width:100%;height:auto;display:block}
+.diagram .node{fill:var(--node);stroke:var(--node-line);stroke-width:1.2}
+.diagram .node-emph{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.6}
+.diagram .node-tree-root{stroke:var(--accent)}
+.diagram .node-label{fill:var(--ink)}
+.diagram .edge{fill:none;stroke:var(--node-line);stroke-width:1.4}
+.diagram .edge-dashed{stroke-dasharray:5 4}
+.diagram .edge-bold{stroke-width:2.4}
+.diagram .edge-head{fill:var(--node-line);stroke:none}
+.diagram .edge-label{fill:var(--muted);font-family:var(--sans)}
+.diagram .edge-label-bg{fill:var(--panel);stroke:none}
+.diagram .lifeline{stroke:var(--line-strong);stroke-width:1.2;stroke-dasharray:4 4;fill:none}
+.diagram .participant{fill:var(--node);stroke:var(--accent);stroke-width:1.2}
+.diagram .note-box{fill:var(--panel-2);stroke:var(--line-strong);stroke-width:1;stroke-dasharray:3 3}
+.diagram .activation{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1}
+.diagram .frag{fill:none;stroke:var(--muted);stroke-width:1;stroke-dasharray:4 4}
+.diagram .frag-tab{fill:var(--panel-2);stroke:var(--muted);stroke-width:1}
+.diagram .frag-label{fill:var(--ink)}
+.diagram .frag-divider{stroke:var(--line-strong);stroke-width:1;fill:none}
+.diagram .flow-group rect{fill:none;stroke:var(--line-strong);stroke-width:1;stroke-dasharray:5 4}
+.diagram .group-label{fill:var(--muted);font-family:var(--mono);letter-spacing:.06em}
+.diagram .tl-spine{stroke:var(--line-strong);stroke-width:1.5;fill:none}
+.diagram .tl-card{fill:var(--panel-2);stroke:var(--line);stroke-width:1}
+.diagram .tl-card-hl{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.4}
+.diagram .tl-dot{fill:var(--panel);stroke:var(--node-line);stroke-width:1.6}
+.diagram .tl-dot-hl{fill:var(--accent);stroke:var(--accent)}
+.diagram .tl-date{fill:var(--muted);font-family:var(--mono)}
+.diagram .tl-desc{fill:var(--muted)}
+.colophon{margin-top:26px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+  font-size:12px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.colophon code{font-size:11px}
+@media (max-width:880px){
+  .panels{grid-template-columns:minmax(0,1fr)}
+  .panel.span-2{grid-column:auto}
+  .doc{padding:20px 14px 56px}
+  .masthead{align-items:flex-start}
+  .kv-row{grid-template-columns:minmax(0,1fr)}
+  /* Keep diagrams at their natural size and let the figure scroll. */
+  .diagram{margin-left:-18px;margin-right:-18px;padding:6px 18px}
+  .diagram svg{max-width:none}
+}
+@media (prefers-reduced-motion:no-preference){
+  .panel{transition:border-color .15s ease}
+}
+@media print{
+  body{background:#fff}
+  .doc{max-width:none;padding:0}
+  .toolbar{display:none}
+  .panel{break-inside:avoid;border-color:#ccc}
+  .diagram{break-inside:avoid}
+}
+
+:root[data-theme='blueprint']{
+  --radius:0;
+}
+/* Blueprint keeps prose proportional and reserves the mono face for chrome.
+   Diagram labels stay proportional too, because their box geometry is
+   computed from a proportional width estimate. */
+:root[data-theme='blueprint'] .eyebrow,
+:root[data-theme='blueprint'] .panel-head,
+:root[data-theme='blueprint'] h3.sub,
+:root[data-theme='blueprint'] h4.sub,
+:root[data-theme='blueprint'] h5.sub,
+:root[data-theme='blueprint'] h6.sub,
+:root[data-theme='blueprint'] .stamp,
+:root[data-theme='blueprint'] .toolbar button,
+:root[data-theme='blueprint'] .callout-tag,
+:root[data-theme='blueprint'] .kv dt,
+:root[data-theme='blueprint'] .code-lang,
+:root[data-theme='blueprint'] .stat-value,
+:root[data-theme='blueprint'] .stat-delta,
+:root[data-theme='blueprint'] .limit-value,
+:root[data-theme='blueprint'] .limit-pct{
+  font-family:var(--mono);
+}
+:root[data-theme='blueprint'] body{
+  background-color:var(--bg);
+  background-image:linear-gradient(var(--grid-line) 1px,transparent 1px),
+    linear-gradient(90deg,var(--grid-line) 1px,transparent 1px);
+  background-size:26px 26px,26px 26px;
+}
+:root[data-theme='blueprint'] .doc{
+  max-width:1220px;background:var(--panel);border:1px solid var(--line-strong);
+  padding:0 22px 26px;box-shadow:none;
+}
+:root[data-theme='blueprint'] .masthead{
+  margin:0 -22px 20px;padding:18px 22px 14px;background:var(--panel-2);
+  border-bottom:2px solid var(--line-strong);align-items:center;
+}
+:root[data-theme='blueprint'] h1{font-size:clamp(20px,2.6vw,27px);letter-spacing:.02em}
+:root[data-theme='blueprint'] .subtitle{font-family:var(--sans);font-size:14px}
+:root[data-theme='blueprint'] .panel{background:transparent;border-color:var(--line-strong)}
+:root[data-theme='blueprint'] .panel-head{font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--muted);border-bottom:1px solid var(--line);padding-bottom:6px}
+:root[data-theme='blueprint'] h3.sub,h4.sub,h5.sub,h6.sub{font-size:12px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--muted)}
+:root[data-theme='blueprint'] .toolbar button{border-radius:0}
+:root[data-theme='blueprint'] .stats .stat{border-radius:0;background:transparent}
+:root[data-theme='blueprint'] .limit-track{border-radius:0}
+:root[data-theme='blueprint'] .limit-fill{border-radius:0}
+:root[data-theme='blueprint'] .diagram .node{rx:2px}
+
+</style>
+</head>
+<body>
+<div class="doc">
+<header class="masthead">
+<div class="masthead-text">
+<p class="eyebrow">HTML Brief</p>
+<h1>TCP congestion control, 1988 to today</h1>
+<p class="subtitle">Four algorithms that changed what the sender is allowed to do</p>
+<p class="stamp">Generated 2026-10-04 17:45:00 (UTC+8) · Source: examples/congestion-control-history.md</p>
+</div>
+<div class="toolbar" role="group"><button type="button" data-act="theme" data-label-bp="Theme · Blueprint" data-label-doc="Theme · Document">Theme · Blueprint</button><button type="button" data-act="mode" data-label-auto="Mode · Auto" data-label-light="Mode · Light" data-label-dark="Mode · Dark">Mode · Auto</button><button type="button" data-act="copy" data-label-on="Copy source" data-label-off="Copied" data-label-error="Copy failed">Copy source</button></div>
+</header>
+<main class="panels">
+  <section class="panel span-2" id="panel-1">
+<h2 class="panel-head">Milestones</h2>
+    <div class="panel-body"><figure class="diagram" role="img" aria-label="Milestones timeline"><svg viewBox="0 0 511.7 350.0" width="511.7" height="350.0" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"><title>Milestones timeline</title><g transform="translate(4.0,0.0)"><rect class="tl-card" x="106.6" y="16.0" width="385.2" height="46.0" rx="7" /><text class="node-label" x="119.6" y="32.0" font-size="12.5" text-anchor="start" dominant-baseline="middle">Reno</text><text class="tl-desc" x="119.6" y="46.0" font-size="11.5" text-anchor="start" dominant-baseline="middle">Loss-based slow start with fast recovery</text><text class="tl-date" x="58.6" y="39.0" font-size="11.5" text-anchor="end" dominant-baseline="middle">1988-09</text><circle class="tl-dot" cx="80.6" cy="39.0" r="5" /><rect class="tl-card" x="106.6" y="80.0" width="385.2" height="46.0" rx="7" /><text class="node-label" x="119.6" y="96.0" font-size="12.5" text-anchor="start" dominant-baseline="middle">SACK</text><text class="tl-desc" x="119.6" y="110.0" font-size="11.5" text-anchor="start" dominant-baseline="middle">RFC 2018 lets the receiver report which segments arrived</text><text class="tl-date" x="58.6" y="103.0" font-size="11.5" text-anchor="end" dominant-baseline="middle">1998-06</text><circle class="tl-dot" cx="80.6" cy="103.0" r="5" /><rect class="tl-card" x="106.6" y="144.0" width="385.2" height="46.0" rx="7" /><text class="node-label" x="119.6" y="160.0" font-size="12.5" text-anchor="start" dominant-baseline="middle">CUBIC</text><text class="tl-desc" x="119.6" y="174.0" font-size="11.5" text-anchor="start" dominant-baseline="middle">RFC 8312 replaces time-based growth with a cubic window</text><text class="tl-date" x="58.6" y="167.0" font-size="11.5" text-anchor="end" dominant-baseline="middle">2007-10</text><circle class="tl-dot" cx="80.6" cy="167.0" r="5" /><rect class="tl-card" x="106.6" y="208.0" width="385.2" height="46.0" rx="7" /><text class="node-label" x="119.6" y="224.0" font-size="12.5" text-anchor="start" dominant-baseline="middle">PRR</text><text class="tl-desc" x="119.6" y="238.0" font-size="11.5" text-anchor="start" dominant-baseline="middle">RFC 6937 caps recovery volume after a drop</text><text class="tl-date" x="58.6" y="231.0" font-size="11.5" text-anchor="end" dominant-baseline="middle">2011-06</text><circle class="tl-dot" cx="80.6" cy="231.0" r="5" /><rect class="tl-card" x="106.6" y="272.0" width="385.2" height="46.0" rx="7" /><text class="node-label" x="119.6" y="288.0" font-size="12.5" text-anchor="start" dominant-baseline="middle">BBR</text><text class="tl-desc" x="119.6" y="302.0" font-size="11.5" text-anchor="start" dominant-baseline="middle">Models bandwidth and round-trip time instead of loss</text><text class="tl-date" x="58.6" y="295.0" font-size="11.5" text-anchor="end" dominant-baseline="middle">2016-09</text><circle class="tl-dot" cx="80.6" cy="295.0" r="5" /><path class="tl-spine" d="M 80.6 16 L 80.6 334.0" /> data-bbox="12.0 16.0 491.7 334.0"</g></svg></figure></div>
+  </section>
+  <section class="panel span-2" id="panel-2">
+<h2 class="panel-head">What each one optimises</h2>
+    <div class="panel-body"><dl class="kv"><div class="kv-row"><dt>Reno</dt><dd>react to loss · simple, punishes deep buffers</dd></div><div class="kv-row"><dt>SACK</dt><dd>react to loss · knows what survived a drop</dd></div><div class="kv-row"><dt>CUBIC</dt><dd>react to loss · scales on long links with a fixed target</dd></div><div class="kv-row"><dt>PRR</dt><dd>react to loss · recovery no longer overshoots</dd></div><div class="kv-row"><dt>BBR</dt><dd>react to delay · keeps the pipe full on links with random loss</dd></div></dl></div>
+  </section>
+  <section class="panel span-2" id="panel-3">
+<h2 class="panel-head">Choosing an algorithm</h2>
+    <div class="panel-body"><div class="table-wrap"><table class="table"><thead><tr><th style="text-align:left">Algorithm</th><th style="text-align:left">Deep buffer link</th><th style="text-align:left">Random loss</th><th style="text-align:left">Long fat link</th><th style="text-align:left">Complexity</th></tr></thead><tbody><tr><td style="text-align:left">Reno</td><td style="text-align:left"><span class="mark mark-no">✗</span></td><td style="text-align:left"><span class="mark mark-ok">✓</span></td><td style="text-align:left"><span class="mark mark-no">✗</span></td><td style="text-align:left">low</td></tr><tr><td style="text-align:left">CUBIC</td><td style="text-align:left"><span class="mark mark-ok">✓</span></td><td style="text-align:left"><span class="mark mark-warn">!</span></td><td style="text-align:left"><span class="mark mark-ok">✓</span></td><td style="text-align:left">medium</td></tr><tr><td style="text-align:left">BBR</td><td style="text-align:left"><span class="mark mark-ok">✓</span></td><td style="text-align:left"><span class="mark mark-ok">✓</span></td><td style="text-align:left"><span class="mark mark-ok">✓</span></td><td style="text-align:left">high</td></tr></tbody></table></div><aside class="callout callout-tip"><span class="callout-tag">Tip</span><div class="callout-body"><p>Pick by link behaviour, not by benchmark headline. BBR wins where loss
+is random; CUBIC wins where loss marks a full queue.</p></div></aside></div>
+  </section>
+  <section class="panel span-2" id="panel-4">
+<h2 class="panel-head">Recovery loop</h2>
+    <div class="panel-body"><figure class="diagram" role="img" aria-label="Recovery loop sequence diagram"><svg viewBox="0 0 390.4 300.0" width="390.4" height="300.0" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"><title>Recovery loop sequence diagram</title><g transform="translate(-12.0,16.0)"><path class="lifeline" d="M 68.0 34.0 L 68.0 294.0" /><rect class="participant" x="28.0" y="0" width="80.0" height="34.0" rx="6" /><text class="node-label" x="68.0" y="17.0" font-size="13.0" text-anchor="middle" dominant-baseline="middle">Sender</text><path class="lifeline" d="M 284.7 34.0 L 284.7 294.0" /><rect class="participant" x="244.7" y="0" width="80.0" height="34.0" rx="6" /><text class="node-label" x="284.7" y="17.0" font-size="13.0" text-anchor="middle" dominant-baseline="middle">Network</text><path class="edge edge-solid" d="M 73.0 124.0 L 276.7 124.0" /><polygon class="edge-head" points="276.7,124.0 268.7,127.4 268.7,120.6" /><rect class="edge-label-bg" x="112.4" y="103.0" width="127.9" height="14" rx="4" /><text class="edge-label" x="176.3" y="111.0" font-size="12.0" text-anchor="middle" dominant-baseline="middle" style="fill:var(--muted)">1. send cwnd of data</text><path class="edge edge-dashed" d="M 279.7 172.0 L 76.0 172.0" /><polygon class="edge-head" points="76.0,172.0 84.0,168.6 84.0,175.4" /><rect class="edge-label-bg" x="98.1" y="151.0" width="156.5" height="14" rx="4" /><text class="edge-label" x="176.3" y="159.0" font-size="12.0" text-anchor="middle" dominant-baseline="middle" style="fill:var(--muted)">2. SACK blocks received</text><path class="edge edge-solid" d="M 73.0 196.0 L 95.0 196.0 Q 104.0 196.0 104.0 205.0 L 104.0 219.0 Q 104.0 228.0 95.0 228.0 L 73.0 228.0" /><polygon class="edge-head" points="73.0,228.0 81.0,224.6 81.0,231.4" /><rect class="edge-label-bg" x="108.0" y="229.0" width="282.4" height="14" rx="4" /><text class="edge-label" x="112.0" y="237.0" font-size="11.5" text-anchor="start" dominant-baseline="middle" style="fill:var(--muted)">3. cwnd = Wmax - (bytes delivered / bytes acked)</text><path class="edge edge-solid" d="M 73.0 268.0 L 276.7 268.0" /><polygon class="edge-head" points="276.7,268.0 268.7,271.4 268.7,264.6" /><rect class="edge-label-bg" x="85.2" y="247.0" width="182.2" height="14" rx="4" /><text class="edge-label" x="176.3" y="255.0" font-size="12.0" text-anchor="middle" dominant-baseline="middle" style="fill:var(--muted)">4. resume at a reduced window</text> data-bbox="28.0 0.0 386.4 268.0"</g></svg></figure></div>
+  </section>
+  <section class="panel span-2" id="panel-5">
+<h2 class="panel-head">Notes</h2>
+    <div class="panel-body"><ul class="list"><li>RFC 2018 and RFC 6937 are dated by their publication month.</li><li>BBR started as a Google draft; treat its version number as moving.</li><li>Linux exposes per-algorithm sockets, so a test can compare them on one host.</li></ul></div>
+  </section>
+</main>
+<footer class="colophon">
+<span>Built with the <code>html-brief</code> skill.</span>
+</footer>
+</div>
+<script type="text/markdown" id="html-brief-source">
+---
+title: TCP congestion control, 1988 to today
+subtitle: Four algorithms that changed what the sender is allowed to do
+theme: blueprint
+mode: auto
+---
+
+## Milestones {span=2}
+
+```timeline
+1988-09 | Reno | Loss-based slow start with fast recovery
+1998-06 | SACK | RFC 2018 lets the receiver report which segments arrived
+2007-10 | CUBIC | RFC 8312 replaces time-based growth with a cubic window
+2011-06 | PRR | RFC 6937 caps recovery volume after a drop
+2016-09 | BBR | Models bandwidth and round-trip time instead of loss
+```
+
+## What each one optimises {span=2}
+
+```kv
+Reno | react to loss | simple, punishes deep buffers
+SACK | react to loss | knows what survived a drop
+CUBIC | react to loss | scales on long links with a fixed target
+PRR | react to loss | recovery no longer overshoots
+BBR | react to delay | keeps the pipe full on links with random loss
+```
+
+## Choosing an algorithm {span=2}
+
+| Algorithm | Deep buffer link | Random loss | Long fat link | Complexity |
+| --- | --- | --- | --- | --- |
+| Reno | no | ok | no | low |
+| CUBIC | ok | warn | ok | medium |
+| BBR | ok | ok | ok | high |
+
+> tip: Pick by link behaviour, not by benchmark headline. BBR wins where loss
+> is random; CUBIC wins where loss marks a full queue.
+
+## Recovery loop {span=2}
+
+```sequence num
+Sender -> Network: send cwnd of data
+Network -.-> Sender: SACK blocks received
+Sender -> Sender: cwnd = Wmax - (bytes delivered / bytes acked)
+Sender -> Network: resume at a reduced window
+```
+
+## Notes
+
+- RFC 2018 and RFC 6937 are dated by their publication month.
+- BBR started as a Google draft; treat its version number as moving.
+- Linux exposes per-algorithm sockets, so a test can compare them on one host.
+</script>
+<script>
+
+(function () {
+  var root = document.documentElement;
+  var store = 'html-brief:view';
+  var modes = ['auto', 'light', 'dark'];
+  var themes = ['blueprint', 'document'];
+  try {
+    var saved = JSON.parse(localStorage.getItem(store) || '{}');
+    if (themes.indexOf(saved.theme) > -1) root.setAttribute('data-theme', saved.theme);
+    if (modes.indexOf(saved.mode) > -1) root.setAttribute('data-mode', saved.mode);
+  } catch (error) {}
+  var buttons = Array.prototype.slice.call(document.querySelectorAll('.toolbar button'));
+  function persist() {
+    try {
+      localStorage.setItem(
+        store,
+        JSON.stringify({ theme: root.getAttribute('data-theme'), mode: root.getAttribute('data-mode') })
+      );
+    } catch (error) {}
+  }
+  function relabel(button, text) {
+    if (text) button.textContent = text;
+  }
+  function cycle(list, current) {
+    var index = list.indexOf(current);
+    return list[(index + 1) % list.length];
+  }
+  function copySource(button) {
+    var node = document.getElementById('html-brief-source');
+    var text = node ? node.textContent : '';
+    function done(ok) {
+      relabel(button, ok ? button.getAttribute('data-label-off') : button.getAttribute('data-label-error'));
+      window.setTimeout(function () {
+        relabel(button, button.getAttribute('data-label-on'));
+      }, 1600);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { done(true); },
+        function () { done(false); }
+      );
+      return;
+    }
+    var area = document.createElement('textarea');
+    area.value = text;
+    area.setAttribute('readonly', '');
+    area.style.position = 'fixed';
+    area.style.opacity = '0';
+    document.body.appendChild(area);
+    area.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (error) { ok = false; }
+    document.body.removeChild(area);
+    done(ok);
+  }
+  buttons.forEach(function (button) {
+    button.addEventListener('click', function () {
+      var act = button.getAttribute('data-act');
+      if (act === 'theme') {
+        var next = cycle(themes, root.getAttribute('data-theme'));
+        root.setAttribute('data-theme', next);
+        relabel(
+          button,
+          next === 'blueprint'
+            ? button.getAttribute('data-label-bp')
+            : button.getAttribute('data-label-doc')
+        );
+        persist();
+        return;
+      }
+      if (act === 'mode') {
+        var mode = cycle(modes, root.getAttribute('data-mode'));
+        root.setAttribute('data-mode', mode);
+        relabel(button, button.getAttribute('data-label-' + mode));
+        persist();
+        return;
+      }
+      if (act === 'copy') copySource(button);
+    });
+  });
+})();
+
+</script>
+</body>
+</html>
