@@ -198,3 +198,25 @@ UI_TEXT = {
         "diagram": "図",
     },
 }
+
+LOCALE = {"lang": "en"}
+
+DIAGRAM_WORDS = {
+    "en": {
+        "flow": "flow diagram",
+        "sequence": "sequence diagram",
+        "tree": "tree diagram",
+        "timeline": "timeline diagram",
+    },
+    "zh": {"flow": "流程图", "sequence": "时序图", "tree": "目录树", "timeline": "时间线"},
+    "ja": {"flow": "フローチャート", "sequence": "シーケンス図", "tree": "ツリー", "timeline": "タイムライン"},
+}
+
+
+def set_locale(lang: str) -> None:
+    """Remember the page language for every localized label."""
+    LOCALE["lang"] = lang if lang in UI_TEXT else "en"
+
+
+def diagram_word(kind: str) -> str:
+    return DIAGRAM_WORDS[LOCALE["lang"]][kind]

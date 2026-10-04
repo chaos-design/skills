@@ -47,6 +47,9 @@ python3 scripts/html_brief.py check draft.md
 # 渲染全部内置示例，并校验页面保持自包含
 python3 scripts/html_brief.py validate --out-dir out
 
+# 校验页面语义：结构、语言、标注、图形顺序仍与草稿一致（无需浏览器）
+python3 scripts/check_semantics.py
+
 # 用本机 Chrome 验证图内标签没有被裁切（不写入任何文件）
 python3 scripts/check_layout.py
 ```
@@ -166,11 +169,34 @@ python3 scripts/html_brief.py examples --out-dir out
 # 渲染全部示例，检查 doctype、内联样式、内嵌源文，并确认没有任何外链 URL
 python3 scripts/html_brief.py validate --out-dir out
 
+# 用独立的小解析器从草稿反推期望结构，再与渲染结果逐项比对
+python3 scripts/check_semantics.py
+
 # 用无头 Chrome 渲染全部示例；任一图内标签超出 viewBox 或页面出现横向滚动都会失败
 python3 scripts/check_layout.py
 ```
 
+`check_semantics.py` 检查的是"说得对不对"，而不只是"坏没坏"。它自带一个小解析器，
+从每份草稿反推期望值再逐项比对：
+
+| 校验项 | 能抓出的问题 |
+| --- | --- |
+| 内嵌源文与草稿逐字节一致 | 转义或截断 |
+| 面板数量与标题对应草稿的 `##` 行 | 面板或其标题丢失 |
+| 显式 `lang:` 生效 | front matter 被忽略 |
+| 工具栏与标注语言与页面语言一致 | 英文页配中文控件 |
+| 仅当引用有两段时才出现 callout 标题 | 标题掉回正文 |
+| 每个 `ok` / `no` / `warn` 单元格生成一个符号 | 对比列丢失 |
+| 每行 limits 生成对应百分比的进度条 | 进度条数字错误 |
+| 时序图参与者按首次出现顺序排列 | 泳道顺序错误 |
+| 每张图都有 title、aria-label 与 viewBox | 图形失去可访问名称 |
+| 同一草稿两次渲染结果一致 | 隐藏的不确定性 |
+
+脚本内还有一份小快照，固定每份示例的标题、语言、面板数与图形类型，改动必须显式确认。
+
 `check_layout.py` 需要本机的 Chrome、Edge 或 Chromium。找不到浏览器时它会报告跳过并以 0 退出，不会假装通过。
+
+两个检查脚本都只写入临时目录，不改动仓库。
 
 ## 已知限制
 
@@ -192,6 +218,7 @@ skills/html-brief/
   references/          草稿格式与撰写指南
   scripts/
     html_brief.py      命令行入口
+    check_semantics.py 语义校验：结构、语言、标注、图形顺序
     check_layout.py    无头浏览器版面检查
     briefkit/          解析、图形、块、主题、渲染、检查
 tests/html-brief/      生成预览，每个示例一个目录

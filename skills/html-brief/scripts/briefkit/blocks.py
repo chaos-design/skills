@@ -17,6 +17,7 @@ from .parser import (
     strip_emphasis,
 )
 from .textutil import esc, esc_attr
+from .textutil import set_locale as set_page_locale
 
 _CODE_SPAN_RE = re.compile(r"`([^`]+)`")
 _LINK_RE = re.compile(r"\[([^\]]+)\]\(([^)\s]+)\)")
@@ -49,6 +50,7 @@ LOCALE = {"lang": "en"}
 def set_locale(lang: str) -> None:
     """Pick the labels used by callouts and annotations."""
     LOCALE["lang"] = lang if lang in CALLOUT_LABELS else "en"
+    set_page_locale(lang)
 
 DIAGRAM_BUILDERS = {
     "flow": diagrams.render_flow,

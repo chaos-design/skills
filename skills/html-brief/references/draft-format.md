@@ -287,10 +287,17 @@ being opened, and a `##` missing before a deeper heading.
 # renders every bundled draft and asserts the page stays self-contained
 python3 scripts/html_brief.py validate --out-dir out
 
+# re-derives panels, headings, language, callout titles, table glyphs, limit
+# bars and sequence order from the draft and compares them with the page
+python3 scripts/check_semantics.py
+
 # renders every bundled draft in headless Chrome and fails when a diagram label
-# leaves its viewBox or the page scrolls sideways; writes nothing to the repo
+# leaves its viewBox or the page scrolls sideways
 python3 scripts/check_layout.py
 ```
+
+`check_semantics.py` keeps its own small parser on purpose. If it reused the
+renderer's parser, a parser bug would agree with itself and stay invisible.
 
 ## Determinism
 

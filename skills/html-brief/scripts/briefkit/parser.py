@@ -491,7 +491,9 @@ def _parse_panels(blocks: list[object]) -> tuple[list[Panel], list[object]]:
 
 def parse_draft(text: str, source: str = "") -> Document:
     """Parse a full draft into a document of panels and blocks."""
-    body = text.replace("\r\n", "\n").split("\n")
+    # A byte-order mark is metadata, not content: it would otherwise turn the
+    # front matter fence into a line of text and duplicate the first panel.
+    body = text.lstrip("\ufeff").replace("\r\n", "\n").split("\n")
     meta, offset = parse_front_matter(body)
     rest = body[offset:]
     blocks = _parse_blocks(rest, 0, len(rest), offset)

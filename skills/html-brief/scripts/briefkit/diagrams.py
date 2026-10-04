@@ -12,7 +12,7 @@ import re
 from dataclasses import dataclass, field
 
 from .parser import DraftError
-from .textutil import esc, text_px, wrap_text
+from .textutil import diagram_word, esc, text_px, wrap_text
 
 FONT = 12.5
 LABEL_FONT = 11.5
@@ -790,7 +790,7 @@ def render_flow(text: str, args: list[str], line: int, title: str = "Flow") -> s
             for index, item in enumerate(node.lines):
                 canvas.add(text_node(item, node.cx, start + index * LINE_H))
 
-    return canvas.render(f"{title} flow diagram")
+    return canvas.render(f"{title} {diagram_word('flow')}")
 
 
 # --------------------------------------------------------------------------- #
@@ -1121,7 +1121,7 @@ def render_sequence(text: str, args: list[str], line: int, title: str = "Sequenc
 
     if math.isfinite(canvas.max_x):
         canvas.max_x = max(canvas.max_x, lanes[order[-1]] + box_w[order[-1]] / 2 + margin)
-    return canvas.render(f"{title} sequence diagram")
+    return canvas.render(f"{title} {diagram_word('sequence')}")
 
 
 # --------------------------------------------------------------------------- #
@@ -1206,7 +1206,7 @@ def render_tree(text: str, args: list[str], line: int, title: str = "Tree") -> s
         canvas.extend(x, cy - box_h / 2, x + width, cy + box_h / 2)
 
     canvas.max_y = max(canvas.max_y, bottom)
-    return canvas.render(f"{title} tree")
+    return canvas.render(f"{title} {diagram_word('tree')}")
 
 
 # --------------------------------------------------------------------------- #
@@ -1282,4 +1282,4 @@ def render_timeline(text: str, args: list[str], line: int, title: str = "Timelin
     )
     canvas.point(spine_x, 16)
     canvas.point(spine_x, spine_bottom)
-    return canvas.render(f"{title} timeline")
+    return canvas.render(f"{title} {diagram_word('timeline')}")

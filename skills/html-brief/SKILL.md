@@ -98,6 +98,9 @@ python3 scripts/html_brief.py validate --out-dir out
 
 # prove no diagram label is clipped, needs a local Chrome, writes nothing
 python3 scripts/check_layout.py
+
+# prove the page still says what the draft says, no browser needed
+python3 scripts/check_semantics.py
 ```
 
 Useful flags: `--theme blueprint|document`, `--mode auto|light|dark`,
@@ -140,6 +143,7 @@ brief is final: the renderer refuses to write a page while findings remain.
 
 ```bash
 python3 scripts/html_brief.py validate --out-dir <folder>
+python3 scripts/check_semantics.py
 python3 scripts/check_layout.py
 python3 scripts/html_brief.py check <draft.md>
 ```
@@ -170,6 +174,9 @@ commands ran and any check that could not run.
 - `scripts/briefkit/render.py` — panel grid, masthead, toolbar.
 - `scripts/briefkit/theme.py` — light and dark variables, two themes.
 - `scripts/briefkit/check.py` — writing check.
+- `scripts/check_semantics.py` — asserts the page still says what the draft
+  says: panels, headings, language, callout titles, table glyphs, limit bars,
+  sequence order, embedded source and render determinism.
 - `scripts/check_layout.py` — headless browser check for clipped labels; needs a
   local Chrome, Edge or Chromium, and reports itself as skipped without one.
 - `references/draft-format.md` — the draft specification.

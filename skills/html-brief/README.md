@@ -55,6 +55,9 @@ python3 scripts/html_brief.py check draft.md
 # render every bundled example and assert the page stays self-contained
 python3 scripts/html_brief.py validate --out-dir out
 
+# prove the page still says what the draft says, no browser needed
+python3 scripts/check_semantics.py
+
 # prove no diagram label is clipped (uses a local Chrome, writes nothing)
 python3 scripts/check_layout.py
 ```
@@ -184,13 +187,38 @@ python3 scripts/html_brief.py examples --out-dir out
 # the absence of any external URL
 python3 scripts/html_brief.py validate --out-dir out
 
+# re-derives the expected structure from each draft and compares it with the
+# rendered page
+python3 scripts/check_semantics.py
+
 # renders every example in headless Chrome and fails if any diagram label
 # leaves its viewBox or the page scrolls sideways
 python3 scripts/check_layout.py
 ```
 
+`check_semantics.py` is the one that catches meaning rather than breakage. It
+re-reads each draft with its own small parser and asserts:
+
+| Asserted | What it catches |
+| --- | --- |
+| the embedded source matches the draft byte for byte | escaping or truncation |
+| panel count and headings match the `##` lines | a panel or its title lost |
+| an explicit `lang:` reaches `<html lang>` | the front matter ignored |
+| the toolbar and callout tags match that language | an English page with Chinese controls |
+| a callout has a title only when its quote has two paragraphs | a title turned into body |
+| every `ok` / `no` / `warn` cell produced one glyph | a comparison column lost |
+| every limits row produced a bar at the declared percentage | a wrong number on a bar |
+| sequence participants appear in first-use order | lanes drawn in the wrong order |
+| every figure has a title, an aria-label and a viewBox | a diagram left unnamed |
+| two renders of one draft are identical | hidden nondeterminism |
+
+A small snapshot in the script also pins each example's title, language, panel
+count and diagram kinds, so an intentional change has to be a deliberate edit.
+
 `check_layout.py` needs a local Chrome, Edge or Chromium. Without one it reports
 the check as skipped and exits 0; it never reports a pass it did not measure.
+
+Both checkers write into a temporary folder and leave the repository alone.
 
 ## Known limits
 
@@ -216,6 +244,7 @@ skills/html-brief/
   references/          draft format and authoring guide
   scripts/
     html_brief.py      CLI entry point
+    check_semantics.py semantic checks against the draft
     check_layout.py    headless browser layout check
     briefkit/          parser, diagrams, blocks, theme, render, check
 tests/html-brief/      generated previews, one folder per example
