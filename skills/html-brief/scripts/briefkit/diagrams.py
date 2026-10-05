@@ -12,7 +12,7 @@ import re
 from dataclasses import dataclass, field
 
 from .parser import DraftError
-from .textutil import diagram_word, esc, text_px, wrap_text
+from .textutil import diagram_word, esc, esc_attr, text_px, wrap_text
 
 FONT = 12.5
 LABEL_FONT = 11.5
@@ -143,7 +143,7 @@ class Canvas:
         width = self.max_x - self.min_x + margin * 2
         height = self.max_y - self.min_y + margin * 2
         return (
-            f'<figure class="diagram" role="img" aria-label="{esc(label)}">'
+            f'<figure class="diagram" role="img" aria-label="{esc_attr(label)}">'
             f'<svg viewBox="0 0 {_n(width)} {_n(height)}" width="{_n(width)}" height="{_n(height)}" '
             f'preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">'
             f"<title>{esc(label)}</title>{body}</svg></figure>"
@@ -319,15 +319,18 @@ def parse_flow(
                         example,
                     )
                 existing.emphasis = existing.emphasis or emphasis
-                continue
-            nodes[node_label] = FlowNode(
-                node_label,
-                shape,
-                emphasis,
-                group=stack[-1] if stack else "",
-                order=len(nodes),
-            )
-            if stack:
+            else:
+                nodes[node_label] = FlowNode(
+                    node_label,
+                    shape,
+                    emphasis,
+                    group=stack[-1] if stack else "",
+                    order=len(nodes),
+                )
+            if stack and node_label not in groups[stack[-1]]:
+                # A node declared before the group block still belongs to it
+                # once the group mentions it, otherwise the frame draws around
+                # only part of what the author grouped.
                 groups[stack[-1]].append(node_label)
         style = {"-.->": "dashed", "==>": "bold"}.get(arrow, "solid")
         edges.append(FlowEdge(src_label, dst_label, edge_label_text, style))
@@ -1107,7 +1110,9 @@ def render_sequence(text: str, args: list[str], line: int, title: str = "Sequenc
         if event.kind == "deactivate":
             starts = open_spans.get(event.src) or []
             if starts:
-                spans.append((event.src, starts.pop(), max(6.0, y - starts[-1] if starts else y)))
+                # Nested activations are a stack: each `deactivate` closes the
+                # most recent one, and that span ends where the stack is now.
+                spans.append((event.src, starts.pop(), y))
             continue
         note_lines = wrap_text(event.label or "", label_font, max(210.0, gap * 1.5))
         height = len(note_lines) * 17 + 14

@@ -309,6 +309,11 @@ tag variant may terminate the script element early. `check_semantics.py` proves
 that with a parser rather than a string search, because a string search and a
 browser disagree on forms such as `</SCRIPT >`.
 
+Finally it renders hostile drafts — a script tag, an event handler, a
+`javascript:` url — and reports anything the browser would act on. That check
+uses a parser for the same reason: `<p>" onmouseover="x</p>` is escaped prose, and
+only a parser can tell it apart from a real event handler.
+
 ## Determinism
 
 The same draft and the same flags produce the same bytes. The generation stamp

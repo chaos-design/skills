@@ -7,9 +7,6 @@ from .blocks import plain, render_blocks, set_locale
 from .parser import Document, Panel
 from .textutil import HTML_LANG, UI_TEXT, esc, esc_attr, detect_lang
 
-THEMES = ("blueprint", "document")
-MODES = ("auto", "light", "dark")
-
 PANEL_TEMPLATE = """  <section class="panel{span}"{id}>
 {heading}    <div class="panel-body">{body}</div>
   </section>"""
@@ -169,7 +166,6 @@ def render_page(
     lang: str = "auto",
     columns: int = 2,
     stamp: str = "",
-    source_label: str = "",
     note: str = "",
 ) -> str:
     if lang not in HTML_LANG:

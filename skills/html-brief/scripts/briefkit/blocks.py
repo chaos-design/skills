@@ -64,7 +64,13 @@ DIAGRAM_BUILDERS = {
 # inline markdown
 # --------------------------------------------------------------------------- #
 def inline(text: str) -> str:
-    """Render inline Markdown into HTML."""
+    """Render inline Markdown into HTML.
+
+    The text is escaped once, up front, and every substitution below works on
+    that escaped string without escaping a second time. Escaping inside a
+    substitution double-encodes anything that already holds an entity, which is
+    how a query string like `?a=1&b=2` used to come out as `&amp;amp;`.
+    """
     fragments: list[str] = []
     while True:
         match = _CODE_SPAN_RE.search(text)
@@ -76,19 +82,16 @@ def inline(text: str) -> str:
     out = esc(text)
 
     def link_sub(match: re.Match[str]) -> str:
-        label = esc(match.group(1))
-        href = match.group(2)
+        label, href = match.group(1), match.group(2)
         if _SAFE_URL.match(href):
-            return f'<a href="{esc_attr(href)}">{label}</a>'
+            return f'<a href="{href}">{label}</a>'
         return label
 
     out = _LINK_RE.sub(link_sub, out)
     out = _BOLD_RE.sub(lambda m: f"<strong>{m.group(1) or m.group(2)}</strong>", out)
     out = _ITALIC_RE.sub(lambda m: f"<em>{m.group(1)}</em>", out)
     out = _STRIKE_RE.sub(lambda m: f"<del>{m.group(1)}</del>", out)
-    out = _BARE_URL_RE.sub(
-        lambda m: f'<a href="{esc_attr(m.group(1))}">{esc(m.group(1))}</a>', out
-    )
+    out = _BARE_URL_RE.sub(lambda m: f'<a href="{m.group(1)}">{m.group(1)}</a>', out)
     for index, fragment in enumerate(fragments):
         out = out.replace(f"{index}", fragment)
     return out
@@ -138,7 +141,8 @@ def render_callout(block: CalloutBlock) -> str:
     )
 
 
-def status_cell(value: str) -> str:
+def status_glyph(value: str) -> str:
+    """Return the ✓ / ✗ / ! span for a status word, or an empty string."""
     token = value.strip().lower()
     if token in OK_WORDS:
         return '<span class="mark mark-ok">✓</span>'
@@ -146,11 +150,27 @@ def status_cell(value: str) -> str:
         return '<span class="mark mark-no">✗</span>'
     if token in WARN_WORDS:
         return '<span class="mark mark-warn">!</span>'
-    return inline(value)
+    return ""
+
+
+def status_columns(block: TableBlock) -> set[int]:
+    """Columns whose every cell is a status word.
+
+    Deciding per column rather than per cell keeps a row label like `no` or
+    `部分` from being swallowed by the glyph rule, which is how a first-column
+    label used to disappear from the page.
+    """
+    columns: set[int] = set()
+    for index in range(len(block.headers)):
+        values = [row[index] for row in block.rows if index < len(row) and row[index].strip()]
+        if values and all(status_glyph(value) for value in values):
+            columns.add(index)
+    return columns
 
 
 def render_table(block: TableBlock) -> str:
     aligns = block.align or ["left"] * len(block.headers)
+    glyphs = status_columns(block)
     head = "".join(
         f'<th style="text-align:{aligns[index] if index < len(aligns) else "left"}">'
         f"{inline(cell)}</th>"
@@ -160,7 +180,7 @@ def render_table(block: TableBlock) -> str:
     for row in block.rows:
         cells = "".join(
             f'<td style="text-align:{aligns[index] if index < len(aligns) else "left"}">'
-            f"{status_cell(cell)}</td>"
+            f"{status_glyph(cell) or inline(cell) if index in glyphs else inline(cell)}</td>"
             for index, cell in enumerate(row)
         )
         rows.append(f"<tr>{cells}</tr>")
@@ -269,17 +289,23 @@ def render_annot(block: ComponentBlock) -> str:
     def replace(match: re.Match[str]) -> str:
         counter[0] += 1
         kind = match.group("kind")
+        # `source` is escaped before substitution, so the capture already
+        # holds safe text. Escaping again here would show `&amp;lt;` to the
+        # reader instead of `<`.
         text = match.group("text").strip()
         note = (match.group("note") or "").strip()
         css = _ANNOT_CLASS[kind]
         if note:
-            notes.append((str(counter[0]), note))
+            notes.append((str(counter[0]), inline(note)))
         return (
-            f'<span class="annot {css}" data-note="{counter[0]}">{inline(text)}'
+            f'<span class="annot {css}" data-note="{counter[0]}">{text}'
             f'<sup class="annot-mark">{counter[0]}</sup></span>'
         )
 
-    sentence = _ANNOT_RE.sub(replace, source)
+    # Escape first, then let the marker substitution add its own markup. The
+    # other order leaves the unmarked part of the sentence as raw draft text,
+    # which is a script injection into the finished page.
+    sentence = _ANNOT_RE.sub(replace, esc(source))
     legend = ""
     if notes:
         items = "".join(f'<li><span>{index}</span>{inline(note)}</li>' for index, note in notes)

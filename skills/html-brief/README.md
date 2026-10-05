@@ -213,6 +213,7 @@ re-reads each draft with its own small parser and asserts:
 | two renders of one draft are identical | hidden nondeterminism |
 | one render stays inside its wall-clock budget | a layout change that trades seconds for milliseconds of polish |
 | the embedded source reads back unchanged and no closing-tag variant escapes it | a draft becoming executable markup |
+| no injected payload becomes live markup anywhere on the page | a script tag, event handler or `javascript:` url reaching the reader |
 
 A small snapshot in the script also pins each example's title, language, panel
 count and diagram kinds, so an intentional change has to be a deliberate edit.
