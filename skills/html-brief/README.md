@@ -212,6 +212,7 @@ re-reads each draft with its own small parser and asserts:
 | every figure has a title, an aria-label and a viewBox | a diagram left unnamed |
 | two renders of one draft are identical | hidden nondeterminism |
 | one render stays inside its wall-clock budget | a layout change that trades seconds for milliseconds of polish |
+| the embedded source reads back unchanged and no closing-tag variant escapes it | a draft becoming executable markup |
 
 A small snapshot in the script also pins each example's title, language, panel
 count and diagram kinds, so an intentional change has to be a deliberate edit.

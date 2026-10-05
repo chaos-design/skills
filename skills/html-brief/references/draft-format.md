@@ -303,6 +303,12 @@ python3 scripts/check_layout.py
 `check_semantics.py` keeps its own small parser on purpose. If it reused the
 renderer's parser, a parser bug would agree with itself and stay invisible.
 
+It also holds the embedded source to a round trip: whatever a draft contains,
+reading it back out of the page must return the draft unchanged, and no closing
+tag variant may terminate the script element early. `check_semantics.py` proves
+that with a parser rather than a string search, because a string search and a
+browser disagree on forms such as `</SCRIPT >`.
+
 ## Determinism
 
 The same draft and the same flags produce the same bytes. The generation stamp

@@ -27,6 +27,7 @@ Checks per draft:
   9  every diagram carries a title, an aria-label and a viewBox
  10  rendering twice produces the same bytes
  11  one render stays inside its wall-clock budget
+ 12  no closing-tag variant escapes the embedded source
 """
 from __future__ import annotations
 
@@ -35,12 +36,14 @@ import re
 import sys
 import tempfile
 import time
+from html.parser import HTMLParser
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from briefkit.blocks import NO_WORDS, OK_WORDS, WARN_WORDS  # noqa: E402
 from briefkit.cli import build_page, example_files, slugify  # noqa: E402
+from briefkit.render import embed_source, unembed_source  # noqa: E402
 from briefkit.textutil import DIAGRAM_WORDS  # noqa: E402
 
 FRONTMATTER = re.compile(r"\A---\n(?P<body>.*?)\n---\n", re.S)
@@ -52,6 +55,23 @@ LABEL_WRAPPER = re.compile(r"^[*(\[{]+|[)\]}]*$")
 
 COPY_LABEL = {"en": "Copy source", "zh": "复制源文", "ja": "原稿をコピー"}
 HTML_LANG = {"en": "en", "zh": "zh-CN", "ja": "ja"}
+# Closing sequences a browser accepts even though a naive search misses.
+HOSTILE_DUMPS = (
+    "</script>",
+    "</SCRIPT>",
+    "</SCRIPT >",
+    "</script\t>",
+    "</script\n>",
+    "</script/>",
+    "</script\x00>",
+    "</ScRiPt bar>",
+    "</ script>",
+    "< /script>",
+    "</script",
+    "<script>alert(1)</script>",
+    "```html\n</SCRIPT >\n```",
+)
+
 CALLOUT_TAGS = {
     "en": {"Note", "Tip", "Warning", "Risk", "Key point"},
     "zh": {"注记", "建议", "警告", "风险", "关键结论"},
@@ -228,6 +248,23 @@ COMPONENT_NAMES = {"flow", "sequence", "tree", "timeline", "limits", "stat", "an
 RENDER_SECONDS = 3.0
 
 
+def count_script_elements(page: str) -> int:
+    """Count script elements the way a parser would, not by string search."""
+    counter = _ScriptCounter()
+    counter.feed(page)
+    return counter.total
+
+
+class _ScriptCounter(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self.total = 0
+
+    def handle_starttag(self, tag, _attrs):
+        if tag == "script":
+            self.total += 1
+
+
 def count_figures(page: str) -> int:
     return page.count('<figure class="diagram"')
 
@@ -260,9 +297,23 @@ def check(draft: Path, page: str, draft_text: str) -> list[str]:
     )
     need(embedded is not None, "the page does not embed the source draft")
     expect(
-        embedded.group("text").replace("<\\/script>", "</script>") == draft_text,
+        unembed_source(embedded.group("text")) == draft_text,
         "the embedded source does not match the draft",
     )
+    # A draft that tries to close the script element must not be able to.
+    expect(
+        count_script_elements(page) == 2,
+        f"the source dump is not closed properly, page has {count_script_elements(page)} script elements",
+    )
+    for hostile in HOSTILE_DUMPS:
+        embedded_one = embed_source(hostile)
+        expect(
+            unembed_source(embedded_one) == hostile,
+            f"embedding then reading back changed {hostile!r}",
+        )
+        counter = _ScriptCounter()
+        counter.feed(f'<script type="text/markdown">{embedded_one}</script>')
+        expect(counter.total == 1, f"{hostile!r} closes the script element early")
 
     meta = front_matter(draft_text)
     source = draft_text.lstrip("\ufeff")
