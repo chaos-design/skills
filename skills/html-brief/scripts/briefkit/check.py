@@ -196,6 +196,3 @@ def check_draft(text: str) -> list[Finding]:
                 continue
     return findings
 
-
-def format_findings(findings: list[Finding], source: str = "") -> str:
-    return "\n".join(finding.render(source) for finding in findings)

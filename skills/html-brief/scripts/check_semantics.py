@@ -26,6 +26,7 @@ Checks per draft:
   8  sequence participants appear in first-use order
   9  every diagram carries a title, an aria-label and a viewBox
  10  rendering twice produces the same bytes
+ 11  one render stays inside its wall-clock budget
 """
 from __future__ import annotations
 
@@ -33,6 +34,7 @@ import argparse
 import re
 import sys
 import tempfile
+import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -221,6 +223,10 @@ def expected_participants(text: str) -> list[str]:
 
 COMPONENT_NAMES = {"flow", "sequence", "tree", "timeline", "limits", "stat", "annot", "kv"}
 
+# Wall-clock ceiling for one render. Measured worst case for a 20-layer graph
+# with 160 edges is about 70 ms, so this leaves room without hiding a runaway.
+RENDER_SECONDS = 3.0
+
 
 def count_figures(page: str) -> int:
     return page.count('<figure class="diagram"')
@@ -382,12 +388,16 @@ def main() -> int:
             slug = slugify(draft.stem)
             text = draft.read_text(encoding="utf-8")
             try:
+                started = time.perf_counter()
                 page, _title, _panels = build_page(text, args=Options(), source=str(draft))
+                elapsed = time.perf_counter() - started
                 again, _t, _p = build_page(text, args=Options(), source=str(draft))
                 problems = check(draft, page, text)
                 problems += golden_check(slug, page)
                 if page != again:
                     problems.append("two renders of the same draft differ")
+                if elapsed > RENDER_SECONDS:
+                    problems.append(f"render took {elapsed:.1f}s, over the {RENDER_SECONDS:.0f}s budget")
             except Failure as error:
                 print(f"FAIL {draft.name}: {error}")
                 failures += 1

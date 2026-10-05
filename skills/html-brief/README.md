@@ -211,6 +211,7 @@ re-reads each draft with its own small parser and asserts:
 | sequence participants appear in first-use order | lanes drawn in the wrong order |
 | every figure has a title, an aria-label and a viewBox | a diagram left unnamed |
 | two renders of one draft are identical | hidden nondeterminism |
+| one render stays inside its wall-clock budget | a layout change that trades seconds for milliseconds of polish |
 
 A small snapshot in the script also pins each example's title, language, panel
 count and diagram kinds, so an intentional change has to be a deliberate edit.
