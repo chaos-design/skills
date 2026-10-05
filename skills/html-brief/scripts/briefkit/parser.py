@@ -215,6 +215,15 @@ def _parse_table(body: list[str], start: int, offset: int) -> tuple[TableBlock, 
         )
     headers = _split_table_row(body[start])
     align = _table_align(body[start + 1])
+    if len(align) != len(headers):
+        # Silently left-aligning the extra columns hides a typo in the
+        # separator row, which is the one part of a table nobody proofreads.
+        raise DraftError(
+            f"the separator row has {len(align)} columns but the header has {len(headers)}",
+            start + 2 + offset,
+            "table",
+            "| A | B |\n| --- | --- |\n| 1 | 2 |",
+        )
     rows: list[list[str]] = []
     index = start + 2
     while index < len(body) and _is_table_row(body[index]):
@@ -442,7 +451,6 @@ def _parse_panels(blocks: list[object]) -> tuple[list[Panel], list[object]]:
     lead: list[object] = []
     current: Panel | None = None
     title_level = 2
-    seen_levels: list[int] = []
 
     for block in blocks:
         if isinstance(block, Heading) and block.level == 2:
@@ -463,7 +471,6 @@ def _parse_panels(blocks: list[object]) -> tuple[list[Panel], list[object]]:
             panels.append(current)
             continue
         if isinstance(block, Heading):
-            seen_levels.append(block.level)
             if not panels and block.level < 2:
                 title_level = block.level
         if current is None:
@@ -479,9 +486,12 @@ def _parse_panels(blocks: list[object]) -> tuple[list[Panel], list[object]]:
             panels.insert(0, Panel("", 2, lead, 1))
         for panel in panels:
             for block in panel.blocks:
-                if isinstance(block, Heading) and block.level >= title_level:
+                # `##` opens a panel, so only a shallower heading can still be
+                # inside one. That is a document title written after the first
+                # panel, which almost always means a `##` is missing.
+                if isinstance(block, Heading) and block.level < title_level:
                     raise DraftError(
-                        "panels must start at `##`; deeper headings belong inside a panel",
+                        f"a `{block.level * '#'}` heading inside a panel means a `##` is missing",
                         block.line,
                         "heading",
                         "## Panel title {span=2}\n\n### Subsection",

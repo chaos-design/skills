@@ -27,6 +27,8 @@ Checks per draft:
   9  every diagram carries a title, an aria-label and a viewBox
  10  rendering twice produces the same bytes
  11  one render stays inside its wall-clock budget
+ 12  no closing-tag variant escapes the embedded source
+ 13  no draft payload becomes live markup anywhere on the page
 """
 from __future__ import annotations
 
@@ -35,12 +37,15 @@ import re
 import sys
 import tempfile
 import time
+from html.parser import HTMLParser
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from briefkit.blocks import NO_WORDS, OK_WORDS, WARN_WORDS  # noqa: E402
 from briefkit.cli import build_page, example_files, slugify  # noqa: E402
+from briefkit.parser import DraftError  # noqa: E402
+from briefkit.render import embed_source, unembed_source  # noqa: E402
 from briefkit.textutil import DIAGRAM_WORDS  # noqa: E402
 
 FRONTMATTER = re.compile(r"\A---\n(?P<body>.*?)\n---\n", re.S)
@@ -52,6 +57,23 @@ LABEL_WRAPPER = re.compile(r"^[*(\[{]+|[)\]}]*$")
 
 COPY_LABEL = {"en": "Copy source", "zh": "复制源文", "ja": "原稿をコピー"}
 HTML_LANG = {"en": "en", "zh": "zh-CN", "ja": "ja"}
+# Closing sequences a browser accepts even though a naive search misses.
+HOSTILE_DUMPS = (
+    "</script>",
+    "</SCRIPT>",
+    "</SCRIPT >",
+    "</script\t>",
+    "</script\n>",
+    "</script/>",
+    "</script\x00>",
+    "</ScRiPt bar>",
+    "</ script>",
+    "< /script>",
+    "</script",
+    "<script>alert(1)</script>",
+    "```html\n</SCRIPT >\n```",
+)
+
 CALLOUT_TAGS = {
     "en": {"Note", "Tip", "Warning", "Risk", "Key point"},
     "zh": {"注记", "建议", "警告", "风险", "关键结论"},
@@ -77,6 +99,19 @@ class Failure(Exception):
 def need(condition: bool, message: str) -> None:
     if not condition:
         raise Failure(message)
+
+
+def _has_lead_block(source: str) -> bool:
+    """True when the draft has content before its first `##` heading.
+
+    The renderer keeps that content as an untitled lead panel, and a `#` title
+    counts too: it supplies the page title and is still part of the lead panel.
+    """
+    without_matter = FRONTMATTER.sub("", source).lstrip("\ufeff")
+    head, separator, _rest = without_matter.partition("\n## ")
+    if not separator:
+        return False
+    return any(line.strip() for line in head.split("\n"))
 
 
 def front_matter(text: str) -> dict[str, str]:
@@ -228,6 +263,80 @@ COMPONENT_NAMES = {"flow", "sequence", "tree", "timeline", "limits", "stat", "an
 RENDER_SECONDS = 3.0
 
 
+# Payloads that must never reach the page as live markup.
+INJECTION_PAYLOADS = (
+    "<script>alert(1)</script>",
+    "<img src=x onerror=alert(1)>",
+    '" onmouseover="alert(1)',
+    "<iframe src=about:blank>",
+    "[x](javascript:alert(1))",
+    "</body><script>alert(1)</script>",
+)
+
+INJECTION_DRAFTS = (
+    "---\ntitle: T\n---\n\n## {payload} {{span=2}}\n\n{payload}\n\n### Sub\n\n```annot\nA {bad|{payload}} word.\n```\n\n"
+    "```flow LR\nA -> B: {payload}\n```\n\n```tree\n{payload}\n  child\n```\n\n"
+    "> warn: {payload}\n\n| H | V |\n| --- | --- |\n| {payload} | ok |\n",
+    '---\ntitle: "{payload}"\nsubtitle: {payload}\nnote: {payload}\n---\n\n## Panel {payload}\n\ntext with {payload}\n',
+)
+
+
+# The two script elements a page always carries: the source dump and the
+# toolbar behaviour. Neither comes from the draft.
+def strip_page_scripts(page: str) -> str:
+    page = re.sub(r'<script type="text/markdown".*?</script>', "", page, flags=re.S)
+    return re.sub(r"<script>.*?</script>", "", page, flags=re.S)
+
+
+class _VectorFinder(HTMLParser):
+    """Report only what a browser would act on, never text that merely looks it.
+
+    A regex over the markup flags `<p>" onmouseover="x</p>` as an event handler
+    when it is nothing but escaped prose. A parser sees the difference.
+    """
+
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self.found: list[str] = []
+        self.in_script = False
+
+    def handle_starttag(self, tag, attrs):
+        if tag == "script":
+            if dict(attrs).get("type") != "text/markdown":
+                self.found.append("script element")
+        if tag in ("iframe", "object", "embed"):
+            self.found.append(f"{tag} element")
+        for name, value in attrs:
+            if name.startswith("on"):
+                self.found.append(f"event handler {name!r}")
+            if name in ("href", "src", "action") and value:
+                if value.strip().lower().startswith("javascript:"):
+                    self.found.append("javascript url")
+
+
+def live_vectors(page: str) -> list[str]:
+    finder = _VectorFinder()
+    finder.feed(strip_page_scripts(page))
+    return sorted(set(finder.found))
+
+
+def count_script_elements(page: str) -> int:
+    """Count script elements the way a parser would, not by string search."""
+    counter = _ScriptCounter()
+    counter.feed(page)
+    return counter.total
+
+
+class _ScriptCounter(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self.total = 0
+
+    def handle_starttag(self, tag, _attrs):
+        if tag == "script":
+            self.total += 1
+
+
 def count_figures(page: str) -> int:
     return page.count('<figure class="diagram"')
 
@@ -260,17 +369,36 @@ def check(draft: Path, page: str, draft_text: str) -> list[str]:
     )
     need(embedded is not None, "the page does not embed the source draft")
     expect(
-        embedded.group("text").replace("<\\/script>", "</script>") == draft_text,
+        unembed_source(embedded.group("text")) == draft_text,
         "the embedded source does not match the draft",
     )
+    # A draft that tries to close the script element must not be able to.
+    expect(
+        count_script_elements(page) == 2,
+        f"the source dump is not closed properly, page has {count_script_elements(page)} script elements",
+    )
+    for hostile in HOSTILE_DUMPS:
+        embedded_one = embed_source(hostile)
+        expect(
+            unembed_source(embedded_one) == hostile,
+            f"embedding then reading back changed {hostile!r}",
+        )
+        counter = _ScriptCounter()
+        counter.feed(f'<script type="text/markdown">{embedded_one}</script>')
+        expect(counter.total == 1, f"{hostile!r} closes the script element early")
 
     meta = front_matter(draft_text)
     source = draft_text.lstrip("\ufeff")
     headings = len(HEADING.findall(source))
 
-    # 2 panel count and headings
+    # 2 panel count and headings. Anything before the first `##` becomes an
+    # extra untitled lead panel, so the count is the headings plus that one.
     panels = len(re.findall(r'<section class="panel', page))
-    expect(panels == max(1, headings), f"expected {max(1, headings)} panels, found {panels}")
+    lead = 1 if _has_lead_block(source) else 0
+    expect(
+        panels == max(1, headings) + lead,
+        f"expected {max(1, headings) + lead} panels, found {panels}",
+    )
     named = len(
         re.findall(r"^##\s+(?!\{span)\S.*$", FRONTMATTER.sub("", source), re.M)
     )
@@ -358,6 +486,24 @@ def golden_check(slug: str, page: str) -> list[str]:
     return problems
 
 
+def check_injections(options) -> list[str]:
+    """Render hostile drafts and report anything that becomes live markup."""
+    problems: list[str] = []
+    for payload in INJECTION_PAYLOADS:
+        for template in INJECTION_DRAFTS:
+            draft_text = template.replace("{payload}", payload)
+            try:
+                page, _title, _panels = build_page(draft_text, args=options, source="probe.md")
+            except DraftError:
+                # Refusing the draft outright is a safe outcome.
+                continue
+            for vector in live_vectors(page):
+                problems.append(f"{payload!r} produced a {vector}")
+            if count_script_elements(page) != 2:
+                problems.append(f"{payload!r} changed the script element count")
+    return problems
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
@@ -383,6 +529,14 @@ def main() -> int:
         check = "off"
 
     failures = 0
+    injected = check_injections(Options())
+    if injected:
+        failures += 1
+        print("FAIL injection probes")
+        for item in injected:
+            print(f"  - {item}")
+    else:
+        print(f"ok   injection probes · {len(INJECTION_PAYLOADS)} payloads x {len(INJECTION_DRAFTS)} drafts")
     with tempfile.TemporaryDirectory(prefix="html-brief-semantics-") as work:
         for draft in drafts:
             slug = slugify(draft.stem)

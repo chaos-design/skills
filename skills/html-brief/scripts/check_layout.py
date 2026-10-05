@@ -99,7 +99,14 @@ def find_chrome(explicit: str | None) -> str | None:
 
 def probe(chrome: str, page: Path) -> dict:
     instrumented = page.with_name(page.stem + "-probe.html")
-    instrumented.write_text(page.read_text(encoding="utf-8").replace("</body>", PROBE + "</body>"), encoding="utf-8")
+    source = page.read_text(encoding="utf-8")
+    # Append to the last `</body>` only. A draft that talks about HTML can carry
+    # its own `</body>` inside the embedded source, and replacing every
+    # occurrence would drop the probe inside that inert text block.
+    head, separator, tail = source.rpartition("</body>")
+    if not separator:
+        raise RuntimeError(f"{page.name} has no </body> to append the probe to")
+    instrumented.write_text(f"{head}{PROBE}</body>{tail}", encoding="utf-8")
     pattern = re.compile(r'<pre id="html-brief-probe">(.*?)</pre>', re.S)
     command = [
         chrome,
