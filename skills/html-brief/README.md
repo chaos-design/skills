@@ -258,3 +258,10 @@ screenshots/html-brief/
 
 Apache-2.0, the same license as the rest of this repository. See
 [LICENSE](./LICENSE).
+
+## Credits
+
+`html-brief` was modeled on
+[answer-me-with-html](https://github.com/QingYunA/answer-me-with-html). It
+keeps the same split: an agent writes a short Markdown draft, and a program
+decides the layout, the diagrams and the theme.

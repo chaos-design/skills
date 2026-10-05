@@ -231,3 +231,9 @@ screenshots/html-brief/
 ## 许可证
 
 Apache-2.0，与本仓库其余部分一致，见 [LICENSE](./LICENSE)。
+
+## 致谢
+
+`html-brief` 参考了
+[answer-me-with-html](https://github.com/QingYunA/answer-me-with-html)，沿用同
+一分工：由 agent 写一份简短的 Markdown 草稿，由程序决定版面、图形与主题。
