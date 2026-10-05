@@ -1,0 +1,15 @@
+{
+  "name": "live-panel",
+  "version": "0.1.0",
+  "category": "Visualization · System description → always-running architecture panel (mp4 or live page)",
+  "description": "Render a JSON description of a running system as an always-running architecture panel: fixed layout, packets on the wires, scrolling log, counters, gauges that flip state past a threshold, and side triggers that light in turn. Outputs an H.264 mp4 for X or Xiaohongshu, or a self-contained page that runs live in any browser. Deterministic replay, plus headless checks for geometry, replay identity and log-versus-panel agreement.",
+  "homepage": "https://github.com/chaos-design/skills/tree/main/skills/live-panel",
+  "compat": [
+    "claude-code",
+    "claude-ai",
+    "cursor",
+    "codex-cli",
+    "gemini-cli",
+    "opencode"
+  ]
+}

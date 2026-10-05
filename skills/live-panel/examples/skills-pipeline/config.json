@@ -1,0 +1,1923 @@
+{
+  "meta": {
+    "title": "Chaos Design Skills 内容流水线（live-panel 示例）",
+    "lang": "zh-CN"
+  },
+  "canvas": {
+    "preset": "4:5",
+    "width": 1200,
+    "height": 1500,
+    "duration": 30,
+    "fps": 30,
+    "preroll": 12
+  },
+  "theme": {
+    "preset": "terminal-dark",
+    "font": "\"JetBrains Mono\",\"IBM Plex Mono\",\"DejaVu Sans Mono\",\"Noto Sans Mono CJK SC\",monospace",
+    "fontSize": 21,
+    "lineHeight": 30,
+    "colors": {
+      "bg": "#161a21",
+      "bar": "#222730",
+      "line": "#4a5367",
+      "line2": "#3a4154",
+      "dim": "#6f788c",
+      "fg": "#e4e8f0",
+      "wh": "#ffffff",
+      "cy": "#86e1e6",
+      "bl": "#8fb4f6",
+      "gr": "#7fdba8",
+      "pu": "#b9a2f2",
+      "ye": "#e3c07a",
+      "hl": "#2e2c47",
+      "dots": "#566078"
+    }
+  },
+  "clock": {
+    "start": "00:00:12",
+    "rate": 1
+  },
+  "titlebar": {
+    "text": "~/chaos-design/skills — live-panel — 4:5 · 30s"
+  },
+  "credit": {
+    "text": "内容为本仓库自身的技能流水线 · 结构方法参考 ythx-101/live-panel-skill （MIT）· 动画计数为示意",
+    "y": 1487
+  },
+  "machines": {
+    "ingest": {
+      "type": "triggers",
+      "color": "pu",
+      "period": 5.0,
+      "on": 3.2,
+      "t0": 0.5,
+      "callsStart": 1,
+      "onText": "给建议",
+      "offText": "待命",
+      "items": [
+        {
+          "name": "URL 抓取",
+          "adv": [
+            "» 读完再给结论",
+            "» 别停在摘要"
+          ],
+          "to": "→ 归一"
+        },
+        {
+          "name": "文档落地",
+          "adv": [
+            "» 标题层级要留",
+            "» 章节顺序不动"
+          ],
+          "to": "→ 保真"
+        },
+        {
+          "name": "社交源",
+          "adv": [
+            "» 作者与时间留",
+            "» 线程要串起来"
+          ],
+          "to": "→ 技能"
+        }
+      ],
+      "log": {
+        "who": "入口",
+        "c": "pu",
+        "start": {
+          "m": "{name} · 已被叫起",
+          "g": "读取中"
+        },
+        "end": {
+          "m": "{name} · 建议已给出",
+          "g": "{to}"
+        }
+      }
+    },
+    "fidText": {
+      "type": "gauge",
+      "values": [
+        0.99,
+        0.97,
+        0.86,
+        0.99,
+        0.95
+      ],
+      "threshold": 0.9,
+      "period": 4.3,
+      "t0": 0.8,
+      "seed": 11,
+      "decimals": 2,
+      "high": {
+        "label": "保留",
+        "dest": "无损"
+      },
+      "low": {
+        "label": "截断",
+        "dest": "有缺口"
+      },
+      "log": {
+        "who": "归一",
+        "c": "gr",
+        "msgs": [
+          "正文段落已比对"
+        ],
+        "tail": "p={value} {label} → {dest}"
+      }
+    },
+    "fidCode": {
+      "type": "gauge",
+      "values": [
+        0.98,
+        0.99,
+        0.88,
+        0.97,
+        0.94
+      ],
+      "threshold": 0.9,
+      "period": 3.6,
+      "t0": 2.1,
+      "seed": 23,
+      "decimals": 2,
+      "high": {
+        "label": "保留",
+        "dest": "无损"
+      },
+      "low": {
+        "label": "截断",
+        "dest": "有缺口"
+      },
+      "log": {
+        "who": "归一",
+        "c": "gr",
+        "msgs": [
+          "代码块已比对"
+        ],
+        "tail": "p={value} {label} → {dest}"
+      }
+    },
+    "fidTable": {
+      "type": "gauge",
+      "values": [
+        0.96,
+        0.83,
+        0.99,
+        0.92,
+        0.97
+      ],
+      "threshold": 0.9,
+      "period": 5.1,
+      "t0": 3.4,
+      "seed": 37,
+      "decimals": 2,
+      "high": {
+        "label": "保留",
+        "dest": "无损"
+      },
+      "low": {
+        "label": "截断",
+        "dest": "有缺口"
+      },
+      "log": {
+        "who": "归一",
+        "c": "gr",
+        "msgs": [
+          "表格已比对"
+        ],
+        "tail": "p={value} {label} → {dest}"
+      }
+    },
+    "mode": {
+      "type": "any_low",
+      "of": [
+        "fidText",
+        "fidCode",
+        "fidTable"
+      ]
+    },
+    "pages": {
+      "type": "counter",
+      "start": 412,
+      "rate": 2.6,
+      "format": "comma"
+    },
+    "artifacts": {
+      "type": "counter",
+      "start": 27,
+      "rate": 0.34,
+      "format": "comma"
+    },
+    "tokens": {
+      "type": "counter",
+      "start": 128000,
+      "rate": 4600,
+      "format": "comma"
+    },
+    "stepReader": {
+      "type": "cycle",
+      "period": 3.6,
+      "t0": 0.4,
+      "values": [
+        "切分段落",
+        "对齐译文",
+        "写术语表"
+      ]
+    },
+    "stepSlides": {
+      "type": "cycle",
+      "period": 4.2,
+      "t0": 1.5,
+      "values": [
+        "抽提要点",
+        "切分版面",
+        "补讲者备注"
+      ]
+    },
+    "stepBrief": {
+      "type": "cycle",
+      "period": 3.9,
+      "t0": 2.6,
+      "values": [
+        "排面板",
+        "画流程图",
+        "写结论"
+      ]
+    },
+    "reader": {
+      "type": "lane",
+      "period": 9,
+      "run": 6.5,
+      "off": 1.0,
+      "phase": 0,
+      "busy": "对齐译文中",
+      "done": [
+        "页面已生成"
+      ],
+      "busyColor": "bl",
+      "doneColor": "gr",
+      "log": {
+        "who": "双语",
+        "c": "bl",
+        "msgs": [
+          [
+            "段落对照已生成",
+            "术语 12"
+          ],
+          [
+            "注释已写入",
+            "术语 9"
+          ]
+        ]
+      }
+    },
+    "slides": {
+      "type": "lane",
+      "period": 7.5,
+      "run": 5,
+      "off": 2.5,
+      "phase": 1,
+      "busy": "切分版面中",
+      "done": [
+        "deck 已生成"
+      ],
+      "busyColor": "bl",
+      "doneColor": "gr",
+      "log": {
+        "who": "幻灯",
+        "c": "bl",
+        "msgs": [
+          [
+            "版面已切分",
+            "12 页"
+          ],
+          [
+            "讲者备注已补",
+            "12 页"
+          ]
+        ]
+      }
+    },
+    "brief": {
+      "type": "lane",
+      "period": 8,
+      "run": 5.2,
+      "off": 2.8,
+      "phase": 2,
+      "busy": "排面板中",
+      "done": [
+        "brief 已生成"
+      ],
+      "busyColor": "bl",
+      "doneColor": "gr",
+      "log": {
+        "who": "简报",
+        "c": "bl",
+        "msgs": [
+          [
+            "面板已排好",
+            "6 面板"
+          ],
+          [
+            "图表已就位",
+            "6 面板"
+          ]
+        ]
+      }
+    }
+  },
+  "elements": [
+    {
+      "type": "text",
+      "x": 0,
+      "w": 1200,
+      "y": 80,
+      "align": "center",
+      "ls": 1,
+      "runs": [
+        {
+          "t": "CHAOS DESIGN SKILLS",
+          "c": "wh",
+          "b": 1
+        },
+        {
+          "t": "  ·  ",
+          "c": "dim"
+        },
+        {
+          "t": "内容流水线",
+          "c": "cy",
+          "b": 1
+        },
+        {
+          "t": "  ·  ",
+          "c": "dim"
+        },
+        {
+          "t": "LIVE PANEL",
+          "c": "pu",
+          "b": 1
+        }
+      ]
+    },
+    {
+      "type": "rule",
+      "x": 34,
+      "y": 108,
+      "w": 1132
+    },
+    {
+      "type": "text",
+      "x": 0,
+      "w": 1200,
+      "y": 141,
+      "align": "center",
+      "runs": [
+        {
+          "sw": "pu"
+        },
+        {
+          "t": "采集入口",
+          "c": "dim"
+        },
+        {
+          "t": "      ",
+          "c": "dim"
+        },
+        {
+          "sw": "cy"
+        },
+        {
+          "t": "归一化",
+          "c": "dim"
+        },
+        {
+          "t": "      ",
+          "c": "dim"
+        },
+        {
+          "sw": "gr"
+        },
+        {
+          "t": "保真度 · 活动计数",
+          "c": "dim"
+        },
+        {
+          "t": "      ",
+          "c": "dim"
+        },
+        {
+          "sw": "bl"
+        },
+        {
+          "t": "下游技能 · 导出",
+          "c": "dim"
+        }
+      ]
+    },
+    {
+      "type": "box",
+      "x": 34,
+      "y": 172,
+      "w": 300,
+      "h": 1000,
+      "color": "pu",
+      "pad": [
+        13,
+        10,
+        10
+      ],
+      "lines": [
+        {
+          "t": "采集入口",
+          "c": "pu",
+          "b": 1,
+          "align": "left"
+        },
+        {
+          "t": "web-markdown",
+          "c": "pu",
+          "align": "left"
+        },
+        {
+          "trigger": [
+            "ingest",
+            0
+          ],
+          "indent": 13,
+          "size": 20
+        },
+        "",
+        {
+          "align": "left",
+          "indent": 40,
+          "runs": [
+            {
+              "t": "URL　",
+              "c": "dim"
+            },
+            {
+              "t": "正文与代码块",
+              "c": "fg"
+            }
+          ]
+        },
+        {
+          "align": "left",
+          "indent": 40,
+          "runs": [
+            {
+              "t": "　　",
+              "c": "fg"
+            },
+            {
+              "t": "导航与广告丢弃",
+              "c": "fg"
+            }
+          ]
+        },
+        "",
+        {
+          "trigger": [
+            "ingest",
+            1
+          ],
+          "indent": 13,
+          "size": 20
+        },
+        "",
+        {
+          "align": "left",
+          "indent": 40,
+          "runs": [
+            {
+              "t": "PDF　",
+              "c": "dim"
+            },
+            {
+              "t": "标题层级保留",
+              "c": "fg"
+            }
+          ]
+        },
+        {
+          "align": "left",
+          "indent": 40,
+          "runs": [
+            {
+              "t": "　　",
+              "c": "fg"
+            },
+            {
+              "t": "章节顺序不动",
+              "c": "fg"
+            }
+          ]
+        },
+        "",
+        {
+          "trigger": [
+            "ingest",
+            2
+          ],
+          "indent": 13,
+          "size": 20
+        },
+        "",
+        {
+          "align": "left",
+          "indent": 40,
+          "runs": [
+            {
+              "t": "社交源　",
+              "c": "dim"
+            },
+            {
+              "t": "推文与线程",
+              "c": "fg"
+            }
+          ]
+        },
+        {
+          "align": "left",
+          "indent": 40,
+          "runs": [
+            {
+              "t": "　　",
+              "c": "fg"
+            },
+            {
+              "t": "作者与时间留",
+              "c": "fg"
+            }
+          ]
+        },
+        "",
+        {
+          "align": "left",
+          "indent": 40,
+          "runs": [
+            {
+              "t": "三类来源　",
+              "c": "dim"
+            },
+            {
+              "t": "不各自抓取",
+              "c": "fg"
+            }
+          ]
+        },
+        {
+          "align": "left",
+          "indent": 40,
+          "runs": [
+            {
+              "t": "　　",
+              "c": "fg"
+            },
+            {
+              "t": "只归一化一次",
+              "c": "fg"
+            }
+          ]
+        },
+        "",
+        {
+          "align": "left",
+          "indent": 40,
+          "items": [
+            {
+              "w": 150,
+              "runs": [
+                {
+                  "t": "本片调用",
+                  "c": "dim"
+                }
+              ]
+            },
+            {
+              "w": 62,
+              "align": "right",
+              "runs": [
+                {
+                  "v": "ingest.calls",
+                  "c": "pu",
+                  "b": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "align": "left",
+          "indent": 40,
+          "runs": [
+            {
+              "t": "（动画计数，示意）",
+              "c": "dim"
+            }
+          ]
+        },
+        "",
+        {
+          "align": "left",
+          "indent": 40,
+          "runs": [
+            {
+              "t": "本次建议",
+              "c": "fg"
+            },
+            {
+              "t": "：",
+              "c": "fg"
+            }
+          ]
+        },
+        {
+          "align": "left",
+          "indent": 40,
+          "runs": [
+            {
+              "v": "ingest.adv0",
+              "c": "pu",
+              "b": 1
+            }
+          ]
+        },
+        {
+          "align": "left",
+          "indent": 40,
+          "runs": [
+            {
+              "v": "ingest.adv1",
+              "c": "pu",
+              "b": 1
+            }
+          ]
+        },
+        "",
+        {
+          "align": "left",
+          "indent": 40,
+          "runs": [
+            {
+              "t": "看板规则",
+              "c": "dim"
+            }
+          ]
+        },
+        {
+          "align": "left",
+          "indent": 40,
+          "runs": [
+            {
+              "t": "版面从不动",
+              "c": "fg"
+            }
+          ]
+        },
+        {
+          "align": "left",
+          "indent": 40,
+          "runs": [
+            {
+              "t": "日志只由状态机生成",
+              "c": "fg"
+            }
+          ]
+        },
+        {
+          "align": "left",
+          "indent": 40,
+          "runs": [
+            {
+              "t": "缺数据即标示意",
+              "c": "fg"
+            }
+          ]
+        },
+        ""
+      ]
+    },
+    {
+      "type": "line",
+      "from": [
+        65,
+        275
+      ],
+      "to": [
+        65,
+        755
+      ],
+      "dash": true
+    },
+    {
+      "type": "tarrow",
+      "machine": "ingest",
+      "i": 0,
+      "from": [
+        340,
+        260
+      ],
+      "to": [
+        376,
+        260
+      ]
+    },
+    {
+      "type": "tarrow",
+      "machine": "ingest",
+      "i": 1,
+      "from": [
+        340,
+        380
+      ],
+      "to": [
+        376,
+        380
+      ]
+    },
+    {
+      "type": "tarrow",
+      "machine": "ingest",
+      "i": 2,
+      "from": [
+        340,
+        530
+      ],
+      "to": [
+        376,
+        530
+      ]
+    },
+    {
+      "type": "box",
+      "x": 380,
+      "y": 172,
+      "w": 786,
+      "h": 170,
+      "color": "cy",
+      "pad": [
+        13,
+        19,
+        19
+      ],
+      "align": "left",
+      "lines": [
+        {
+          "runs": [
+            {
+              "t": "web-markdown",
+              "c": "cy",
+              "b": 1
+            },
+            {
+              "t": "　·　归一化层",
+              "c": "cy",
+              "b": 1
+            }
+          ]
+        },
+        {
+          "t": "三类来源共用一条归一化流水线",
+          "c": "fg",
+          "indent": 19,
+          "align": "left"
+        },
+        {
+          "align": "left",
+          "indent": 19,
+          "items": [
+            {
+              "w": 260,
+              "runs": [
+                {
+                  "t": "本片处理页面",
+                  "c": "dim"
+                }
+              ]
+            },
+            {
+              "w": 150,
+              "align": "right",
+              "runs": [
+                {
+                  "v": "pages",
+                  "c": "wh",
+                  "b": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "align": "left",
+          "indent": 19,
+          "runs": [
+            {
+              "t": "抓取　",
+              "c": "dim"
+            },
+            {
+              "t": "正文与代码块，丢弃导航与广告",
+              "c": "fg"
+            }
+          ]
+        },
+        {
+          "align": "left",
+          "indent": 19,
+          "runs": [
+            {
+              "t": "落地　",
+              "c": "dim"
+            },
+            {
+              "t": "PDF / Markdown 保留标题层级",
+              "c": "fg"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "line",
+      "from": [
+        773,
+        342
+      ],
+      "to": [
+        773,
+        390
+      ]
+    },
+    {
+      "type": "box",
+      "x": 380,
+      "y": 390,
+      "w": 786,
+      "h": 190,
+      "color": "gr",
+      "pad": [
+        13,
+        19,
+        19
+      ],
+      "align": "left",
+      "lines": [
+        {
+          "align": "left",
+          "items": [
+            {
+              "w": 420,
+              "runs": [
+                {
+                  "t": "归一化保真度",
+                  "c": "gr",
+                  "b": 1
+                },
+                {
+                  "t": "　与源文逐段比对",
+                  "c": "dim"
+                }
+              ]
+            },
+            {
+              "w": 290,
+              "align": "right",
+              "runs": [
+                {
+                  "t": "全部保留",
+                  "c": "gr",
+                  "b": 1,
+                  "when": {
+                    "var": "mode",
+                    "eq": "low"
+                  },
+                  "then": {
+                    "c": "dim",
+                    "b": 0
+                  }
+                },
+                {
+                  "t": "　　"
+                },
+                {
+                  "t": "存在截断",
+                  "c": "dim",
+                  "when": {
+                    "var": "mode",
+                    "eq": "low"
+                  },
+                  "then": {
+                    "c": "ye",
+                    "b": 1
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "align": "left",
+          "indent": 19,
+          "items": [
+            {
+              "w": 220,
+              "runs": [
+                {
+                  "t": "正文段落",
+                  "c": "fg"
+                }
+              ]
+            },
+            {
+              "w": 170,
+              "bar": {
+                "gauge": "fidText",
+                "w": 127,
+                "h": 20,
+                "high": "gr",
+                "low": "ye"
+              }
+            },
+            {
+              "runs": [
+                {
+                  "v": "fidText",
+                  "c": "fg",
+                  "when": {
+                    "var": "fidText.low",
+                    "eq": "1"
+                  },
+                  "then": {
+                    "b": 1,
+                    "c": "wh"
+                  }
+                },
+                {
+                  "t": " "
+                },
+                {
+                  "v": "fidText.label"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "align": "left",
+          "indent": 19,
+          "items": [
+            {
+              "w": 220,
+              "runs": [
+                {
+                  "t": "代码块",
+                  "c": "fg"
+                }
+              ]
+            },
+            {
+              "w": 170,
+              "bar": {
+                "gauge": "fidCode",
+                "w": 127,
+                "h": 20,
+                "high": "gr",
+                "low": "ye"
+              }
+            },
+            {
+              "runs": [
+                {
+                  "v": "fidCode",
+                  "c": "fg",
+                  "when": {
+                    "var": "fidCode.low",
+                    "eq": "1"
+                  },
+                  "then": {
+                    "b": 1,
+                    "c": "wh"
+                  }
+                },
+                {
+                  "t": " "
+                },
+                {
+                  "v": "fidCode.label"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "align": "left",
+          "indent": 19,
+          "items": [
+            {
+              "w": 220,
+              "runs": [
+                {
+                  "t": "表格",
+                  "c": "fg"
+                }
+              ]
+            },
+            {
+              "w": 170,
+              "bar": {
+                "gauge": "fidTable",
+                "w": 127,
+                "h": 20,
+                "high": "gr",
+                "low": "ye"
+              }
+            },
+            {
+              "runs": [
+                {
+                  "v": "fidTable",
+                  "c": "fg",
+                  "when": {
+                    "var": "fidTable.low",
+                    "eq": "1"
+                  },
+                  "then": {
+                    "b": 1,
+                    "c": "wh"
+                  }
+                },
+                {
+                  "t": " "
+                },
+                {
+                  "v": "fidTable.label"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "align": "left",
+          "indent": 19,
+          "runs": [
+            {
+              "t": "保留 → 写入 Markdown",
+              "c": "gr",
+              "when": {
+                "var": "mode",
+                "eq": "low"
+              },
+              "then": {
+                "c": "dim",
+                "b": 0
+              }
+            },
+            {
+              "t": "　　"
+            },
+            {
+              "t": "截断 → 记入缺口",
+              "c": "dim",
+              "when": {
+                "var": "mode",
+                "eq": "low"
+              },
+              "then": {
+                "c": "ye",
+                "b": 1
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "line",
+      "from": [
+        506,
+        580
+      ],
+      "to": [
+        506,
+        604
+      ]
+    },
+    {
+      "type": "line",
+      "from": [
+        1040,
+        580
+      ],
+      "to": [
+        1040,
+        604
+      ]
+    },
+    {
+      "type": "line",
+      "from": [
+        506,
+        604
+      ],
+      "to": [
+        1040,
+        604
+      ]
+    },
+    {
+      "type": "line",
+      "from": [
+        506,
+        604
+      ],
+      "to": [
+        506,
+        624
+      ]
+    },
+    {
+      "type": "glyph",
+      "x": 506,
+      "y": 633,
+      "ch": "▼",
+      "c": "bl"
+    },
+    {
+      "type": "line",
+      "from": [
+        773,
+        604
+      ],
+      "to": [
+        773,
+        624
+      ]
+    },
+    {
+      "type": "glyph",
+      "x": 773,
+      "y": 633,
+      "ch": "▼",
+      "c": "bl"
+    },
+    {
+      "type": "line",
+      "from": [
+        1040,
+        604
+      ],
+      "to": [
+        1040,
+        624
+      ]
+    },
+    {
+      "type": "glyph",
+      "x": 1040,
+      "y": 633,
+      "ch": "▼",
+      "c": "bl"
+    },
+    {
+      "type": "box",
+      "x": 380,
+      "y": 645,
+      "w": 252,
+      "h": 200,
+      "color": "bl",
+      "pad": [
+        13,
+        10,
+        10
+      ],
+      "align": "left",
+      "lines": [
+        {
+          "runs": [
+            {
+              "t": "bilingual-reader",
+              "c": "bl",
+              "b": 1
+            }
+          ]
+        },
+        {
+          "runs": [
+            {
+              "t": "双语阅读页",
+              "c": "dim"
+            }
+          ]
+        },
+        {
+          "runs": [
+            {
+              "v": "reader"
+            }
+          ]
+        },
+        "",
+        {
+          "align": "left",
+          "indent": 0,
+          "items": [
+            {
+              "w": 60,
+              "runs": [
+                {
+                  "t": "当前步",
+                  "c": "dim"
+                }
+              ]
+            },
+            {
+              "w": 160,
+              "align": "right",
+              "runs": [
+                {
+                  "v": "stepReader",
+                  "c": "fg",
+                  "b": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "align": "left",
+          "indent": 0,
+          "items": [
+            {
+              "w": 56,
+              "runs": [
+                {
+                  "t": "产物",
+                  "c": "dim"
+                }
+              ]
+            },
+            {
+              "w": 176,
+              "align": "right",
+              "runs": [
+                {
+                  "t": "reader.html",
+                  "c": "fg"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "box",
+      "x": 647,
+      "y": 645,
+      "w": 252,
+      "h": 200,
+      "color": "bl",
+      "pad": [
+        13,
+        10,
+        10
+      ],
+      "align": "left",
+      "lines": [
+        {
+          "runs": [
+            {
+              "t": "content-slides",
+              "c": "bl",
+              "b": 1
+            }
+          ]
+        },
+        {
+          "runs": [
+            {
+              "t": "幻灯片 deck",
+              "c": "dim"
+            }
+          ]
+        },
+        {
+          "runs": [
+            {
+              "v": "slides"
+            }
+          ]
+        },
+        "",
+        {
+          "align": "left",
+          "indent": 0,
+          "items": [
+            {
+              "w": 60,
+              "runs": [
+                {
+                  "t": "当前步",
+                  "c": "dim"
+                }
+              ]
+            },
+            {
+              "w": 160,
+              "align": "right",
+              "runs": [
+                {
+                  "v": "stepSlides",
+                  "c": "fg",
+                  "b": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "align": "left",
+          "indent": 0,
+          "items": [
+            {
+              "w": 56,
+              "runs": [
+                {
+                  "t": "产物",
+                  "c": "dim"
+                }
+              ]
+            },
+            {
+              "w": 176,
+              "align": "right",
+              "runs": [
+                {
+                  "t": "slides.html",
+                  "c": "fg"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "box",
+      "x": 914,
+      "y": 645,
+      "w": 252,
+      "h": 200,
+      "color": "bl",
+      "pad": [
+        13,
+        10,
+        10
+      ],
+      "align": "left",
+      "lines": [
+        {
+          "runs": [
+            {
+              "t": "html-brief",
+              "c": "bl",
+              "b": 1
+            }
+          ]
+        },
+        {
+          "runs": [
+            {
+              "t": "单页简报",
+              "c": "dim"
+            }
+          ]
+        },
+        {
+          "runs": [
+            {
+              "v": "brief"
+            }
+          ]
+        },
+        "",
+        {
+          "align": "left",
+          "indent": 0,
+          "items": [
+            {
+              "w": 60,
+              "runs": [
+                {
+                  "t": "当前步",
+                  "c": "dim"
+                }
+              ]
+            },
+            {
+              "w": 160,
+              "align": "right",
+              "runs": [
+                {
+                  "v": "stepBrief",
+                  "c": "fg",
+                  "b": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "align": "left",
+          "indent": 0,
+          "items": [
+            {
+              "w": 56,
+              "runs": [
+                {
+                  "t": "产物",
+                  "c": "dim"
+                }
+              ]
+            },
+            {
+              "w": 176,
+              "align": "right",
+              "runs": [
+                {
+                  "t": "brief.html",
+                  "c": "fg"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "line",
+      "from": [
+        506,
+        845
+      ],
+      "to": [
+        506,
+        875
+      ]
+    },
+    {
+      "type": "line",
+      "from": [
+        1040,
+        845
+      ],
+      "to": [
+        1040,
+        875
+      ]
+    },
+    {
+      "type": "line",
+      "from": [
+        506,
+        875
+      ],
+      "to": [
+        1040,
+        875
+      ]
+    },
+    {
+      "type": "line",
+      "from": [
+        773,
+        875
+      ],
+      "to": [
+        773,
+        895
+      ]
+    },
+    {
+      "type": "glyph",
+      "x": 773,
+      "y": 904,
+      "ch": "▼",
+      "c": "cy"
+    },
+    {
+      "type": "box",
+      "x": 380,
+      "y": 945,
+      "w": 786,
+      "h": 200,
+      "color": "cy",
+      "pad": [
+        13,
+        19,
+        19
+      ],
+      "align": "left",
+      "lines": [
+        {
+          "align": "left",
+          "items": [
+            {
+              "w": 420,
+              "runs": [
+                {
+                  "t": "出口　",
+                  "c": "cy",
+                  "b": 1
+                },
+                {
+                  "t": "单个文件打开即用",
+                  "c": "cy",
+                  "b": 1
+                }
+              ]
+            },
+            {
+              "w": 290,
+              "align": "right",
+              "runs": [
+                {
+                  "t": "产物 ",
+                  "c": "dim"
+                },
+                {
+                  "v": "artifacts",
+                  "c": "wh",
+                  "b": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "t": "无 CDN、无外部字体、无远程图片、无运行期请求",
+          "c": "fg",
+          "indent": 19,
+          "align": "left"
+        },
+        {
+          "align": "left",
+          "indent": 19,
+          "items": [
+            {
+              "w": 200,
+              "runs": [
+                {
+                  "t": "已交付产物",
+                  "c": "dim"
+                }
+              ]
+            },
+            {
+              "w": 120,
+              "align": "right",
+              "runs": [
+                {
+                  "v": "artifacts",
+                  "c": "wh",
+                  "b": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "align": "left",
+          "indent": 19,
+          "items": [
+            {
+              "w": 200,
+              "runs": [
+                {
+                  "t": "归一化 token",
+                  "c": "dim"
+                }
+              ]
+            },
+            {
+              "w": 120,
+              "align": "right",
+              "runs": [
+                {
+                  "v": "tokens",
+                  "c": "cy",
+                  "b": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "align": "left",
+          "indent": 19,
+          "items": [
+            {
+              "w": 200,
+              "runs": [
+                {
+                  "t": "正文保真",
+                  "c": "dim"
+                }
+              ]
+            },
+            {
+              "w": 120,
+              "align": "right",
+              "runs": [
+                {
+                  "v": "fidText",
+                  "c": "fg",
+                  "b": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "t": "（以上计数为动画示意，非真实测量）",
+          "c": "dim",
+          "indent": 19,
+          "align": "left",
+          "size": 17
+        }
+      ]
+    },
+    {
+      "type": "line",
+      "from": [
+        773,
+        1145
+      ],
+      "to": [
+        773,
+        1215
+      ]
+    },
+    {
+      "type": "flow",
+      "path": [
+        [
+          773,
+          342
+        ],
+        [
+          773,
+          390
+        ]
+      ],
+      "period": 1.6,
+      "offsets": [
+        0.2
+      ],
+      "color": "cy",
+      "tail": 15
+    },
+    {
+      "type": "flow",
+      "path": [
+        [
+          506,
+          580
+        ],
+        [
+          506,
+          604
+        ],
+        [
+          506,
+          630
+        ]
+      ],
+      "period": 2.6,
+      "offsets": [
+        0.0,
+        1.4
+      ],
+      "color": "gr",
+      "tail": 15
+    },
+    {
+      "type": "flow",
+      "path": [
+        [
+          773,
+          604
+        ],
+        [
+          773,
+          630
+        ]
+      ],
+      "period": 1.8,
+      "offsets": [
+        0.7
+      ],
+      "color": "gr",
+      "tail": 15
+    },
+    {
+      "type": "flow",
+      "path": [
+        [
+          1040,
+          580
+        ],
+        [
+          1040,
+          604
+        ],
+        [
+          1040,
+          630
+        ]
+      ],
+      "period": 2.4,
+      "offsets": [
+        0.5,
+        1.9
+      ],
+      "color": "gr",
+      "tail": 15
+    },
+    {
+      "type": "flow",
+      "path": [
+        [
+          506,
+          845
+        ],
+        [
+          506,
+          875
+        ],
+        [
+          773,
+          875
+        ],
+        [
+          773,
+          901
+        ]
+      ],
+      "period": 2.8,
+      "offsets": [
+        0.3,
+        1.8
+      ],
+      "color": "cy",
+      "tail": 15
+    },
+    {
+      "type": "flow",
+      "path": [
+        [
+          1040,
+          845
+        ],
+        [
+          1040,
+          875
+        ],
+        [
+          773,
+          875
+        ],
+        [
+          773,
+          901
+        ]
+      ],
+      "period": 3.1,
+      "offsets": [
+        1.0,
+        2.5
+      ],
+      "color": "cy",
+      "tail": 15
+    },
+    {
+      "type": "flow",
+      "path": [
+        [
+          773,
+          1145
+        ],
+        [
+          773,
+          1221
+        ]
+      ],
+      "period": 2.0,
+      "offsets": [
+        0.4,
+        1.6
+      ],
+      "color": "wh",
+      "tail": 15
+    },
+    {
+      "type": "log",
+      "x": 34,
+      "y": 1215,
+      "w": 1132,
+      "rows": 4,
+      "padTop": 16,
+      "padBottom": 29,
+      "padLeft": 20,
+      "title": "session log",
+      "titleX": 38,
+      "titleW": 179,
+      "cols": [
+        {
+          "key": "time",
+          "x": 0
+        },
+        {
+          "key": "who",
+          "x": 126
+        },
+        {
+          "key": "m",
+          "x": 236
+        },
+        {
+          "key": "g",
+          "x": 640
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "x": 34,
+      "y": 1405,
+      "runs": [
+        {
+          "t": "~/skills $",
+          "c": "gr",
+          "b": 1
+        },
+        {
+          "t": " render "
+        },
+        {
+          "t": "--config",
+          "c": "ye"
+        },
+        {
+          "t": " examples/skills-pipeline/config.json"
+        },
+        {
+          "cursor": true,
+          "c": "gr"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "x": 34,
+      "y": 1436,
+      "runs": [
+        {
+          "t": "layout",
+          "c": "dim"
+        },
+        {
+          "t": "  [fixed]"
+        },
+        {
+          "t": "  tempo",
+          "c": "dim"
+        },
+        {
+          "t": "  [fast/medium/slow]",
+          "c": "bl",
+          "b": 1
+        },
+        {
+          "t": "  truth",
+          "c": "dim"
+        },
+        {
+          "t": "  [one]",
+          "c": "gr",
+          "b": 1
+        },
+        {
+          "t": "  simulated",
+          "c": "dim"
+        },
+        {
+          "t": "  [labeled]",
+          "c": "ye",
+          "b": 1
+        }
+      ]
+    }
+  ]
+}

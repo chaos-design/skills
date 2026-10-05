@@ -17,6 +17,8 @@ Chaos Design Skills 是一组面向真实工作流的 Agent Skills，项目地�
 - 通过 `web-markdown` 统一内容标准化流程，供下游 Skill 继续处理。
 - `html-brief` 把结构化答案渲染成单个离线 HTML 文件，图形几何与主题由代码计算，
   不由模型逐行输出。
+- `live-panel` 把「正在运行的系统」渲染成一块一直在运行的架构看板，产出 mp4 或活的网页。
+  每一帧都是时间的纯函数，因此无头检查可以实测版面与日志，而不是相信它们。
 - 生成结果尽量保持自包含，便于预览、分享和归档。
 - 使用 `tests/` 下的约定目录验证各 Skill 产物，避免不同技能的输出相互混杂。
 - 仓库和每个可分发 Skill 均采用 Apache-2.0 许可证。
@@ -30,6 +32,7 @@ Chaos Design Skills 是一组面向真实工作流的 Agent Skills，项目地�
 | `frontend-slides` | 生成面向前端展示场景的幻灯片页面和视觉材料。 | [中文](./skills/frontend-slides/README.zh-CN.md) / [English](./skills/frontend-slides/README.md) |
 | `geo-flow-map` | 基于结构化流动数据生成地理流向地图可视化。 | [中文](./skills/geo-flow-map/README.zh-CN.md) / [English](./skills/geo-flow-map/README.md) |
 | `html-brief` | 把复杂答案渲染成单文件 HTML 简报：面板栅格、流程图与时序图、对比表、双主题与明暗切换。 | [中文](./skills/html-brief/README.zh-CN.md) / [English](./skills/html-brief/README.md) |
+| `live-panel` | 把系统描述变成一直在运行的架构看板，渲染为 H.264 mp4 或活的网页。 | [中文](./skills/live-panel/README.zh-CN.md) / [English](./skills/live-panel/README.md) |
 | `web-markdown` | 抓取并转换网页内容，输出稳定 Markdown，供其他 Skill 使用。 | [中文](./skills/web-markdown/README.zh-CN.md) / [English](./skills/web-markdown/README.md) |
 | `x-tweet-fetcher` | 提取 X/Twitter 内容，为需要社交来源输入的流程提供支持。 | [中文](./skills/x-tweet-fetcher/README.zh-CN.md) / [English](./skills/x-tweet-fetcher/README.md) |
 
@@ -43,6 +46,7 @@ npx skills add https://github.com/chaos-design/skills --skill content-slides
 npx skills add https://github.com/chaos-design/skills --skill frontend-slides
 npx skills add https://github.com/chaos-design/skills --skill geo-flow-map
 npx skills add https://github.com/chaos-design/skills --skill html-brief
+npx skills add https://github.com/chaos-design/skills --skill live-panel
 npx skills add https://github.com/chaos-design/skills --skill web-markdown
 npx skills add https://github.com/chaos-design/skills --skill x-tweet-fetcher
 ```
