@@ -192,6 +192,8 @@ python3 scripts/check_layout.py
 | 每张图都有 title、aria-label 与 viewBox | 图形失去可访问名称 |
 | 同一草稿两次渲染结果一致 | 隐藏的不确定性 |
 | 单次渲染不超过时间预算 | 用秒级耗时换取毫秒级美化的改动 |
+| 内嵌源文原样还原，且任何闭合标签变体都无法逃逸 | 草稿变成可执行标记 |
+| 任何注入载荷都不会成为页面上的活动标记 | 脚本标签、事件处理器或 `javascript:` 链接到达读者 |
 
 脚本内还有一份小快照，固定每份示例的标题、语言、面板数与图形类型，改动必须显式确认。
 
@@ -229,3 +231,9 @@ screenshots/html-brief/
 ## 许可证
 
 Apache-2.0，与本仓库其余部分一致，见 [LICENSE](./LICENSE)。
+
+## 致谢
+
+`html-brief` 参考了
+[answer-me-with-html](https://github.com/QingYunA/answer-me-with-html)，沿用同
+一分工：由 agent 写一份简短的 Markdown 草稿，由程序决定版面、图形与主题。

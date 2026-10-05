@@ -193,6 +193,6 @@ def check_draft(text: str) -> list[Finding]:
                     for cell in row:
                         _check_text(cell, block.line, "cell", findings, light=True)
             elif isinstance(block, (Heading, CodeBlock, ComponentBlock)):
-                continue
+                pass  # no prose to check
     return findings
 

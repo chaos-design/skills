@@ -1,16 +1,38 @@
 """Page assembly: panel grid, masthead, toolbar and inline behaviour."""
 from __future__ import annotations
 
+import re
+
 from .blocks import plain, render_blocks, set_locale
 from .parser import Document, Panel
 from .textutil import HTML_LANG, UI_TEXT, esc, esc_attr, detect_lang
 
-THEMES = ("blueprint", "document")
-MODES = ("auto", "light", "dark")
-
 PANEL_TEMPLATE = """  <section class="panel{span}"{id}>
 {heading}    <div class="panel-body">{body}</div>
   </section>"""
+
+# Anything that can close a script element, including the forms a browser
+# accepts but a literal string search misses: any case, trailing whitespace,
+# a tab or newline, and a NUL. Only the leading `<` is rewritten, so the draft
+# can be read back out byte for byte.
+SCRIPT_CLOSE_RE = re.compile(r"<(\s*/\s*script[\s/\x00>]*)", re.IGNORECASE)
+
+
+def embed_source(text: str) -> str:
+    """Put a draft inside a <script> element without letting it escape.
+
+    The draft is data, not markup. Inside a script element the only sequence
+    that ends it is a *closing* tag, and HTML parsers are lenient about case,
+    spacing and a NUL, so all of those forms have to be neutralised. A backslash
+    after `<` is not markup, and rewriting only that one character leaves the
+    rest of the draft intact enough to read it back out unchanged.
+    """
+    return SCRIPT_CLOSE_RE.sub(r"<\\\1", text)
+
+
+def unembed_source(text: str) -> str:
+    """Read an embedded draft back out, restoring the original characters."""
+    return re.sub(r"<\\(\s*/\s*script[\s/\x00>]*)", r"<\1", text, flags=re.IGNORECASE)
 
 
 def pack_panels(panels: list[Panel], columns: int) -> list[int]:
@@ -144,7 +166,6 @@ def render_page(
     lang: str = "auto",
     columns: int = 2,
     stamp: str = "",
-    source_label: str = "",
     note: str = "",
 ) -> str:
     if lang not in HTML_LANG:
@@ -198,7 +219,7 @@ def render_page(
         "</footer>",
         "</div>",
         '<script type="text/markdown" id="html-brief-source">',
-        source_text.replace("</script", "<\\/script"),
+        embed_source(source_text),
         "</script>",
         "<script>",
         SCRIPT,

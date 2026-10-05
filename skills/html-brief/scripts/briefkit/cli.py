@@ -79,7 +79,18 @@ def read_draft(path: str) -> tuple[str, str]:
     file_path = Path(path)
     if not file_path.is_file():
         raise DraftError(f"draft not found: {path}", 0, "input", "html_brief.py render draft.md")
-    return file_path.read_text(encoding="utf-8"), display_source(file_path)
+    raw = file_path.read_bytes()
+    try:
+        # A stray byte elsewhere is worth guessing at, but guessing would
+        # corrupt the draft, and the draft is the source of truth.
+        return raw.decode("utf-8"), display_source(file_path)
+    except UnicodeDecodeError as error:
+        raise DraftError(
+            f"the draft is not valid UTF-8 at byte {error.start}; re-save it as UTF-8",
+            0,
+            "input",
+            "utf-8 draft.md > draft-utf8.md",
+        ) from None
 
 
 def next_free_path(target: Path) -> Path:
@@ -117,9 +128,17 @@ def build_page(
         stamp_bits.append(f"Generated {date} (UTC+8)")
     stamp_bits.append(f"Source: {source}")
     stamp = " · ".join(stamp_bits)
-    columns = int(getattr(args, "columns", 0) or document.meta.get("columns") or 2)
+    raw_columns = getattr(args, "columns", 0) or document.meta.get("columns") or 2
+    try:
+        columns = int(raw_columns)
+    except (TypeError, ValueError):
+        raise DraftError(
+            f"columns must be 1 or 2, got {raw_columns!r}", 0, "front matter", "columns: 2"
+        ) from None
     if columns not in (1, 2):
-        raise DraftError(f"columns must be 1 or 2, got {columns}", 0, "front matter", "columns: 2")
+        raise DraftError(
+            f"columns must be 1 or 2, got {columns}", 0, "front matter", "columns: 2"
+        )
     theme = getattr(args, "theme", None) or document.meta.get("theme", "document")
     mode = getattr(args, "mode", None) or document.meta.get("mode", "auto")
     lang = getattr(args, "lang", None) or document.meta.get("lang", "auto")
@@ -139,7 +158,6 @@ def build_page(
         lang=lang,
         columns=columns,
         stamp=stamp,
-        source_label=source,
         note=document.meta.get("note", ""),
     )
     return page, title, document.panels
@@ -155,8 +173,14 @@ def run_render(args: argparse.Namespace, draft_text: str, source: str) -> int:
         webbrowser.open(target.resolve().as_uri())
     if not args.quiet:
         print(f"{target.resolve()}")
-        print(f"  panels: {len(panels)} · bytes: {len(page.encode('utf-8'))} · theme: {args.theme or 'front matter'}")
+        theme_used = theme_in_page(page)
+        print(f"  panels: {len(panels)} · bytes: {len(page.encode('utf-8'))} · theme: {theme_used}")
     return 0
+
+
+def theme_in_page(page: str) -> str:
+    match = re.search(r'<html[^>]*\sdata-theme="([^"]+)"', page)
+    return match.group(1) if match else "document"
 
 
 def run_check(args: argparse.Namespace) -> int:

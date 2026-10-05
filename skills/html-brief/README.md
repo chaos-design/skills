@@ -212,6 +212,8 @@ re-reads each draft with its own small parser and asserts:
 | every figure has a title, an aria-label and a viewBox | a diagram left unnamed |
 | two renders of one draft are identical | hidden nondeterminism |
 | one render stays inside its wall-clock budget | a layout change that trades seconds for milliseconds of polish |
+| the embedded source reads back unchanged and no closing-tag variant escapes it | a draft becoming executable markup |
+| no injected payload becomes live markup anywhere on the page | a script tag, event handler or `javascript:` url reaching the reader |
 
 A small snapshot in the script also pins each example's title, language, panel
 count and diagram kinds, so an intentional change has to be a deliberate edit.
@@ -256,3 +258,10 @@ screenshots/html-brief/
 
 Apache-2.0, the same license as the rest of this repository. See
 [LICENSE](./LICENSE).
+
+## Credits
+
+`html-brief` was modeled on
+[answer-me-with-html](https://github.com/QingYunA/answer-me-with-html). It
+keeps the same split: an agent writes a short Markdown draft, and a program
+decides the layout, the diagrams and the theme.
