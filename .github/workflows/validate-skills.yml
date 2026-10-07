@@ -1,0 +1,136 @@
+name: validate-skills
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# 每个 skill 的校验是独立的。新增带可运行检查脚本的 skill 时在这里追加一个 job 即可。
+jobs:
+  live-panel:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+
+      - name: Install ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
+      # ubuntu-latest 预装 google-chrome 和 ffmpeg，无需额外安装。
+      # HTML 页与视频校验都要真实跑起来一个浏览器和 ffmpeg 管道。
+      - name: Compile scripts
+        run: python3 -m py_compile skills/live-panel/scripts/*.py
+
+      - name: Config is well-formed and builds a self-contained page
+        working-directory: skills/live-panel
+        run: |
+          python3 scripts/build_page.py examples/skills-pipeline/config.json --print
+          python3 scripts/build_page.py examples/skills-pipeline/config.json --out /tmp/panel.html
+          ! grep -qE 'https?://[^"'"'"' ]*\.(js|css|woff|png)' /tmp/panel.html
+
+      - name: Layout and replay determinism
+        working-directory: skills/live-panel
+        run: python3 scripts/check_frames.py --config examples/skills-pipeline/config.json --out-dir /tmp/lp-frames --samples 40 --png 3 --repeat
+
+      - name: Log agrees with the panel (no stale second truth)
+        working-directory: skills/live-panel
+        run: python3 scripts/check_truth.py --config examples/skills-pipeline/config.json --samples 40
+
+      - name: mp4 renders end to end
+        working-directory: skills/live-panel
+        run: |
+          python3 scripts/render.py --config examples/skills-pipeline/config.json --out /tmp/panel.mp4 --duration 3
+          ffprobe -v error -show_entries format=duration -of csv=p=0 /tmp/panel.mp4
+
+  html-brief:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+
+      - name: Compile scripts
+        run: python3 -m py_compile skills/html-brief/scripts/*.py skills/html-brief/scripts/briefkit/*.py
+
+      - name: Semantic check against drafts
+        working-directory: skills/html-brief
+        run: python3 scripts/check_semantics.py
+
+      - name: Validate example renders
+        working-directory: skills/html-brief
+        run: python3 scripts/html_brief.py validate --out-dir /tmp/hb-out
+
+      - name: Layout check in headless Chrome
+        working-directory: skills/html-brief
+        run: python3 scripts/check_layout.py
+
+  plan-flow:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+
+      - name: Compile scripts
+        run: python3 -m py_compile skills/plan-flow/scripts/*.py
+
+      - name: Archive gate refuses an unfinished plan
+        run: |
+          root=$(mktemp -d)
+          touch "$root/README.md"
+          pf="python3 skills/plan-flow/scripts/plan_flow.py --root $root"
+          $pf new "Gate check" --task "one task"
+          if $pf move 01 archive; then echo "archive must be refused while items are open"; exit 1; fi
+          $pf tick 01 1 2 3 4 5 6
+          if $pf move 01 archive; then echo "archive must be refused while placeholders remain"; exit 1; fi
+          $pf status
+
+  static:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Every manifest is well-formed JSON with the expected keys
+        run: |
+          python3 - <<'PY'
+          import json, pathlib, sys
+          need = {"name", "version", "category", "description", "homepage", "compat"}
+          bad = 0
+          for m in sorted(pathlib.Path("skills").glob("*/manifest.json")):
+              d = json.loads(m.read_text(encoding="utf-8"))
+              missing = need - set(d)
+              if missing:
+                  print(f"{m}: missing {sorted(missing)}"); bad += 1
+              else:
+                  print(f"ok {m}: {d['name']} {d['version']}")
+          sys.exit(1 if bad else 0)
+          PY
+
+      - name: Live-panel preview is self-contained
+        run: |
+          page=tests/live-panel/skills-pipeline/index.html
+          if grep -qE '<script[^>]*src="https?:' "$page" || grep -qE '<link[^>]*href="https?:' "$page"; then
+            echo "live-panel page must be self-contained"; exit 1
+          fi
+          echo "live-panel page self-contained"
+
+      - name: Every preview link in tests/index.html resolves
+        run: |
+          python3 - <<'PY'
+          import pathlib, re, sys
+          root = pathlib.Path("tests")
+          page = root / "index.html"
+          bad = 0
+          for m in re.finditer(r'href="((?!https?:)[^"#]+)"', page.read_text(encoding="utf-8")):
+              if not (root / m.group(1)).exists():
+                  print("broken link:", m.group(1)); bad += 1
+          print(f"{'ok' if not bad else 'broken:'} {len(re.findall(r'href=', page.read_text(encoding='utf-8')))} links")
+          sys.exit(1 if bad else 0)
+          PY

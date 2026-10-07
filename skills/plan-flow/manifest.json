@@ -1,0 +1,15 @@
+{
+  "name": "plan-flow",
+  "version": "0.1.0",
+  "category": "Workflow · Task → plan → progress tracking → archive",
+  "description": "Turn a non-trivial task into a plan file in a repository's plans/ directory (planing, pending, archive), tick progress as work is verified, report numeric status on request, and archive only when every task and Definition-of-Done item is checked. Directory is the single source of state; gates are enforced by a standard-library Python script.",
+  "homepage": "https://github.com/chaos-design/skills/tree/main/skills/plan-flow",
+  "compat": [
+    "claude-code",
+    "claude-ai",
+    "cursor",
+    "codex-cli",
+    "gemini-cli",
+    "opencode"
+  ]
+}
