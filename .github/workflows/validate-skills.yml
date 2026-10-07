@@ -16,6 +16,9 @@ jobs:
         with:
           python-version: '3.14'
 
+      - name: Install ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
       # ubuntu-latest 预装 google-chrome 和 ffmpeg，无需额外安装。
       # HTML 页与视频校验都要真实跑起来一个浏览器和 ffmpeg 管道。
       - name: Compile scripts
