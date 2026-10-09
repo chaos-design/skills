@@ -34,6 +34,10 @@ Severity decides what happens to the current work:
 
 ## Design
 
+Detailed architecture, message lifecycle, checkpoint decision procedure and the
+principles behind each choice: [docs/design.md](docs/design.md) ·
+[设计说明（中文）](docs/design.zh-CN.md).
+
 - **The directory is the state.** Pending instructions are files in `inbox/`,
   consumed ones in `applied/`; the log is append-only. Nothing can drift.
 - **Injection is decoupled from execution.** The channel is the repo itself,
