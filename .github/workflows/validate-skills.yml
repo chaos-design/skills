@@ -113,7 +113,7 @@ jobs:
           $ti inject "wrong direction, do CLI" --action redirect --sender reviewer
           $ti inject "stop before the migration" --action halt
           # severity order: halt first
-          ti check | head -1 | grep -q '^003 \[halt\]' || { echo "halt must sort first"; exit 1; }
+          $ti check | head -1 | grep -q '^003 \[halt\]' || { echo "halt must sort first"; exit 1; }
           # strict gate: pending inbox exits non-zero
           if $ti check --strict >/dev/null 2>&1; then echo "strict must fail while pending"; exit 1; fi
           # halt cannot be acknowledged without evidence
