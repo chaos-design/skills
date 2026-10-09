@@ -1,0 +1,15 @@
+{
+  "name": "task-inject",
+  "version": "0.1.0",
+  "category": "Workflow · Runtime feedback injection → checkpoint drain → acknowledged application",
+  "description": "Inject modification feedback and adjustment instructions into a task the agent is already executing. Instructions are appended to a repo's .injects/inbox/ at any time (atomic writes, safe mid-run) and drained at fixed checkpoints. Four severity levels (halt, redirect, revise, note) decide whether the current step finishes, stops at the next tool boundary, or the direction is re-planned. Every application is acknowledged with evidence and appended to an audit log; halt requires a note, ids are never reused, and check --strict gates CI on a drained inbox. Directory is the single source of state; gates are enforced by a standard-library Python script.",
+  "homepage": "https://github.com/chaos-design/skills/tree/main/skills/task-inject",
+  "compat": [
+    "claude-code",
+    "claude-ai",
+    "cursor",
+    "codex-cli",
+    "gemini-cli",
+    "opencode"
+  ]
+}
