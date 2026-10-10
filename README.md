@@ -40,6 +40,7 @@ and license file so that agents can install and use it independently.
 | `html-brief` | Renders a complex answer as one self-contained HTML brief: panel grid, flow and sequence diagrams, comparison tables, two themes and a light/dark switch. | [English](./skills/html-brief/README.md) / [中文](./skills/html-brief/README.zh-CN.md) |
 | `live-panel` | Turns a system description into an always-running architecture panel, rendered to an H.264 mp4 or a live page. | [English](./skills/live-panel/README.md) / [中文](./skills/live-panel/README.zh-CN.md) |
 | `plan-flow` | Turns a task into a plan file under `plans/`, tracks progress, and archives it only when every task and Definition-of-Done item is checked. | [English](./skills/plan-flow/README.md) / [中文](./skills/plan-flow/README.zh-CN.md) |
+| `task-inject` | Injects modification feedback and adjustment instructions into a task the agent is already executing; the running agent drains them at fixed checkpoints, by severity (halt / redirect / revise / note), with an audit log. | [English](./skills/task-inject/README.md) / [中文](./skills/task-inject/README.zh-CN.md) |
 | `web-markdown` | Fetches and converts web content into stable Markdown for other skills. | [English](./skills/web-markdown/README.md) / [中文](./skills/web-markdown/README.zh-CN.md) |
 | `x-tweet-fetcher` | Extracts X/Twitter content for workflows that need social-source input. | [English](./skills/x-tweet-fetcher/README.md) / [中文](./skills/x-tweet-fetcher/README.zh-CN.md) |
 
@@ -55,6 +56,7 @@ npx skills add https://github.com/chaos-design/skills --skill geo-flow-map
 npx skills add https://github.com/chaos-design/skills --skill html-brief
 npx skills add https://github.com/chaos-design/skills --skill live-panel
 npx skills add https://github.com/chaos-design/skills --skill plan-flow
+npx skills add https://github.com/chaos-design/skills --skill task-inject
 npx skills add https://github.com/chaos-design/skills --skill web-markdown
 npx skills add https://github.com/chaos-design/skills --skill x-tweet-fetcher
 ```
@@ -67,6 +69,15 @@ normalization entry point:
 npx skills add https://github.com/chaos-design/skills --skill web-markdown
 npx skills add https://github.com/chaos-design/skills --skill bilingual-reader
 npx skills add https://github.com/chaos-design/skills --skill content-slides
+```
+
+`plan-flow` and `task-inject` cover a long-running task together: plan-flow
+keeps the plan as the single source of truth, while `task-inject` carries
+mid-run feedback into that plan:
+
+```bash
+npx skills add https://github.com/chaos-design/skills --skill plan-flow
+npx skills add https://github.com/chaos-design/skills --skill task-inject
 ```
 
 `web-markdown` uses `x-tweet-fetcher` as its low-level bridge for X/Twitter and

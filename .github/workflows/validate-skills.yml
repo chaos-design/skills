@@ -92,6 +92,42 @@ jobs:
           if $pf move 01 archive; then echo "archive must be refused while placeholders remain"; exit 1; fi
           $pf status
 
+  task-inject:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+
+      - name: Compile scripts
+        run: python3 -m py_compile skills/task-inject/scripts/*.py
+
+      - name: Halt gate and drain gate on a real flow
+        run: |
+          export TASK_INJECT_ROOT=$(mktemp -d)
+          ti="python3 skills/task-inject/scripts/task_inject.py"
+          $ti init
+          $ti inject "switch to pnpm" --action note
+          $ti inject "wrong direction, do CLI" --action redirect --sender reviewer
+          $ti inject "stop before the migration" --action halt
+          # severity order: halt first
+          $ti check | head -1 | grep -q '^003 \[halt\]' || { echo "halt must sort first"; exit 1; }
+          # strict gate: pending inbox exits non-zero
+          if $ti check --strict >/dev/null 2>&1; then echo "strict must fail while pending"; exit 1; fi
+          # halt cannot be acknowledged without evidence
+          if $ti apply 003 >/dev/null 2>&1; then echo "halt requires --note"; exit 1; fi
+          $ti apply 003 --note "stopped before migration; schema review done"
+          $ti apply 001 --note "switched to pnpm"
+          $ti apply 002 --note "re-scoped to CLI"
+          # drained inbox passes strict
+          $ti check --strict
+          # ids are never reused after the inbox drains
+          out=$($ti inject "one more" --action note)
+          case "$out" in *004*) ;; *) echo "id must continue at 004, got: $out"; exit 1;; esac
+          $ti log --last 4
+
   static:
     runs-on: ubuntu-latest
     steps:

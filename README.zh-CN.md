@@ -34,6 +34,7 @@ Chaos Design Skills 是一组面向真实工作流的 Agent Skills，项目地�
 | `html-brief` | 把复杂答案渲染成单文件 HTML 简报：面板栅格、流程图与时序图、对比表、双主题与明暗切换。 | [中文](./skills/html-brief/README.zh-CN.md) / [English](./skills/html-brief/README.md) |
 | `live-panel` | 把系统描述变成一直在运行的架构看板，渲染为 H.264 mp4 或活的网页。 | [中文](./skills/live-panel/README.zh-CN.md) / [English](./skills/live-panel/README.md) |
 | `plan-flow` | 把任务落成 `plans/` 下的计划文件，跟踪进度，仅在全部任务与完成标准勾选后归档。 | [中文](./skills/plan-flow/README.zh-CN.md) / [English](./skills/plan-flow/README.md) |
+| `task-inject` | 向 Agent 正在执行的任务中动态注入修改意见与调整指令；运行中的 Agent 在固定检查点按严重级别（halt / redirect / revise / note）消化指令，并留审计日志。 | [中文](./skills/task-inject/README.zh-CN.md) / [English](./skills/task-inject/README.md) |
 | `web-markdown` | 抓取并转换网页内容，输出稳定 Markdown，供其他 Skill 使用。 | [中文](./skills/web-markdown/README.zh-CN.md) / [English](./skills/web-markdown/README.md) |
 | `x-tweet-fetcher` | 提取 X/Twitter 内容，为需要社交来源输入的流程提供支持。 | [中文](./skills/x-tweet-fetcher/README.zh-CN.md) / [English](./skills/x-tweet-fetcher/README.md) |
 
@@ -49,6 +50,7 @@ npx skills add https://github.com/chaos-design/skills --skill geo-flow-map
 npx skills add https://github.com/chaos-design/skills --skill html-brief
 npx skills add https://github.com/chaos-design/skills --skill live-panel
 npx skills add https://github.com/chaos-design/skills --skill plan-flow
+npx skills add https://github.com/chaos-design/skills --skill task-inject
 npx skills add https://github.com/chaos-design/skills --skill web-markdown
 npx skills add https://github.com/chaos-design/skills --skill x-tweet-fetcher
 ```
@@ -60,6 +62,14 @@ npx skills add https://github.com/chaos-design/skills --skill x-tweet-fetcher
 npx skills add https://github.com/chaos-design/skills --skill web-markdown
 npx skills add https://github.com/chaos-design/skills --skill bilingual-reader
 npx skills add https://github.com/chaos-design/skills --skill content-slides
+```
+
+`plan-flow` 与 `task-inject` 组合可以覆盖长任务：plan-flow 让计划文件保持为
+唯一事实来源，`task-inject` 负责把执行途中的反馈注入该计划：
+
+```bash
+npx skills add https://github.com/chaos-design/skills --skill plan-flow
+npx skills add https://github.com/chaos-design/skills --skill task-inject
 ```
 
 `web-markdown` 在处理 X/Twitter 和已支持中文平台 URL 时，会使用
