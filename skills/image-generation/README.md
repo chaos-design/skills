@@ -23,6 +23,29 @@ npx skills add https://github.com/chaos-design/skills --skill image-generation
 | Generate | Agent | Collects the user's subject, style, composition and mood, completes the prompt per the guidance, calls the host's image generation tool, and delivers the real image. |
 | Report | Agent | On any failure the skill reports which gate step failed and why, then stops. No placeholder images, no mock output, no "configure an API key" detour. |
 
+## Examples
+
+Real outputs from the validation run on 2026-10-11 (UTC+8), produced by
+executing the skill's own workflow end to end:
+
+<p>
+  <img src="../../screenshots/image-generation/probe-red-circle.png" width="240" alt="capability gate probe: a red circle on a white background">
+  <img src="../../screenshots/image-generation/example-orange-cat.png" width="420" alt="example generation: a realistic orange cat in warm sunlight">
+  <img src="../../screenshots/image-generation/example-cyberpunk-city.png" width="420" alt="example generation: a cyberpunk city at night from a high angle">
+</p>
+
+| Image | Prompt | Stage |
+| --- | --- | --- |
+| `probe-red-circle.png` | `a single red circle on a white background` | Capability gate step 2 — minimal probe, verified as a real 1024x1024 PNG (magic bytes + content) |
+| `example-orange-cat.png` | `一只橘色的猫咪，写实风格，温暖的阳光，特写镜头，宁静的氛围` | Post-gate generation, sample prompt from `SKILL.md` |
+| `example-cyberpunk-city.png` | `未来城市，赛博朋克风格，霓虹灯光，夜景，俯视角度` | Post-gate generation, sample prompt from `SKILL.md` |
+
+The validation run exercised the full gate in order: tool discovery found the
+session's image generation tool, the probe returned a verified PNG whose
+content matched the prompt, and only then did generation proceed. Raw
+artifacts live in [`tests/image-generation/`](../../tests/image-generation/);
+the same images are referenced here from `screenshots/image-generation/`.
+
 ## Design
 
 - **The gate comes first.** The skill is not usable until the current model is

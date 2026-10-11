@@ -20,6 +20,27 @@ npx skills add https://github.com/chaos-design/skills --skill image-generation
 | 生成 | Agent | 收集用户的主体、风格、构图与氛围要求，按提示词建议补全 prompt，调用宿主图片生成工具，交付真实图片。 |
 | 报告 | Agent | 任一环节失败时，说明失败发生在哪一步、原因是什么，然后停止。不提供占位图，不伪造输出，不引导用户"配置个 API Key"绕过。 |
 
+## 示例
+
+2026-10-11（UTC+8）的验证记录，完整执行了技能自身工作流得到的真实产出：
+
+<p>
+  <img src="../../screenshots/image-generation/probe-red-circle.png" width="240" alt="能力门禁探针：白底红圆">
+  <img src="../../screenshots/image-generation/example-orange-cat.png" width="420" alt="示例生成：温暖阳光下的写实橘猫">
+  <img src="../../screenshots/image-generation/example-cyberpunk-city.png" width="420" alt="示例生成：夜景俯视角度的赛博朋克城市">
+</p>
+
+| 图片 | 提示词 | 阶段 |
+| --- | --- | --- |
+| `probe-red-circle.png` | `a single red circle on a white background` | 能力门禁第 2 步——最小探针，已校验为真实 1024x1024 PNG（文件头 + 内容） |
+| `example-orange-cat.png` | `一只橘色的猫咪，写实风格，温暖的阳光，特写镜头，宁静的氛围` | 门禁通过后的生成，示例提示词来自 `SKILL.md` |
+| `example-cyberpunk-city.png` | `未来城市，赛博朋克风格，霓虹灯光，夜景，俯视角度` | 门禁通过后的生成，示例提示词来自 `SKILL.md` |
+
+验证按门禁定义的顺序完整执行：先在会话工具中发现图片生成工具，再用探针拿到
+内容吻合的真实 PNG，两步全部通过后才进行正式生成。原始产物在
+[`tests/image-generation/`](../../tests/image-generation/)；本文档引用的是
+`screenshots/image-generation/` 下的同一批图片。
+
 ## 设计
 
 - **门禁先行。** 未确认当前模型支持图片输出之前，技能不可用。门禁每个会话只跑一次，
