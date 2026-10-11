@@ -1,0 +1,15 @@
+{
+  "name": "image-generation",
+  "version": "0.1.0",
+  "category": "Multimodal · Capability gate (tool discovery + probe) → text-to-image via host capability → zero secrets",
+  "description": "Generates images from text descriptions with zero secrets: no API key, no .env, no base URL — every image is produced through the host environment's built-in image generation capability. Before the skill becomes active in a session it runs a mandatory capability gate: discover an image generation tool among the session's tools, then run one minimal probe generation and verify a real image comes back. Both steps must pass, or the skill refuses to operate and reports honestly instead of falling back to placeholders or key-based workarounds.",
+  "homepage": "https://github.com/chaos-design/skills/tree/main/skills/image-generation",
+  "compat": [
+    "claude-code",
+    "claude-ai",
+    "cursor",
+    "codex-cli",
+    "gemini-cli",
+    "opencode"
+  ]
+}
