@@ -25,26 +25,25 @@ npx skills add https://github.com/chaos-design/skills --skill image-generation
 
 ## Examples
 
-Real outputs from the validation run on 2026-10-11 (UTC+8), produced by
-executing the skill's own workflow end to end:
+The capability gate and its real output from the validation run on 2026-10-11
+(UTC+8):
 
 <p>
-  <img src="../../screenshots/image-generation/probe-red-circle.png" width="240" alt="capability gate probe: a red circle on a white background">
-  <img src="../../screenshots/image-generation/example-orange-cat.png" width="420" alt="example generation: a realistic orange cat in warm sunlight">
-  <img src="../../screenshots/image-generation/example-cyberpunk-city.png" width="420" alt="example generation: a cyberpunk city at night from a high angle">
+  <img src="../../screenshots/image-generation/gate-flow.svg" width="560" alt="capability gate flow: tool discovery, then probe generation; both must pass or the skill refuses to run">
+  <img src="../../screenshots/image-generation/probe-red-circle.png" width="300" alt="gate probe output: a red circle on a white background, watermark-free">
 </p>
 
-| Image | Prompt | Stage |
-| --- | --- | --- |
-| `probe-red-circle.png` | `a single red circle on a white background` | Capability gate step 2 — minimal probe, verified as a real 1024x1024 PNG (magic bytes + content) |
-| `example-orange-cat.png` | `一只橘色的猫咪，写实风格，温暖的阳光，特写镜头，宁静的氛围` | Post-gate generation, sample prompt from `SKILL.md` |
-| `example-cyberpunk-city.png` | `未来城市，赛博朋克风格，霓虹灯光，夜景，俯视角度` | Post-gate generation, sample prompt from `SKILL.md` |
+| Image | What it shows |
+| --- | --- |
+| `gate-flow.svg` | The mandatory pre-activation gate: tool discovery, then a minimal probe; both must pass or the skill refuses to operate. |
+| `probe-red-circle.png` | Step-2 probe output for `a single red circle on a white background` — a real, watermark-free 1024x1024 PNG (magic bytes, pixel content, and corner pixels verified). |
 
-The validation run exercised the full gate in order: tool discovery found the
-session's image generation tool, the probe returned a verified PNG whose
-content matched the prompt, and only then did generation proceed. Raw
-artifacts live in [`tests/image-generation/`](../../tests/image-generation/);
-the same images are referenced here from `screenshots/image-generation/`.
+Generation runs only after both gate steps pass. The host's photographic and
+illustration pipelines stamp a mandatory "AI-generated" mark that cannot be
+disabled by any parameter and must not be stripped after the fact, so this
+documentation embeds only the watermark-free probe output and the gate diagram;
+the raw probe artifact lives in
+[`tests/image-generation/`](../../tests/image-generation/).
 
 ## Design
 
@@ -79,6 +78,7 @@ The skill is instruction-driven; the agent follows `SKILL.md`:
 | `prompt` | Description covering subject, style, color, composition, mood | none | yes |
 | `size` | Size or aspect ratio, limited to what the host tool supports | tool default | no |
 | `count` | Number of images | 1 | no |
+| `watermark` | Prefer watermark-free delivery; explicitly blank the host tool's watermark/footnote parameter | watermark-free | no |
 
 ## Requirements
 

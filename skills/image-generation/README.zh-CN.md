@@ -22,24 +22,22 @@ npx skills add https://github.com/chaos-design/skills --skill image-generation
 
 ## 示例
 
-2026-10-11（UTC+8）的验证记录，完整执行了技能自身工作流得到的真实产出：
+2026-10-11（UTC+8）的验证记录：能力门禁流程与其真实产出：
 
 <p>
-  <img src="../../screenshots/image-generation/probe-red-circle.png" width="240" alt="能力门禁探针：白底红圆">
-  <img src="../../screenshots/image-generation/example-orange-cat.png" width="420" alt="示例生成：温暖阳光下的写实橘猫">
-  <img src="../../screenshots/image-generation/example-cyberpunk-city.png" width="420" alt="示例生成：夜景俯视角度的赛博朋克城市">
+  <img src="../../screenshots/image-generation/gate-flow.svg" width="560" alt="能力门禁流程：工具发现、探针验证，两步全部通过才生效，否则拒绝使用">
+  <img src="../../screenshots/image-generation/probe-red-circle.png" width="300" alt="门禁探针产出：白底红圆，无水印">
 </p>
 
-| 图片 | 提示词 | 阶段 |
-| --- | --- | --- |
-| `probe-red-circle.png` | `a single red circle on a white background` | 能力门禁第 2 步——最小探针，已校验为真实 1024x1024 PNG（文件头 + 内容） |
-| `example-orange-cat.png` | `一只橘色的猫咪，写实风格，温暖的阳光，特写镜头，宁静的氛围` | 门禁通过后的生成，示例提示词来自 `SKILL.md` |
-| `example-cyberpunk-city.png` | `未来城市，赛博朋克风格，霓虹灯光，夜景，俯视角度` | 门禁通过后的生成，示例提示词来自 `SKILL.md` |
+| 图片 | 说明 |
+| --- | --- |
+| `gate-flow.svg` | 生效前置检查流程图：先工具发现，再探针验证；两步全部通过技能才生效，任一失败即拒绝使用。 |
+| `probe-red-circle.png` | 第 2 步探针对 `a single red circle on a white background` 的真实产出——无水印的 1024x1024 PNG（文件头、像素内容、角落像素均已校验）。 |
 
-验证按门禁定义的顺序完整执行：先在会话工具中发现图片生成工具，再用探针拿到
-内容吻合的真实 PNG，两步全部通过后才进行正式生成。原始产物在
-[`tests/image-generation/`](../../tests/image-generation/)；本文档引用的是
-`screenshots/image-generation/` 下的同一批图片。
+生成仅在门禁两步全部通过后进行。宿主的摄影类与插画类生成管线会强制附加
+「AI 生成」标识，无法通过任何参数关闭，也不允许事后裁剪或涂抹去除，因此本文档
+只嵌入无水印的探针产出与门禁流程图；探针原始产物在
+[`tests/image-generation/`](../../tests/image-generation/)。
 
 ## 设计
 
@@ -67,6 +65,7 @@ npx skills add https://github.com/chaos-design/skills --skill image-generation
 | `prompt` | 覆盖主体、风格、色彩、构图、氛围的描述文本 | 无 | 是 |
 | `size` | 尺寸或比例，仅限宿主工具实际支持的取值 | 工具默认 | 否 |
 | `count` | 生成张数 | 1 | 否 |
+| `watermark` | 期望无水印交付；显式留空宿主工具的水印/脚注参数 | 无水印 | 否 |
 
 ## 依赖
 
