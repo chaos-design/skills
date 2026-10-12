@@ -38,6 +38,22 @@ Chaos Design Skills 是一组面向真实工作流的 Agent Skills，项目地�
 | `web-markdown` | 抓取并转换网页内容，输出稳定 Markdown，供其他 Skill 使用。 | [中文](./skills/web-markdown/README.zh-CN.md) / [English](./skills/web-markdown/README.md) |
 | `x-tweet-fetcher` | 提取 X/Twitter 内容，为需要社交来源输入的流程提供支持。 | [中文](./skills/x-tweet-fetcher/README.zh-CN.md) / [English](./skills/x-tweet-fetcher/README.md) |
 
+## 站点
+
+已发布 Skill 的独立目录站位于 [`site/`](./site)。排行榜数据全部来自仓库真实的
+manifest 元数据与 git 历史，布局参考 [skills.sh](https://www.skills.sh/)。
+
+```bash
+cd site
+npm install
+npm run sync:skills   # 重新生成 src/data/skills.generated.json
+npm run build         # 静态导出到 site/out
+```
+
+该站点是完全静态的 Next.js 导出：通过 `site` GitHub Actions 工作流部署到
+GitHub Pages（Settings → Pages → Source: GitHub Actions），也可以在 Vercel 中
+将项目根目录设置为 `site` 导入部署。详见 [`site/README.md`](./site/README.md)。
+
 ## 安装说明
 
 可以使用 `npx skills add` 直接从本仓库安装指定 Skill：

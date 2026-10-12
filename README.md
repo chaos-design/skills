@@ -44,6 +44,24 @@ and license file so that agents can install and use it independently.
 | `web-markdown` | Fetches and converts web content into stable Markdown for other skills. | [English](./skills/web-markdown/README.md) / [中文](./skills/web-markdown/README.zh-CN.md) |
 | `x-tweet-fetcher` | Extracts X/Twitter content for workflows that need social-source input. | [English](./skills/x-tweet-fetcher/README.md) / [中文](./skills/x-tweet-fetcher/README.zh-CN.md) |
 
+## Website
+
+A standalone directory site for the published skills lives under [`site/`](./site).
+It renders the skills as a searchable leaderboard from real repository metadata
+and git history, following the layout language of [skills.sh](https://www.skills.sh/).
+
+```bash
+cd site
+npm install
+npm run sync:skills   # regenerate src/data/skills.generated.json
+npm run build         # static export into site/out
+```
+
+The site is a fully static Next.js export. It deploys to GitHub Pages via the
+`site` GitHub Actions workflow (Settings → Pages → Source: GitHub Actions) and
+can be imported into Vercel with the root directory set to `site`. See
+[`site/README.md`](./site/README.md) for details.
+
 ## Installation
 
 Install a skill directly from this repository with `npx skills add`:
