@@ -143,3 +143,6 @@ vite.config.ts.timestamp-*
 
 # html-brief default render output
 briefs/
+
+# Agent workspace memory (local session logs, never commit)
+.workbuddy/
