@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="470" viewBox="0 0 880 470" role="img" aria-label="image-generation capability gate flow">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#57606A"/>
+    </marker>
+  </defs>
+  <style>
+    .node { fill: #F5F7FA; stroke: #D0D7DE; stroke-width: 1.5; rx: 10; }
+    .pass { fill: #DAFBE1; stroke: #1A7F37; }
+    .refuse { fill: #FFEBE9; stroke: #CF222E; }
+    .title { font: 600 15px -apple-system, 'PingFang SC', 'Segoe UI', 'Microsoft YaHei', sans-serif; fill: #1F2328; }
+    .sub   { font: 400 12.5px -apple-system, 'PingFang SC', 'Segoe UI', 'Microsoft YaHei', sans-serif; fill: #57606A; }
+    .step  { font: 700 11px -apple-system, 'PingFang SC', 'Segoe UI', sans-serif; fill: #0969DA; letter-spacing: 0.08em; }
+    .label { font: 600 12px -apple-system, 'PingFang SC', 'Segoe UI', sans-serif; fill: #1F2328; }
+    .note  { font: 400 11.5px -apple-system, 'PingFang SC', 'Segoe UI', 'Microsoft YaHei', sans-serif; fill: #57606A; }
+    .edge  { stroke: #57606A; stroke-width: 1.5; fill: none; marker-end: url(#arrow); }
+  </style>
+
+  <rect width="880" height="470" fill="#FFFFFF"/>
+
+  <!-- start -->
+  <rect class="node" x="90" y="24" width="340" height="52" rx="10"/>
+  <text class="title" x="260" y="47" text-anchor="middle">会话首次调用 image-generation</text>
+  <text class="sub" x="260" y="65" text-anchor="middle">first image request in the session</text>
+
+  <path class="edge" d="M 260 76 L 260 108"/>
+
+  <!-- step 1 -->
+  <rect class="node" x="90" y="110" width="340" height="78" rx="10"/>
+  <text class="step" x="110" y="132">STEP 1</text>
+  <text class="title" x="110" y="152">工具发现 · Tool discovery</text>
+  <text class="sub" x="110" y="172">会话可用工具中存在图片生成工具？</text>
+
+  <path class="edge" d="M 260 188 L 260 224"/>
+  <text class="label" x="272" y="212">是</text>
+
+  <!-- step 2 -->
+  <rect class="node" x="90" y="226" width="340" height="78" rx="10"/>
+  <text class="step" x="110" y="248">STEP 2</text>
+  <text class="title" x="110" y="268">探针验证 · Probe generation</text>
+  <text class="sub" x="110" y="288">最小提示词实测，返回真实图片文件或 URL？</text>
+
+  <path class="edge" d="M 260 304 L 260 340"/>
+  <text class="label" x="272" y="328">是</text>
+
+  <!-- activate -->
+  <rect class="node pass" x="90" y="342" width="340" height="78" rx="10"/>
+  <text class="title" x="260" y="372" text-anchor="middle">技能生效 ✓ 生成并交付真实图片</text>
+  <text class="sub" x="260" y="392" text-anchor="middle">零密钥 · 优先无水印 · 禁止占位图与 mock 兜底</text>
+  <text class="note" x="260" y="446" text-anchor="middle">模型或会话切换后，重新执行前置检查</text>
+
+  <!-- refuse -->
+  <rect class="node refuse" x="560" y="152" width="290" height="126" rx="10"/>
+  <text class="title" x="705" y="184" text-anchor="middle">技能不生效 ✗</text>
+  <text class="sub" x="705" y="208" text-anchor="middle">告知用户：当前模型不支持图片输出</text>
+  <text class="sub" x="705" y="228" text-anchor="middle">停止流程，如实报告失败步骤与原因</text>
+  <text class="sub" x="705" y="252" text-anchor="middle">禁止占位图 / mock 冒充</text>
+  <text class="sub" x="705" y="270" text-anchor="middle">禁止引导用户配置 API Key 绕过</text>
+
+  <!-- no edges -->
+  <path class="edge" d="M 430 149 C 500 149 520 175 556 190"/>
+  <text class="label" x="490" y="160">否</text>
+  <path class="edge" d="M 430 265 C 500 265 520 245 556 236"/>
+  <text class="label" x="490" y="262">否</text>
+</svg>
