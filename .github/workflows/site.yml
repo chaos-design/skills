@@ -61,10 +61,14 @@ jobs:
           BASE_PATH: ${{ github.ref == 'refs/heads/main' && '/skills' || '' }}
 
       # 导出产物必须自包含：脚本与样式表不允许引用外部 CDN。
+      # 注意 bash -e：grep 无匹配时退出码为 1，「没有外链」这一成功情形
+      # 会让裸 grep 赋值直接失败，因此必须 || true 兜底。
       - name: Verify static export
         run: |
           test -f out/index.html
-          external=$(grep -oE '<script[^>]*src="https?://[^"]*"' out/index.html; grep -oE '<link[^>]*href="https?://[^"]*\.css[^"]*"' out/index.html)
+          scripts=$(grep -oE '<script[^>]*src="https?://[^"]*"' out/index.html || true)
+          styles=$(grep -oE '<link[^>]*href="https?://[^"]*\.css[^"]*"' out/index.html || true)
+          external="$scripts$styles"
           if [ -n "$external" ]; then
             echo "::error::static export references external assets: $external"
             exit 1
