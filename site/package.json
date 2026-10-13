@@ -4,9 +4,10 @@
   "private": true,
   "description": "Standalone directory site for the chaos-design/skills agent skills repository.",
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 3456",
     "build": "next build",
-    "lint": "next lint",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "sync:skills": "node scripts/sync-skills.mjs"
@@ -23,16 +24,16 @@
     "next": "^15.5.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "sonner": "^2.0.8",
     "tailwind-merge": "^3.3.1",
     "tw-animate-css": "^1.3.0"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.5.15",
     "@tailwindcss/postcss": "^4.1.0",
     "@types/node": "^22.10.0",
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
-    "eslint": "^8.57.1",
-    "eslint-config-next": "^15.5.0",
     "tailwindcss": "^4.1.0",
     "typescript": "^5.7.0",
     "vitest": "^3.1.0"

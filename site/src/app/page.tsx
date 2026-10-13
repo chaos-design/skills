@@ -1,8 +1,7 @@
-import { SiteFooter } from "@/components/site-footer";
-import { SiteHeader } from "@/components/site-header";
-import { AgentsCarousel } from "@/components/agents-carousel";
 import { Hero } from "@/components/hero";
 import { Leaderboard } from "@/components/leaderboard";
+import { SiteFooter } from "@/components/site-footer";
+import { SiteHeader } from "@/components/site-header";
 
 export default function Home() {
   return (
@@ -11,7 +10,6 @@ export default function Home() {
       <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 sm:px-6 lg:px-8">
         <main className="flex-1">
           <Hero />
-          <AgentsCarousel />
           <Leaderboard />
         </main>
         <SiteFooter />

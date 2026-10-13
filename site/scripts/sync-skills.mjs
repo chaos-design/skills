@@ -1,17 +1,21 @@
 #!/usr/bin/env node
 /**
- * Regenerates src/data/skills.generated.json from the repository's source of
+ * Regenerates public/data/skills.json from the repository's source of
  * truth: skills/<name>/manifest.json (falling back to SKILL.md frontmatter)
- * plus the git history of each skill directory for activity metrics.
+ * plus the real commit history GitHub reports for each skill directory.
  *
  * Run from the site directory:  node scripts/sync-skills.mjs
  *
- * The generated file is committed, and CI fails when it drifts from the
- * repository, so the leaderboard never shows invented numbers.
+ * The file lives in public/ so the browser can re-fetch it on every visit
+ * (cache: "no-store"), which is what keeps the leaderboard fresh between
+ * deploys. It is generated, never hand-written.
  *
- * Exports the pure helpers so they can be unit tested without running git.
+ * Activity comes from the GitHub REST API rather than a local clone, so the
+ * numbers do not depend on how deep the checkout happens to be. Set
+ * GITHUB_TOKEN to raise the rate limit (60 requests/hour unauthenticated).
+ *
+ * Exports the pure helpers so they can be unit tested without hitting the API.
  */
-import { execFileSync } from "node:child_process";
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -19,7 +23,7 @@ import { fileURLToPath } from "node:url";
 const here = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(here, "..", "..");
 const skillsRoot = path.join(repoRoot, "skills");
-const outFile = path.resolve(here, "..", "src", "data", "skills.generated.json");
+const outFile = path.resolve(here, "..", "public", "data", "skills.json");
 
 export const REPO = "chaos-design/skills";
 export const REPO_URL = "https://github.com/chaos-design/skills";
@@ -30,13 +34,25 @@ const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
 /** Display names for the agent ids used in skill manifests. */
 const AGENT_NAMES = {
-  "claude-code": "Claude Code",
   "claude-ai": "Claude",
   cursor: "Cursor",
   "codex-cli": "Codex CLI",
   "gemini-cli": "Gemini CLI",
   opencode: "OpenCode",
 };
+
+/**
+ * Ids that are the same product for display purposes: a manifest listing both
+ * "claude-ai" and "claude-code" is one agent, Claude, not two.
+ */
+const AGENT_ALIASES = {
+  "claude-code": "claude-ai",
+};
+
+/** Collapse alias ids onto the id the site renders, so Claude counts once. */
+export function canonicalAgent(id) {
+  return AGENT_ALIASES[String(id)] ?? String(id);
+}
 
 /** UTC+8 timestamp formatted as YYYY-MM-DD HH:mm:ss (repository convention). */
 export function formatTimestamp(date) {
@@ -101,37 +117,79 @@ export function weeklyBuckets(dates, anchor) {
   return buckets;
 }
 
-function git(args) {
-  return execFileSync("git", ["-C", repoRoot, ...args], {
-    encoding: "utf8",
-    maxBuffer: 64 * 1024 * 1024,
-  });
+const API_ROOT = "https://api.github.com";
+const PER_PAGE = 100;
+/** 100 commits per page x 20 pages: far more than a skill directory has. */
+const MAX_PAGES = 20;
+
+/** "1234+octocat@users.noreply.github.com" -> "octocat"; null for other mail. */
+export function noReplyLogin(email) {
+  const match = /^(?:\d+\+)?([^@]+)@users\.noreply\.github\.com$/i.exec(String(email ?? "").trim());
+  return match ? match[1] : null;
 }
 
-function commitLog(relPath) {
-  const out = git(["log", "--format=%ad", "--date=iso-strict", "--", relPath]);
-  return out
-    .split("\n")
-    .map((line) => line.trim())
-    .filter(Boolean);
+/** The identity a commit is attributed to, for counting contributors. */
+export function authorKey(commit) {
+  const login = commit?.author?.login;
+  if (login) return `login:${login}`;
+  const email = commit?.commit?.author?.email;
+  // A commit without a linked account still carries the owner's noreply
+  // address, which encodes the same login — count it as the same person.
+  const alias = noReplyLogin(email);
+  if (alias) return `login:${alias}`;
+  if (email) return `email:${email}`;
+  const name = commit?.commit?.author?.name;
+  return name ? `name:${name}` : "unknown";
 }
 
-function contributorCount(relPath) {
-  // HEAD is explicit: without a revision on the command line, shortlog
-  // reads commits from stdin when stdin is not a TTY (the case when run
-  // from Node), silently returning zero contributors.
-  return git(["shortlog", "-sn", "HEAD", "--", relPath])
-    .split("\n")
-    .filter((line) => line.trim()).length;
+/** The authored-at date GitHub reports for a commit payload. */
+export function commitDate(commit) {
+  return commit?.commit?.author?.date ?? commit?.commit?.committer?.date ?? null;
+}
+
+async function apiGet(route, params) {
+  const url = new URL(route, API_ROOT);
+  for (const [key, value] of Object.entries(params ?? {})) {
+    url.searchParams.set(key, String(value));
+  }
+  const headers = {
+    Accept: "application/vnd.github+json",
+    "User-Agent": "chaos-design-skills-site",
+  };
+  if (process.env.GITHUB_TOKEN) headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
+  const response = await fetch(url, { headers });
+  if (!response.ok) {
+    throw new Error(
+      `GitHub API ${response.status} ${response.statusText} for ${url.pathname}${url.search} — set GITHUB_TOKEN to raise the rate limit`,
+    );
+  }
+  return response.json();
+}
+
+/** Every commit that touched `relPath`, newest first. */
+async function commitHistory(relPath) {
+  const commits = [];
+  for (let page = 1; page <= MAX_PAGES; page += 1) {
+    const batch = await apiGet(`/repos/${REPO}/commits`, {
+      path: relPath,
+      per_page: PER_PAGE,
+      page,
+    });
+    commits.push(...batch);
+    if (batch.length < PER_PAGE) break;
+  }
+  return commits;
 }
 
 /** Category group is the segment before the "·" separator in the manifest. */
 export function categoryGroup(raw) {
-  const group = String(raw ?? "").split("·")[0].trim();
+  const group = String(raw ?? "")
+    .split("·")[0]
+    .trim();
   return group || "Skill";
 }
 
-function buildSkill(name, anchor, log) {
+function buildSkill(name, anchor, history) {
   const dir = path.join(skillsRoot, name);
   let manifest = {};
   try {
@@ -146,10 +204,12 @@ function buildSkill(name, anchor, log) {
     frontmatter = {};
   }
 
-  const dates = log.map((entry) => new Date(entry));
+  // GitHub returns the newest commit first, so index 0 is the latest change.
+  const stamps = history.map(commitDate).filter(Boolean).sort().reverse();
+  const dates = stamps.map((stamp) => new Date(stamp));
   const weekly = weeklyBuckets(dates, anchor);
-  const lastCommit = log.length > 0 ? isoDate(log[0]) : null;
-  const firstCommit = log.length > 0 ? isoDate(log[log.length - 1]) : null;
+  const lastCommit = stamps.length > 0 ? isoDate(stamps[0]) : null;
+  const firstCommit = stamps.length > 0 ? isoDate(stamps[stamps.length - 1]) : null;
 
   return {
     name,
@@ -158,7 +218,10 @@ function buildSkill(name, anchor, log) {
     description: manifest.description ?? frontmatter.description ?? "",
     repo: REPO,
     homepage: manifest.homepage ?? `${REPO_URL}/tree/main/skills/${name}`,
-    compat: Array.isArray(manifest.compat) ? manifest.compat : [],
+    // Canonicalised and de-duplicated: Claude and Claude Code are one entry.
+    compat: [
+      ...new Set((Array.isArray(manifest.compat) ? manifest.compat : []).map(canonicalAgent)),
+    ],
     stats: {
       totalCommits: dates.length,
       commits8w: weekly.reduce((sum, n) => sum + n, 0),
@@ -166,7 +229,7 @@ function buildSkill(name, anchor, log) {
       weekly,
       firstCommit,
       lastCommit,
-      contributors: contributorCount(`skills/${name}`),
+      contributors: new Set(history.map(authorKey)).size,
     },
   };
 }
@@ -183,19 +246,23 @@ function buildAgents(skills) {
     .sort((a, b) => b.skills - a.skills || a.name.localeCompare(b.name));
 }
 
-function main() {
+async function main() {
   const now = new Date();
   const names = readdirSync(skillsRoot, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
     .map((entry) => entry.name)
     .sort();
-  const logs = names.map((name) => commitLog(`skills/${name}`));
-  // Anchor the rolling activity windows to the newest commit in the
-  // repository, not to wall-clock time, so the generated data is a pure
-  // function of repository state and stays stable between syncs.
-  const newest = logs.map((log) => Date.parse(log[0] ?? "")).filter(Number.isFinite);
+  // One request per skill directory (100 commits a page), fetched in parallel.
+  const histories = await Promise.all(names.map((name) => commitHistory(`skills/${name}`)));
+  // Anchor the rolling activity windows to the newest commit GitHub reports,
+  // not to wall-clock time, so the generated data is a pure function of the
+  // repository state and stays stable between syncs.
+  const newest = histories
+    .flat()
+    .map((commit) => Date.parse(commitDate(commit) ?? ""))
+    .filter(Number.isFinite);
   const anchor = new Date(newest.length > 0 ? Math.max(...newest) : 0);
-  const skills = names.map((name, index) => buildSkill(name, anchor, logs[index]));
+  const skills = names.map((name, index) => buildSkill(name, anchor, histories[index]));
   const payload = {
     generatedAt: formatTimestamp(now),
     repo: REPO,
