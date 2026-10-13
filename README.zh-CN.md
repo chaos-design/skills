@@ -31,6 +31,7 @@ Chaos Design Skills 是一组面向真实工作流的 Agent Skills，项目地�
 | `content-slides` | 将标准化内容转换为自包含的演示幻灯片。 | [中文](./skills/content-slides/README.zh-CN.md) / [English](./skills/content-slides/README.md) |
 | `frontend-slides` | 生成面向前端展示场景的幻灯片页面和视觉材料。 | [中文](./skills/frontend-slides/README.zh-CN.md) / [English](./skills/frontend-slides/README.md) |
 | `geo-flow-map` | 基于结构化流动数据生成地理流向地图可视化。 | [中文](./skills/geo-flow-map/README.zh-CN.md) / [English](./skills/geo-flow-map/README.md) |
+| `image-generation` | 根据文本描述生成图片，零密钥设计；生效前通过能力检查确认当前模型支持图片输出。 | [中文](./skills/image-generation/README.zh-CN.md) / [English](./skills/image-generation/README.md) |
 | `html-brief` | 把复杂答案渲染成单文件 HTML 简报：面板栅格、流程图与时序图、对比表、双主题与明暗切换。 | [中文](./skills/html-brief/README.zh-CN.md) / [English](./skills/html-brief/README.md) |
 | `live-panel` | 把系统描述变成一直在运行的架构看板，渲染为 H.264 mp4 或活的网页。 | [中文](./skills/live-panel/README.zh-CN.md) / [English](./skills/live-panel/README.md) |
 | `plan-flow` | 把任务落成 `plans/` 下的计划文件，跟踪进度，仅在全部任务与完成标准勾选后归档。 | [中文](./skills/plan-flow/README.zh-CN.md) / [English](./skills/plan-flow/README.md) |
@@ -63,6 +64,7 @@ npx skills add https://github.com/chaos-design/skills --skill bilingual-reader
 npx skills add https://github.com/chaos-design/skills --skill content-slides
 npx skills add https://github.com/chaos-design/skills --skill frontend-slides
 npx skills add https://github.com/chaos-design/skills --skill geo-flow-map
+npx skills add https://github.com/chaos-design/skills --skill image-generation
 npx skills add https://github.com/chaos-design/skills --skill html-brief
 npx skills add https://github.com/chaos-design/skills --skill live-panel
 npx skills add https://github.com/chaos-design/skills --skill plan-flow

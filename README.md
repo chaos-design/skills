@@ -37,6 +37,7 @@ and license file so that agents can install and use it independently.
 | `content-slides` | Converts normalized content into self-contained presentation slides. | [English](./skills/content-slides/README.md) / [中文](./skills/content-slides/README.zh-CN.md) |
 | `frontend-slides` | Generates frontend-oriented slide pages and visual presentation material. | [English](./skills/frontend-slides/README.md) / [中文](./skills/frontend-slides/README.zh-CN.md) |
 | `geo-flow-map` | Produces geographic flow map visualizations from structured movement data. | [English](./skills/geo-flow-map/README.md) / [中文](./skills/geo-flow-map/README.zh-CN.md) |
+| `image-generation` | Generates images from text descriptions with zero secrets, gated by a capability check that confirms the current model supports image output before first use. | [English](./skills/image-generation/README.md) / [中文](./skills/image-generation/README.zh-CN.md) |
 | `html-brief` | Renders a complex answer as one self-contained HTML brief: panel grid, flow and sequence diagrams, comparison tables, two themes and a light/dark switch. | [English](./skills/html-brief/README.md) / [中文](./skills/html-brief/README.zh-CN.md) |
 | `live-panel` | Turns a system description into an always-running architecture panel, rendered to an H.264 mp4 or a live page. | [English](./skills/live-panel/README.md) / [中文](./skills/live-panel/README.zh-CN.md) |
 | `plan-flow` | Turns a task into a plan file under `plans/`, tracks progress, and archives it only when every task and Definition-of-Done item is checked. | [English](./skills/plan-flow/README.md) / [中文](./skills/plan-flow/README.zh-CN.md) |
@@ -71,6 +72,7 @@ npx skills add https://github.com/chaos-design/skills --skill bilingual-reader
 npx skills add https://github.com/chaos-design/skills --skill content-slides
 npx skills add https://github.com/chaos-design/skills --skill frontend-slides
 npx skills add https://github.com/chaos-design/skills --skill geo-flow-map
+npx skills add https://github.com/chaos-design/skills --skill image-generation
 npx skills add https://github.com/chaos-design/skills --skill html-brief
 npx skills add https://github.com/chaos-design/skills --skill live-panel
 npx skills add https://github.com/chaos-design/skills --skill plan-flow
