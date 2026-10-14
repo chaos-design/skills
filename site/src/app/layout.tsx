@@ -1,7 +1,12 @@
-import type { Metadata, Viewport } from "next";
 import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
+import type { Metadata, Viewport } from "next";
+import { SkillsProvider } from "@/components/skills-provider";
+import { ThemeInit } from "@/components/theme-init";
+import { Toaster } from "@/components/ui/sonner";
+import { I18nProvider } from "@/lib/i18n";
 import { repoMeta } from "@/lib/skills";
+import { loadSkillsData } from "@/lib/skills-data";
 import "./globals.css";
 
 // Geist Sans / Geist Mono are bundled with the `geist` package and self-hosted
@@ -11,7 +16,9 @@ import "./globals.css";
 // deployment URL, then the GitHub Pages project path.
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL ??
-  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "https://chaos-design.github.io/skills");
+  (process.env.VERCEL_URL
+    ? `https://${process.env.VERCEL_URL}`
+    : "https://chaos-design.github.io/skills");
 
 export const metadata: Metadata = {
   title: {
@@ -59,8 +66,11 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#000000",
-  colorScheme: "dark",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#000000" },
+  ],
+  colorScheme: "light dark",
   width: "device-width",
   initialScale: 1,
 };
@@ -70,9 +80,18 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const data = loadSkillsData();
   return (
-    <html lang="en" className={`dark ${GeistSans.variable} ${GeistMono.variable}`}>
-      <body className="antialiased">{children}</body>
+    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}>
+      <body className="antialiased">
+        <ThemeInit />
+        <I18nProvider>
+          <SkillsProvider initialData={data}>{children}</SkillsProvider>
+        </I18nProvider>
+        {/* Top-centre, under the sticky header (h-14), so a copy confirmation
+            never covers the navigation or the row that was just clicked. */}
+        <Toaster position="top-center" offset={{ top: 72 }} />
+      </body>
     </html>
   );
 }

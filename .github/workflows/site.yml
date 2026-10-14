@@ -5,11 +5,18 @@ on:
     branches: [main]
     paths:
       - "site/**"
+      # 任何 skill 的增删或改动都会改变排行榜数据，必须连带重建站点。
+      - "skills/**"
       - ".github/workflows/site.yml"
   pull_request:
     paths:
       - "site/**"
+      - "skills/**"
       - ".github/workflows/site.yml"
+  # 数据自动保鲜：定时重新生成 public/data/skills.json 并重新部署，
+  # 前端每次访问都会 revalidate，因此无需人工提交数据。
+  schedule:
+    - cron: "0 */6 * * *"
 
 # site/ 是独立站点：CI 只校验与构建站点本身，部署拆成 Pages（静态导出）
 # 与 Vercel（项目根目录指向 site/）两条互不影响的路径。
@@ -25,9 +32,6 @@ jobs:
         working-directory: site
     steps:
       - uses: actions/checkout@v4
-        with:
-          # sync-skills 需要完整 git 历史来计算各 skill 的活跃度。
-          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
@@ -41,15 +45,29 @@ jobs:
 
       - run: npm run typecheck
 
+      # 数据永远是生成的，不是手写的：先按仓库当前状态重新生成，再跑测试与
+      # 构建。提交版本留一份副本，供 PR 的漂移检查比对。
+      - name: Regenerate skill data
+        # sync:skills 走 GitHub REST API 统计提交；带 token 可把限流从
+        # 60 次/小时提上去。PR 上拿不到 secrets，退回匿名额度也够用。
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cp public/data/skills.json /tmp/committed-skills.json
+          npm run sync:skills
+
       - run: npm test
 
-      # 生成数据必须是仓库状态的纯函数；除 generatedAt 时间戳外不允许漂移。
+      # 生成数据必须是仓库状态的纯函数。PR 上要求提交内容与仓库一致（除
+      # generatedAt 时间戳外不允许漂移）；push/schedule 时不作此约束——那两
+      # 种情况下本来就该用刚生成的最新数据构建，而不是报错。
       - name: Skill data is in sync
+        if: github.event_name == 'pull_request'
         run: |
-          npm run sync:skills
-          if git diff -U0 -- src/data/skills.generated.json | grep -E '^[+-]' | grep -v 'generatedAt' | grep -qE '^[+-]([^+-]|$)'; then
-            echo "::error file=src/data/skills.generated.json::stale skill data — run 'npm run sync:skills' in site/ and commit the result"
-            git --no-pager diff -- src/data/skills.generated.json
+          strip='grep -v "\"generatedAt\""'
+          if ! diff -q <(eval $strip /tmp/committed-skills.json) <(eval $strip public/data/skills.json) >/dev/null; then
+            echo "::error file=public/data/skills.json::stale skill data — run 'npm run sync:skills' in site/ and commit the result"
+            diff <(eval $strip /tmp/committed-skills.json) <(eval $strip public/data/skills.json) || true
             exit 1
           fi
           echo "skill data in sync"

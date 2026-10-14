@@ -9,6 +9,11 @@ const nextConfig: NextConfig = {
   // and by Vercel, so there is no server runtime to keep in sync.
   output: "export",
   basePath,
+  // Exposed to the client: the runtime data fetch (/data/skills.json) has to
+  // carry the same prefix as the router when deployed to GitHub Pages.
+  env: {
+    NEXT_PUBLIC_BASE_PATH: basePath,
+  },
   trailingSlash: true,
   images: {
     unoptimized: true,

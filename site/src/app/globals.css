@@ -4,12 +4,57 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * Palette follows the Vercel Geist design language used by skills.sh:
- * pure black canvas, faint white raised surfaces (--ds-gray-100/200),
- * mid grays for muted text (--ds-gray-600/700) and full white for borders
- * on emphasis (--ds-gray-1000). The site is dark-only by design.
+ * Palette follows the Vercel Geist design language used by skills.sh.
+ * Two token sets: a light canvas (default) and a dark canvas (the original
+ * pure-black look). The `.dark` class on <html> selects the dark set, and the
+ * ThemeSwitch component toggles it (with a no-flash script in the layout).
  */
 :root {
+  --ds-gray-100: oklch(0 0 0 / 0.055);
+  --ds-gray-200: oklch(0 0 0 / 0.09);
+  --ds-gray-300: oklch(0.3 0 0);
+  --ds-gray-400: oklch(0.9 0 0);
+  --ds-gray-600: oklch(0.45 0 0);
+  --ds-gray-700: oklch(0.55 0 0);
+  --ds-gray-1000: oklch(0.2 0 0);
+
+  --radius: 0.5rem;
+
+  --background: oklch(0.99 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.145 0 0);
+  --primary-foreground: oklch(0.98 0 0);
+  --secondary: oklch(0 0 0 / 0.06);
+  --secondary-foreground: oklch(0.145 0 0);
+  --muted: oklch(0 0 0 / 0.06);
+  --muted-foreground: oklch(0.45 0 0);
+  --accent: oklch(0 0 0 / 0.06);
+  --accent-foreground: oklch(0.145 0 0);
+  --destructive: oklch(0.577 0.249 40.513);
+  --destructive-foreground: oklch(0.98 0 0);
+  --border: oklch(0.9 0 0);
+  --input: oklch(0.85 0 0);
+  --ring: oklch(0.7 0 0);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(1 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.5 0.2 350);
+  --sidebar-primary-foreground: oklch(0.98 0 0);
+  --sidebar-accent: oklch(0.95 0 0);
+  --sidebar-accent-foreground: oklch(0.145 0 0);
+  --sidebar-border: oklch(0.9 0 0);
+  --sidebar-ring: oklch(0.7 0 0);
+}
+
+.dark {
   --ds-gray-100: oklch(1 0 0 / 0.055);
   --ds-gray-200: oklch(1 0 0 / 0.08);
   --ds-gray-300: oklch(0.707 0 0);
@@ -17,8 +62,6 @@
   --ds-gray-600: oklch(0.631 0 0);
   --ds-gray-700: oklch(0.51 0 0);
   --ds-gray-1000: oklch(0.93 0 0);
-
-  --radius: 0.5rem;
 
   --background: oklch(0 0 0);
   --foreground: oklch(0.93 0 0);
@@ -39,11 +82,6 @@
   --border: oklch(0.269 0 0);
   --input: oklch(0.32 0 0);
   --ring: oklch(0.551 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
   --sidebar: oklch(0.185 0 0);
   --sidebar-foreground: oklch(0.93 0 0);
   --sidebar-primary: oklch(0.656 0.241 354.308);

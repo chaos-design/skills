@@ -1,11 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
+  authorKey,
   categoryGroup,
+  commitDate,
   formatTimestamp,
   isoDate,
   parseFrontmatter,
-  weeklyBuckets,
   WEEKS,
+  weeklyBuckets,
 } from "./sync-skills.mjs";
 
 describe("parseFrontmatter", () => {
@@ -15,7 +17,9 @@ describe("parseFrontmatter", () => {
   });
 
   it("joins folded block scalars with spaces", () => {
-    const data = parseFrontmatter("---\ndescription: >\n  Turns a complex question\n  into one HTML brief.\n---\n");
+    const data = parseFrontmatter(
+      "---\ndescription: >\n  Turns a complex question\n  into one HTML brief.\n---\n",
+    );
     expect(data.description).toBe("Turns a complex question into one HTML brief.");
   });
 
@@ -27,7 +31,9 @@ describe("parseFrontmatter", () => {
 
 describe("categoryGroup", () => {
   it("takes the segment before the middle dot separator", () => {
-    expect(categoryGroup("Workflow · Runtime feedback injection → checkpoint drain")).toBe("Workflow");
+    expect(categoryGroup("Workflow · Runtime feedback injection → checkpoint drain")).toBe(
+      "Workflow",
+    );
   });
 
   it("falls back to Skill for empty values", () => {
@@ -75,5 +81,39 @@ describe("isoDate", () => {
   it("keeps the calendar date of the ISO string itself", () => {
     expect(isoDate("2026-10-09T23:59:00+08:00")).toBe("2026-10-09");
     expect(isoDate("2026-10-09T00:30:00-05:00")).toBe("2026-10-09");
+  });
+});
+
+describe("GitHub commit payloads", () => {
+  it("reads the authored-at date, falling back to the committer date", () => {
+    expect(commitDate({ commit: { author: { date: "2026-10-09T10:00:00Z" } } })).toBe(
+      "2026-10-09T10:00:00Z",
+    );
+    expect(commitDate({ commit: { committer: { date: "2026-10-08T10:00:00Z" } } })).toBe(
+      "2026-10-08T10:00:00Z",
+    );
+    expect(commitDate({})).toBeNull();
+  });
+
+  it("attributes a commit to its GitHub login when there is one", () => {
+    expect(
+      authorKey({ author: { login: "xcz" }, commit: { author: { email: "me@example.com" } } }),
+    ).toBe("login:xcz");
+  });
+
+  it("falls back to email, then name, for commits without a linked account", () => {
+    expect(authorKey({ commit: { author: { email: "me@example.com" } } })).toBe(
+      "email:me@example.com",
+    );
+    expect(authorKey({ commit: { author: { name: "Someone" } } })).toBe("name:Someone");
+  });
+
+  it("counts the same person once across both shapes", () => {
+    const commits = [
+      { author: { login: "xcz" }, commit: { author: { email: "xcz@users.noreply.github.com" } } },
+      { commit: { author: { email: "xcz@users.noreply.github.com" } } },
+      { commit: { author: { email: "other@example.com" } } },
+    ];
+    expect(new Set(commits.map(authorKey)).size).toBe(2);
   });
 });

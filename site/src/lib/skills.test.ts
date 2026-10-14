@@ -1,12 +1,31 @@
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 import {
-  agents,
+  agentPrompt,
   filterSkills,
   formatCompact,
   formatDate,
-  skills,
+  getSkillByName,
+  installCommand,
+  relatedSkills,
+  repoMeta,
+  type SkillsData,
   sortSkills,
 } from "./skills";
+
+/**
+ * The dataset is read from the file the sync script generates, not from a
+ * bundle: what these tests assert is what the site actually ships.
+ */
+function readGeneratedDataset(): SkillsData {
+  const file = path.join(process.cwd(), "public", "data", "skills.json");
+  return JSON.parse(readFileSync(file, "utf8")) as SkillsData;
+}
+
+const dataset = readGeneratedDataset();
+const skills = dataset.skills;
+const agents = dataset.agents;
 
 describe("generated skill data", () => {
   it("describes every skill in the repository with real metadata", () => {
@@ -16,7 +35,9 @@ describe("generated skill data", () => {
     for (const skill of skills) {
       expect(skill.name).toMatch(/^[a-z0-9-]+$/);
       expect(skill.description.length).toBeGreaterThan(20);
-      expect(skill.homepage).toMatch(/^https:\/\/github\.com\/chaos-design\/skills\/tree\/main\/skills\//);
+      expect(skill.homepage).toMatch(
+        /^https:\/\/github\.com\/chaos-design\/skills\/tree\/main\/skills\//,
+      );
       expect(skill.category.length).toBeGreaterThan(0);
       expect(skill.version).toMatch(/^\d+\.\d+\.\d+$/);
     }
@@ -123,5 +144,62 @@ describe("formatDate", () => {
 
   it("renders an em dash for missing dates", () => {
     expect(formatDate(null)).toBe("—");
+  });
+});
+
+describe("getSkillByName", () => {
+  it("returns the skill when the name matches", () => {
+    const hit = getSkillByName(skills, "bilingual-reader");
+    expect(hit?.name).toBe("bilingual-reader");
+    expect(hit).toBe(skills.find((skill) => skill.name === "bilingual-reader"));
+  });
+
+  it("returns undefined for a name that is not a skill", () => {
+    expect(getSkillByName(skills, "kubernetes-helm-charts")).toBeUndefined();
+  });
+});
+
+describe("install strings", () => {
+  it("builds the install command from the site's own configuration", () => {
+    expect(installCommand("bilingual-reader")).toBe(`${repoMeta.installPrefix} bilingual-reader`);
+  });
+
+  it("hands the agent a prompt that installs and follows the skill", () => {
+    const prompt = agentPrompt("domain-modeling");
+    expect(prompt).toContain(`npx skills use "${repoMeta.repoUrl}" --skill "domain-modeling"`);
+    expect(prompt).toContain("follow the generated skill instructions");
+    expect(prompt).toContain("supporting-files directory");
+  });
+});
+
+describe("relatedSkills", () => {
+  it("never includes the source skill", () => {
+    for (const skill of skills) {
+      expect(relatedSkills(skills, skill, skills.length).map((item) => item.name)).not.toContain(
+        skill.name,
+      );
+    }
+  });
+
+  it("caps the result at the requested limit", () => {
+    expect(relatedSkills(skills, skills[0], 3)).toHaveLength(3);
+    expect(relatedSkills(skills, skills[0], 2)).toHaveLength(2);
+  });
+
+  it("lists same-category skills before others", () => {
+    const byCategory = new Map<string, string[]>();
+    for (const skill of skills) {
+      byCategory.set(skill.category, [...(byCategory.get(skill.category) ?? []), skill.name]);
+    }
+    const members = [...byCategory.values()].find((names) => names.length > 1);
+    if (!members) return;
+    const skill = skills.find((item) => item.name === members[0]);
+    if (!skill) return;
+    const related = relatedSkills(skills, skill, skills.length);
+    const otherCategories = related.filter((item) => item.category !== skill.category);
+    const lastSameCategory = related.length - 1 - otherCategories.length;
+    for (let index = 0; index <= lastSameCategory; index += 1) {
+      expect(related[index].category).toBe(skill.category);
+    }
   });
 });

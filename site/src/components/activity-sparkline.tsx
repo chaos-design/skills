@@ -30,7 +30,14 @@ export function ActivitySparkline({ values, label }: { values: number[]; label: 
       className="h-full w-full overflow-visible text-ds-gray-600 opacity-65 transition-[color,opacity] duration-200 ease-out group-hover/sparkline:text-ds-gray-300 group-hover/sparkline:opacity-100"
     >
       <defs>
-        <linearGradient id={gradientId} x1="0" x2="0" y1="0" y2={HEIGHT} gradientUnits="userSpaceOnUse">
+        <linearGradient
+          id={gradientId}
+          x1="0"
+          x2="0"
+          y1="0"
+          y2={HEIGHT}
+          gradientUnits="userSpaceOnUse"
+        >
           <stop offset="0%" stopColor="currentColor" stopOpacity="0.22" />
           <stop offset="55%" stopColor="currentColor" stopOpacity="0.085" />
           <stop offset="100%" stopColor="currentColor" stopOpacity="0" />

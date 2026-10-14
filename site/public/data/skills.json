@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-13 11:26:49",
+  "generatedAt": "2026-10-13 21:13:23",
   "repo": "chaos-design/skills",
   "repoUrl": "https://github.com/chaos-design/skills",
   "installPrefix": "npx skills add https://github.com/chaos-design/skills --skill",
@@ -7,11 +7,6 @@
     {
       "id": "claude-ai",
       "name": "Claude",
-      "skills": 12
-    },
-    {
-      "id": "claude-code",
-      "name": "Claude Code",
       "skills": 12
     },
     {
@@ -44,7 +39,6 @@
       "repo": "chaos-design/skills",
       "homepage": "https://github.com/chaos-design/skills/tree/main/skills/bilingual-reader",
       "compat": [
-        "claude-code",
         "claude-ai",
         "cursor",
         "codex-cli",
@@ -78,7 +72,6 @@
       "repo": "chaos-design/skills",
       "homepage": "https://github.com/chaos-design/skills/tree/main/skills/content-slides",
       "compat": [
-        "claude-code",
         "claude-ai",
         "cursor",
         "codex-cli",
@@ -112,7 +105,6 @@
       "repo": "chaos-design/skills",
       "homepage": "https://github.com/chaos-design/skills/tree/main/skills/frontend-slides",
       "compat": [
-        "claude-code",
         "claude-ai",
         "cursor",
         "codex-cli",
@@ -146,7 +138,6 @@
       "repo": "chaos-design/skills",
       "homepage": "https://github.com/chaos-design/skills/tree/main/skills/geo-flow-map",
       "compat": [
-        "claude-code",
         "claude-ai",
         "cursor",
         "codex-cli",
@@ -180,7 +171,6 @@
       "repo": "chaos-design/skills",
       "homepage": "https://github.com/chaos-design/skills/tree/main/skills/html-brief",
       "compat": [
-        "claude-code",
         "claude-ai",
         "cursor",
         "codex-cli",
@@ -214,7 +204,6 @@
       "repo": "chaos-design/skills",
       "homepage": "https://github.com/chaos-design/skills/tree/main/skills/image-generation",
       "compat": [
-        "claude-code",
         "claude-ai",
         "cursor",
         "codex-cli",
@@ -248,7 +237,6 @@
       "repo": "chaos-design/skills",
       "homepage": "https://github.com/chaos-design/skills/tree/main/skills/live-panel",
       "compat": [
-        "claude-code",
         "claude-ai",
         "cursor",
         "codex-cli",
@@ -282,7 +270,6 @@
       "repo": "chaos-design/skills",
       "homepage": "https://github.com/chaos-design/skills/tree/main/skills/plan-flow",
       "compat": [
-        "claude-code",
         "claude-ai",
         "cursor",
         "codex-cli",
@@ -316,7 +303,6 @@
       "repo": "chaos-design/skills",
       "homepage": "https://github.com/chaos-design/skills/tree/main/skills/task-inject",
       "compat": [
-        "claude-code",
         "claude-ai",
         "cursor",
         "codex-cli",
@@ -350,7 +336,6 @@
       "repo": "chaos-design/skills",
       "homepage": "https://github.com/chaos-design/skills/tree/main/skills/technology-selection",
       "compat": [
-        "claude-code",
         "claude-ai",
         "cursor",
         "codex-cli",
@@ -384,7 +369,6 @@
       "repo": "chaos-design/skills",
       "homepage": "https://github.com/chaos-design/skills/tree/main/skills/web-markdown",
       "compat": [
-        "claude-code",
         "claude-ai",
         "cursor",
         "codex-cli",
@@ -418,7 +402,6 @@
       "repo": "chaos-design/skills",
       "homepage": "https://github.com/chaos-design/skills/tree/main/skills/x-tweet-fetcher",
       "compat": [
-        "claude-code",
         "claude-ai",
         "cursor",
         "codex-cli",

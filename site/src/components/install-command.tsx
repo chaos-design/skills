@@ -1,8 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
 import { Check, Copy } from "lucide-react";
-import { repoMeta, skills } from "@/lib/skills";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { CommandLine } from "@/components/command-line";
+import { useSkills } from "@/components/skills-provider";
+import { repoMeta } from "@/lib/skills";
 
 const TYPE_MS = 90;
 const DELETE_MS = 45;
@@ -11,8 +13,7 @@ const COPIED_MS = 2000;
 
 function prefersReducedMotion() {
   return (
-    typeof window !== "undefined" &&
-    window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches
   );
 }
 
@@ -20,16 +21,29 @@ function prefersReducedMotion() {
  * The install command with a typewriter that cycles through every skill name,
  * mirroring the animated command on the reference directory. The copy button
  * always copies the complete command for the skill currently displayed.
+ *
+ * The box is sized by an invisible copy of the longest command the typewriter
+ * can reach, so typing (and the wrap it triggers) never reflows the page.
  */
 export function InstallCommand() {
+  const { data } = useSkills();
+  const names = data.skills;
   const [index, setIndex] = useState(0);
   const [typed, setTyped] = useState("");
   const [deleting, setDeleting] = useState(false);
   const [copied, setCopied] = useState(false);
   const copiedTimer = useRef<ReturnType<typeof setTimeout>>(null);
 
-  const target = skills[index].name;
+  // Clamp the cursor: a refresh can ship a shorter skill list than the build.
+  const target = names[Math.min(index, names.length - 1)].name;
   const command = `${repoMeta.installPrefix} ${target}`;
+
+  // The widest command the typewriter will ever show — reserved up front.
+  const longest = useMemo(
+    () =>
+      `${repoMeta.installPrefix} ${names.reduce((a, b) => (b.name.length > a.name.length ? b : a), names[0]).name}`,
+    [names],
+  );
 
   useEffect(() => {
     if (prefersReducedMotion()) {
@@ -42,7 +56,7 @@ export function InstallCommand() {
     }
     if (deleting && typed === "") {
       setDeleting(false);
-      setIndex((current) => (current + 1) % skills.length);
+      setIndex((current) => (current + 1) % names.length);
       return;
     }
     const step = setTimeout(
@@ -53,7 +67,7 @@ export function InstallCommand() {
       deleting ? DELETE_MS : TYPE_MS,
     );
     return () => clearTimeout(step);
-  }, [typed, deleting, index, target]);
+  }, [typed, deleting, target, names.length]);
 
   useEffect(() => {
     return () => {
@@ -75,32 +89,25 @@ export function InstallCommand() {
   }, [command]);
 
   return (
-    <div
-      role="button"
-      tabIndex={0}
+    <button
+      type="button"
       onClick={copy}
-      onKeyDown={(event) => {
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          void copy();
-        }
-      }}
       aria-label={`Copy install command: ${command}`}
-      className="flex w-full cursor-pointer items-center justify-between gap-4 rounded-md bg-ds-gray-100/80 px-4 py-3 font-mono text-sm text-foreground transition-colors hover:bg-ds-gray-200/80"
+      className="flex w-full cursor-pointer items-start justify-between gap-3 rounded-md bg-ds-gray-100/80 px-4 py-3 text-left font-mono text-sm leading-6 text-foreground transition-colors hover:bg-ds-gray-200/80"
     >
-      <code className="flex min-w-0 items-center truncate">
-        <span className="text-muted-foreground">$</span>
-        <span className="ml-[1ch]">npx skills add</span>
-        <span className="ml-[1ch] truncate text-muted-foreground">{repoMeta.repoUrl}</span>
-        <span className="ml-[1ch]">--skill</span>
-        <span className="ml-[1ch] text-foreground">{typed}</span>
-        <span aria-hidden="true" className="animate-caret ml-[1px] inline-block w-[0.6em] bg-foreground">
-          &nbsp;
+      <span className="relative block min-w-0 flex-1">
+        {/* Invisible sizer: reserves the tallest layout the typewriter can
+            reach, so the hero never grows or shrinks while it types. */}
+        <span aria-hidden="true" className="invisible block">
+          <CommandLine command={longest} caret />
         </span>
-      </code>
-      <span aria-hidden="true" className="shrink-0 text-muted-foreground">
+        <code className="absolute inset-0 block">
+          <CommandLine command={command} caret />
+        </code>
+      </span>
+      <span aria-hidden="true" className="mt-1 shrink-0 self-start text-muted-foreground">
         {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
       </span>
-    </div>
+    </button>
   );
 }
