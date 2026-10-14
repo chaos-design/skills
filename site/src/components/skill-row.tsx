@@ -44,7 +44,7 @@ export function SkillRow({ skill, rank }: { skill: Skill; rank: number }) {
         onClick={() => void copy()}
         aria-label={t("row.copyHint")}
         title={t("row.copyHint")}
-        className="absolute inset-0 z-0 cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+        className="absolute inset-0 z-0 cursor-pointer focus-visible:outline-none focus-visible:border-b-2 focus-visible:border-ring"
       />
 
       <div className="min-w-7 lg:col-span-1">
