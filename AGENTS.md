@@ -15,6 +15,8 @@ project.
 |   |-- html-brief/
 |   |-- web-markdown/
 |   `-- x-tweet-fetcher/
+|-- site/
+|   `-- <standalone Next.js directory site for the published skills>
 |-- screenshots/
 |   |-- bilingual-reader/
 |   |-- content-slides/

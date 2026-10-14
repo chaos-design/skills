@@ -1,0 +1,106 @@
+name: site
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "site/**"
+      - ".github/workflows/site.yml"
+  pull_request:
+    paths:
+      - "site/**"
+      - ".github/workflows/site.yml"
+
+# site/ 是独立站点：CI 只校验与构建站点本身，部署拆成 Pages（静态导出）
+# 与 Vercel（项目根目录指向 site/）两条互不影响的路径。
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build and test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: site
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # sync-skills 需要完整 git 历史来计算各 skill 的活跃度。
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+
+      - run: npm ci
+
+      - run: npm run lint
+
+      - run: npm run typecheck
+
+      - run: npm test
+
+      # 生成数据必须是仓库状态的纯函数；除 generatedAt 时间戳外不允许漂移。
+      - name: Skill data is in sync
+        run: |
+          npm run sync:skills
+          if git diff -U0 -- src/data/skills.generated.json | grep -E '^[+-]' | grep -v 'generatedAt' | grep -qE '^[+-]([^+-]|$)'; then
+            echo "::error file=src/data/skills.generated.json::stale skill data — run 'npm run sync:skills' in site/ and commit the result"
+            git --no-pager diff -- src/data/skills.generated.json
+            exit 1
+          fi
+          echo "skill data in sync"
+
+      # GitHub Pages 项目页挂在 /<repo> 下；Vercel 从仓库直接构建，不带 basePath。
+      - name: Build static export
+        run: npm run build
+        env:
+          BASE_PATH: ${{ github.ref == 'refs/heads/main' && '/skills' || '' }}
+
+      # 导出产物必须自包含：脚本与样式表不允许引用外部 CDN。
+      # 注意 bash -e：grep 无匹配时退出码为 1，「没有外链」这一成功情形
+      # 会让裸 grep 赋值直接失败，因此必须 || true 兜底。
+      - name: Verify static export
+        run: |
+          test -f out/index.html
+          scripts=$(grep -oE '<script[^>]*src="https?://[^"]*"' out/index.html || true)
+          styles=$(grep -oE '<link[^>]*href="https?://[^"]*\.css[^"]*"' out/index.html || true)
+          external="$scripts$styles"
+          if [ -n "$external" ]; then
+            echo "::error::static export references external assets: $external"
+            exit 1
+          fi
+          echo "static export ok: $(find out -name '*.html' | wc -l | tr -d ' ') html files"
+
+      - name: Upload Pages artifact
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site/out
+
+  deploy-pages:
+    name: Deploy to GitHub Pages
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    concurrency:
+      group: site-pages
+      cancel-in-progress: false
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      # 首次部署时自动开通 Pages（build_type=workflow），无需手动在
+      # Settings → Pages 里选择 "GitHub Actions" 源；已启用时仅查询元数据。
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - id: deployment
+        uses: actions/deploy-pages@v4

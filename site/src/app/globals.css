@@ -1,0 +1,150 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Palette follows the Vercel Geist design language used by skills.sh:
+ * pure black canvas, faint white raised surfaces (--ds-gray-100/200),
+ * mid grays for muted text (--ds-gray-600/700) and full white for borders
+ * on emphasis (--ds-gray-1000). The site is dark-only by design.
+ */
+:root {
+  --ds-gray-100: oklch(1 0 0 / 0.055);
+  --ds-gray-200: oklch(1 0 0 / 0.08);
+  --ds-gray-300: oklch(0.707 0 0);
+  --ds-gray-400: oklch(0.269 0 0);
+  --ds-gray-600: oklch(0.631 0 0);
+  --ds-gray-700: oklch(0.51 0 0);
+  --ds-gray-1000: oklch(0.93 0 0);
+
+  --radius: 0.5rem;
+
+  --background: oklch(0 0 0);
+  --foreground: oklch(0.93 0 0);
+  --card: oklch(0.175 0 0);
+  --card-foreground: oklch(0.93 0 0);
+  --popover: oklch(0.175 0 0);
+  --popover-foreground: oklch(0.93 0 0);
+  --primary: oklch(0.93 0 0);
+  --primary-foreground: oklch(0.185 0 0);
+  --secondary: oklch(1 0 0 / 0.08);
+  --secondary-foreground: oklch(0.93 0 0);
+  --muted: oklch(1 0 0 / 0.08);
+  --muted-foreground: oklch(0.631 0 0);
+  --accent: oklch(1 0 0 / 0.08);
+  --accent-foreground: oklch(0.93 0 0);
+  --destructive: oklch(0.637 0.237 25.331);
+  --destructive-foreground: oklch(0.93 0 0);
+  --border: oklch(0.269 0 0);
+  --input: oklch(0.32 0 0);
+  --ring: oklch(0.551 0 0);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.185 0 0);
+  --sidebar-foreground: oklch(0.93 0 0);
+  --sidebar-primary: oklch(0.656 0.241 354.308);
+  --sidebar-primary-foreground: oklch(0.93 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.93 0 0);
+  --sidebar-border: oklch(0.269 0 0);
+  --sidebar-ring: oklch(0.551 0 0);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Vercel Geist gray ramp, exposed as Tailwind color utilities. */
+  --color-ds-gray-100: var(--ds-gray-100);
+  --color-ds-gray-200: var(--ds-gray-200);
+  --color-ds-gray-300: var(--ds-gray-300);
+  --color-ds-gray-400: var(--ds-gray-400);
+  --color-ds-gray-600: var(--ds-gray-600);
+  --color-ds-gray-700: var(--ds-gray-700);
+  --color-ds-gray-1000: var(--ds-gray-1000);
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  /* Agent logo marquee in the "Available for these agents" strip. */
+  --animate-carousel: carousel 48s linear infinite;
+  @keyframes carousel {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  /* Typewriter caret for the install command. */
+  --animate-caret: caret 1.1s steps(1) infinite;
+  @keyframes caret {
+    0%,
+    49% {
+      opacity: 1;
+    }
+    50%,
+    100% {
+      opacity: 0;
+    }
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-carousel,
+  .animate-caret {
+    animation: none;
+  }
+}
