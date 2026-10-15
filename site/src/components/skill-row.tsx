@@ -72,6 +72,18 @@ export function SkillRow({ skill, rank }: { skill: Skill; rank: number }) {
         >
           {skill.category}
         </Badge>
+        {skill.tags.length > 0 && (
+          <span className="flex flex-wrap items-center gap-1">
+            {skill.tags.map((tag) => (
+              <span
+                key={tag}
+                className="rounded-full border border-border bg-ds-gray-100/60 px-1.5 py-0.5 font-mono text-[10px] text-ds-gray-600"
+              >
+                {tag}
+              </span>
+            ))}
+          </span>
+        )}
       </div>
 
       {/* Mobile: the 8-week total stands in for the sparkline. */}

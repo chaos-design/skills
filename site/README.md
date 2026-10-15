@@ -62,6 +62,22 @@ to the newest commit in the repository, not to wall-clock time, so re-running
 the script without repository changes only advances `generatedAt`. CI checks the
 committed data against the repository on pull requests (ignoring `generatedAt`).
 
+### Published README docs
+
+The detail page renders each skill's README in the site language (中/EN).
+`npm run sync:skills` also republishes the source documents under
+`public/data/skills/<name>/`:
+
+- `skills/<name>/README.md` → `public/data/skills/<name>/README.en.md`
+- `skills/<name>/README.zh-CN.md` → `public/data/skills/<name>/README.zh.md`
+
+Each copy is normalized so it renders as a standalone page: raw `<img>` tags
+become markdown images on `raw.githubusercontent.com`, the cross-language
+switch line is dropped (the site has its own language toggle), and every
+remaining relative link is retargeted at the repository's `main` branch. The
+subtree is rebuilt from scratch on every run, so a removed document never
+lingers in the export.
+
 ### Freshness at runtime
 
 Because the file lives in `public/`, the browser re-fetches it on every visit
@@ -108,15 +124,19 @@ npx serve out        # or any static file server
 site/
 |-- public/
 |   |   `-- data/
-|   |       `-- skills.json    # generated dataset, re-fetched at runtime
+|   |       |-- skills.json    # generated dataset, re-fetched at runtime
+|   |       `-- skills/        # generated README copies per skill and language
+|   |           `-- <name>/
+|   |               |-- README.en.md
+|   |               `-- README.zh.md
 |-- scripts/
-|   |-- sync-skills.mjs        # repo -> public/data/skills.json
+|   |-- sync-skills.mjs        # repo -> skills.json + published README copies
 |   `-- sync-skills.test.mjs   # parser + bucketing unit tests
 |-- src/
 |   |-- app/
 |   |   |-- [skill]/
 |   |   |   `-- page.tsx       # per-skill detail page (SSG via generateStaticParams)
-|   |   |-- globals.css        # Tailwind v4 + Geist tokens + animations
+|   |   |-- globals.css        # Tailwind v4 + Geist tokens + doc-markdown prose styles
 |   |   |-- icon.svg           # favicon
 |   |   |-- layout.tsx         # fonts + metadata
 |   |   |-- opengraph-image.tsx# build-time OG card
@@ -134,6 +154,7 @@ site/
 |   |   |-- leaderboard.tsx    # search + tabs (client)
 |   |   |-- leaderboard-table.tsx
 |   |   |-- skill-detail.tsx   # detail page body
+|   |   |-- skill-readme.tsx   # detail page documentation block (published README)
 |   |   |-- skill-row.tsx      # click anywhere copies the install command
 |   |   |-- skills-provider.tsx# runtime data fetch + revalidate
 |   |   |-- site-footer.tsx

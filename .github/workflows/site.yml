@@ -53,7 +53,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          cp public/data/skills.json /tmp/committed-skills.json
+          cp -R public/data /tmp/committed-data
           npm run sync:skills
 
       - run: npm test
@@ -65,9 +65,15 @@ jobs:
         if: github.event_name == 'pull_request'
         run: |
           strip='grep -v "\"generatedAt\""'
-          if ! diff -q <(eval $strip /tmp/committed-skills.json) <(eval $strip public/data/skills.json) >/dev/null; then
+          if ! diff -q <(eval $strip /tmp/committed-data/skills.json) <(eval $strip public/data/skills.json) >/dev/null; then
             echo "::error file=public/data/skills.json::stale skill data — run 'npm run sync:skills' in site/ and commit the result"
-            diff <(eval $strip /tmp/committed-skills.json) <(eval $strip public/data/skills.json) || true
+            diff <(eval $strip /tmp/committed-data/skills.json) <(eval $strip public/data/skills.json) || true
+            exit 1
+          fi
+          # 发布的 README 副本（public/data/skills/）同样必须是源文档的纯函数。
+          if ! diff -r /tmp/committed-data/skills public/data/skills >/dev/null; then
+            echo "::error file=public/data/skills::stale readme copies — run 'npm run sync:skills' in site/ and commit the result"
+            diff -r /tmp/committed-data/skills public/data/skills || true
             exit 1
           fi
           echo "skill data in sync"

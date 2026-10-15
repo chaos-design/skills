@@ -3,15 +3,19 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   agentPrompt,
+  filterByTags,
   filterSkills,
   formatCompact,
   formatDate,
   getSkillByName,
   installCommand,
+  readmePath,
+  readmeSourceUrl,
   relatedSkills,
   repoMeta,
   type SkillsData,
   sortSkills,
+  tagCounts,
 } from "./skills";
 
 /**
@@ -40,6 +44,11 @@ describe("generated skill data", () => {
       );
       expect(skill.category.length).toBeGreaterThan(0);
       expect(skill.version).toMatch(/^\d+\.\d+\.\d+$/);
+      expect(Array.isArray(skill.tags)).toBe(true);
+      expect(skill.tags.length).toBeGreaterThan(0);
+      for (const tag of skill.tags) {
+        expect(tag).toMatch(/^[a-z0-9-]+$/);
+      }
     }
   });
 
@@ -93,6 +102,34 @@ describe("filterSkills", () => {
 
   it("returns nothing for a query that matches no skill", () => {
     expect(filterSkills(skills, "kubernetes-helm-charts")).toEqual([]);
+  });
+});
+
+describe("filterByTags", () => {
+  it("returns the full list when nothing is selected", () => {
+    expect(filterByTags(skills, [])).toHaveLength(skills.length);
+  });
+
+  it("narrows to skills carrying every selected tag (AND)", () => {
+    const hits = filterByTags(skills, ["slides", "presentation"]);
+    expect(hits.map((skill) => skill.name).sort()).toEqual(["content-slides", "frontend-slides"]);
+  });
+
+  it("returns nothing when the tag combination matches no skill", () => {
+    // No skill is both "slides" and "twitter".
+    expect(filterByTags(skills, ["slides", "twitter"])).toEqual([]);
+  });
+});
+
+describe("tagCounts", () => {
+  it("counts every distinct tag with its member count, most common first", () => {
+    const counts = tagCounts(skills);
+    for (const { tag, count } of counts) {
+      const expected = skills.filter((skill) => skill.tags.includes(tag)).length;
+      expect(count).toBe(expected);
+    }
+    const values = counts.map((item) => item.count);
+    expect(values).toEqual([...values].sort((a, b) => b - a));
   });
 });
 
@@ -169,6 +206,46 @@ describe("install strings", () => {
     expect(prompt).toContain(`npx skills use "${repoMeta.repoUrl}" --skill "domain-modeling"`);
     expect(prompt).toContain("follow the generated skill instructions");
     expect(prompt).toContain("supporting-files directory");
+  });
+});
+
+describe("readme paths", () => {
+  it("returns the public data path of the published README", () => {
+    expect(readmePath("web-markdown", "en")).toBe("data/skills/web-markdown/README.en.md");
+    expect(readmePath("web-markdown", "zh")).toBe("data/skills/web-markdown/README.zh.md");
+  });
+
+  it("links missing docs back to the source README on GitHub", () => {
+    expect(readmeSourceUrl("web-markdown", "en")).toBe(
+      `${repoMeta.repoUrl}/blob/main/skills/web-markdown/README.md`,
+    );
+    expect(readmeSourceUrl("web-markdown", "zh")).toBe(
+      `${repoMeta.repoUrl}/blob/main/skills/web-markdown/README.zh-CN.md`,
+    );
+  });
+});
+
+/**
+ * The published docs must render as standalone pages: no raw HTML images, no
+ * relative link targets, no cross-language switch lines that would push the
+ * reader back to GitHub.
+ */
+function readPublishedReadme(skillName: string, lang: "en" | "zh"): string {
+  const file = path.join(process.cwd(), "public", "data", "skills", skillName, `README.${lang}.md`);
+  return readFileSync(file, "utf8");
+}
+
+describe("published readme docs", () => {
+  it("ships both language copies for every skill in the dataset", () => {
+    for (const skill of skills) {
+      for (const lang of ["en", "zh"] as const) {
+        const text = readPublishedReadme(skill.name, lang);
+        expect(text.length, `${skill.name} ${lang} readme too small`).toBeGreaterThan(200);
+        expect(text).not.toContain("<img");
+        expect(text).not.toMatch(/\]\(\.{1,2}\//);
+        expect(text).not.toMatch(/^\s*\[(?:中文|English)\]\(\.\//m);
+      }
+    }
   });
 });
 

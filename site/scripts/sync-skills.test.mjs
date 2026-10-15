@@ -5,7 +5,10 @@ import {
   commitDate,
   formatTimestamp,
   isoDate,
+  normalizeReadme,
   parseFrontmatter,
+  READMES,
+  resolveReadmePath,
   WEEKS,
   weeklyBuckets,
 } from "./sync-skills.mjs";
@@ -115,5 +118,105 @@ describe("GitHub commit payloads", () => {
       { commit: { author: { email: "other@example.com" } } },
     ];
     expect(new Set(commits.map(authorKey)).size).toBe(2);
+  });
+});
+
+describe("resolveReadmePath", () => {
+  it("resolves relative links against the skill directory", () => {
+    expect(resolveReadmePath("html-brief", "./LICENSE")).toBe("skills/html-brief/LICENSE");
+    expect(resolveReadmePath("html-brief", "LICENSE")).toBe("skills/html-brief/LICENSE");
+    expect(resolveReadmePath("html-brief", "../web-markdown/README.md")).toBe(
+      "skills/web-markdown/README.md",
+    );
+  });
+
+  it("clamps at the repository root instead of escaping it", () => {
+    expect(resolveReadmePath("html-brief", "../../screenshots/x.webp")).toBe("screenshots/x.webp");
+    expect(resolveReadmePath("html-brief", "../../../still/here.md")).toBe("still/here.md");
+  });
+});
+
+describe("READMES", () => {
+  it("publishes both languages from the repo's file convention", () => {
+    expect(Object.keys(READMES)).toEqual(["en", "zh"]);
+    expect(READMES.en.source).toBe("README.md");
+    expect(READMES.zh.source).toBe("README.zh-CN.md");
+    for (const [lang, entry] of Object.entries(READMES)) {
+      expect(entry.target).toBe(`README.${lang}.md`);
+    }
+  });
+});
+
+describe("normalizeReadme", () => {
+  it("converts raw img tags to markdown images on raw.githubusercontent", () => {
+    const out = normalizeReadme(
+      'See the gallery:\n\n<img src="../../screenshots/s/a.webp" width="420" alt="template screenshot">\n',
+      "s",
+    );
+    expect(out).toContain(
+      "![template screenshot](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/s/a.webp)",
+    );
+    // width is dropped: the site's CSS sizes images itself.
+    expect(out).not.toContain("420");
+    expect(out).not.toContain("<img");
+  });
+
+  it("leaves absolute image URLs alone while converting the tag", () => {
+    const out = normalizeReadme('<img src="https://example.com/x.png" alt="x">', "s");
+    expect(out).toBe("![x](https://example.com/x.png)");
+  });
+
+  it("keeps single-quoted attribute values verbatim", () => {
+    const out = normalizeReadme("<img src='../../screenshots/s/b.webp' alt='single quoted'>", "s");
+    expect(out).toBe(
+      "![single quoted](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/s/b.webp)",
+    );
+  });
+
+  it("drops the language-switch lines in both directions", () => {
+    const en = normalizeReadme("# T\n\n[中文](./README.zh-CN.md)\n\n## Next", "s");
+    expect(en).toBe("# T\n\n## Next");
+    const zh = normalizeReadme("# 标题\n\n[English](./README.md)\n\n## 下一节", "s");
+    expect(zh).toBe("# 标题\n\n## 下一节");
+  });
+
+  it("rewrites relative links to GitHub blob URLs", () => {
+    const out = normalizeReadme(
+      "See [LICENSE](./LICENSE), [web-markdown](../web-markdown/README.md) and [flow](./references/flow.md).",
+      "bilingual-reader",
+    );
+    expect(out).toContain(
+      "[LICENSE](https://github.com/chaos-design/skills/blob/main/skills/bilingual-reader/LICENSE)",
+    );
+    expect(out).toContain(
+      "[web-markdown](https://github.com/chaos-design/skills/blob/main/skills/web-markdown/README.md)",
+    );
+    expect(out).toContain(
+      "[flow](https://github.com/chaos-design/skills/blob/main/skills/bilingual-reader/references/flow.md)",
+    );
+  });
+
+  it("rewrites relative markdown images to raw URLs", () => {
+    const out = normalizeReadme("![diagram](../../screenshots/s/flow.svg)", "s");
+    expect(out).toBe(
+      "![diagram](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/s/flow.svg)",
+    );
+  });
+
+  it("leaves relative paths inside code fences untouched", () => {
+    const out = normalizeReadme(
+      "# t\n\n```bash\ncat ./README.md\ncp ../other/x.md .\n```\n\n[ref](./references/a.md)",
+      "s",
+    );
+    expect(out).toContain("cat ./README.md");
+    expect(out).toContain("cp ../other/x.md .");
+    expect(out).toContain(
+      "[ref](https://github.com/chaos-design/skills/blob/main/skills/s/references/a.md)",
+    );
+  });
+
+  it("keeps absolute URLs as they are", () => {
+    const out = normalizeReadme("[site](https://github.com/chaos-design/skills)", "s");
+    expect(out).toBe("[site](https://github.com/chaos-design/skills)");
   });
 });

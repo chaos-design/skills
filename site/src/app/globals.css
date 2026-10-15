@@ -186,3 +186,138 @@
     animation: none;
   }
 }
+
+/*
+ * Prose styles for the skill README rendered on the detail page
+ * (src/components/skill-readme.tsx). Plain CSS rather than a typography
+ * plugin: the doc is the only long-form text on the site, and every color
+ * resolves through the theme tokens, so dark mode needs no overrides.
+ */
+.doc-markdown {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--foreground);
+}
+.doc-markdown > :first-child {
+  margin-top: 0;
+}
+/* The README's own H1 duplicates the page title above it. */
+.doc-markdown > h1:first-child {
+  display: none;
+}
+.doc-markdown h1 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 1.5em 0 0.5em;
+}
+.doc-markdown h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 1.75em 0 0.5em;
+}
+.doc-markdown h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 1.25em 0 0.4em;
+}
+.doc-markdown h4 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin: 1em 0 0.4em;
+}
+.doc-markdown p,
+.doc-markdown ul,
+.doc-markdown ol,
+.doc-markdown pre,
+.doc-markdown table,
+.doc-markdown blockquote {
+  margin: 0.75em 0;
+}
+.doc-markdown ul {
+  list-style: disc;
+  padding-left: 1.5em;
+}
+.doc-markdown ol {
+  list-style: decimal;
+  padding-left: 1.5em;
+}
+.doc-markdown li {
+  margin: 0.25em 0;
+}
+.doc-markdown li > ul,
+.doc-markdown li > ol {
+  margin: 0.25em 0;
+}
+.doc-markdown a {
+  text-decoration: underline;
+  text-decoration-color: var(--ds-gray-300);
+  text-underline-offset: 4px;
+  transition: text-decoration-color 150ms;
+}
+.doc-markdown a:hover {
+  text-decoration-color: currentColor;
+}
+.doc-markdown strong {
+  font-weight: 600;
+}
+.doc-markdown img {
+  max-width: 100%;
+  height: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.doc-markdown blockquote {
+  padding: 0.25em 1em;
+  border-left: 2px solid var(--ds-gray-300);
+  color: var(--muted-foreground);
+}
+.doc-markdown code {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  background: var(--secondary);
+  border-radius: 4px;
+  padding: 0.15em 0.35em;
+}
+.doc-markdown pre {
+  background: var(--secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.75em 1em;
+  overflow-x: auto;
+}
+.doc-markdown pre code {
+  background: transparent;
+  padding: 0;
+  font-size: 0.8rem;
+  line-height: 1.6;
+}
+.doc-markdown table {
+  display: block;
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.9em;
+}
+.doc-markdown th,
+.doc-markdown td {
+  border: 1px solid var(--border);
+  padding: 6px 10px;
+  text-align: left;
+}
+.doc-markdown th {
+  background: var(--secondary);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.doc-markdown hr {
+  margin: 1.5em 0;
+  border: none;
+  border-top: 1px solid var(--border);
+}

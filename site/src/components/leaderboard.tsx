@@ -7,7 +7,7 @@ import { useSkills } from "@/components/skills-provider";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useI18n } from "@/lib/i18n";
-import { filterSkills, type SortKey, sortSkills } from "@/lib/skills";
+import { filterByTags, filterSkills, type SortKey, sortSkills, tagCounts } from "@/lib/skills";
 
 // Only a 2px bottom underline marks the active tab — no side or top border.
 const TAB_TRIGGER_CLASS =
@@ -17,6 +17,7 @@ export function Leaderboard() {
   const { t } = useI18n();
   const [query, setQuery] = useState("");
   const [tab, setTab] = useState<SortKey>("all");
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [focused, setFocused] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -39,7 +40,18 @@ export function Leaderboard() {
 
   const { data } = useSkills();
   const skills = data.skills;
-  const rows = useMemo(() => sortSkills(filterSkills(skills, query), tab), [skills, query, tab]);
+  // Chips come from the whole dataset so the row is stable no matter which
+  // tags are active; only the table below reacts to the selection.
+  const chips = useMemo(() => tagCounts(skills), [skills]);
+  const rows = useMemo(
+    () => sortSkills(filterByTags(filterSkills(skills, query), selectedTags), tab),
+    [skills, query, tab, selectedTags],
+  );
+
+  const toggleTag = (tag: string) =>
+    setSelectedTags((prev) =>
+      prev.includes(tag) ? prev.filter((item) => item !== tag) : [...prev, tag],
+    );
 
   return (
     <section id="leaderboard" className="scroll-mt-20 py-6 sm:py-8">
@@ -92,6 +104,32 @@ export function Leaderboard() {
               </TabsTrigger>
             </TabsList>
           </Tabs>
+
+          {/* Tag filter: every distinct tag as a pill, most common first.
+              Toggling narrows the table to skills carrying all selected tags. */}
+          {chips.length > 0 && (
+            <div className="mt-3 flex flex-wrap items-center gap-1.5">
+              {chips.map(({ tag, count }) => {
+                const active = selectedTags.includes(tag);
+                return (
+                  <button
+                    key={tag}
+                    type="button"
+                    aria-pressed={active}
+                    onClick={() => toggleTag(tag)}
+                    className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-mono text-xs transition-colors ${
+                      active
+                        ? "border-foreground bg-foreground text-background"
+                        : "border-border text-ds-gray-600 hover:border-ds-gray-400 hover:text-foreground"
+                    }`}
+                  >
+                    <span>{tag}</span>
+                    <span className={active ? "opacity-60" : "text-ds-gray-700"}>{count}</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         <LeaderboardTable rows={rows} />

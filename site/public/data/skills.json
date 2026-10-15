@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-13 21:13:23",
+  "generatedAt": "2026-10-15 17:24:17",
   "repo": "chaos-design/skills",
   "repoUrl": "https://github.com/chaos-design/skills",
   "installPrefix": "npx skills add https://github.com/chaos-design/skills --skill",
@@ -36,6 +36,10 @@
       "version": "0.1.0",
       "category": "Editorial",
       "description": "Normalize English source material from URLs, images, documents, files, attachments, or pasted text into Markdown, stop for source review, then generate a polished offline English-Chinese close-reading page with translation, glossary, vocabulary hover states, quiz, and static HTML validation.",
+      "tags": [
+        "bilingual",
+        "close-reading"
+      ],
       "repo": "chaos-design/skills",
       "homepage": "https://github.com/chaos-design/skills/tree/main/skills/bilingual-reader",
       "compat": [
@@ -69,6 +73,10 @@
       "version": "0.1.0",
       "category": "Presentation",
       "description": "Convert URLs, PDFs, DOCX files, Markdown files, plain text, screenshots, and pasted notes normalized through web-markdown into a single self-contained 16:9 HTML slide deck with source-faithful structure, distinctive visual style, fixed-stage layout, and delivery verification.",
+      "tags": [
+        "slides",
+        "presentation"
+      ],
       "repo": "chaos-design/skills",
       "homepage": "https://github.com/chaos-design/skills/tree/main/skills/content-slides",
       "compat": [
@@ -102,6 +110,10 @@
       "version": "0.1.0",
       "category": "Presentation",
       "description": "Generate deck-stage HTML presentation pages from articles, notes, documents, images, or PPT-style content, using curated visual templates, the shared deck-stage runtime, direct section slides, and browser verification.",
+      "tags": [
+        "slides",
+        "presentation"
+      ],
       "repo": "chaos-design/skills",
       "homepage": "https://github.com/chaos-design/skills/tree/main/skills/frontend-slides",
       "compat": [
@@ -135,6 +147,10 @@
       "version": "0.1.0",
       "category": "Visualization",
       "description": "Generate zero-dependency interactive SVG geographic maps from user intent, including real-outline world and China maps, markers, regions, flow routes, labels, legends, tooltips, scope inference, and final map validation.",
+      "tags": [
+        "map",
+        "visualization"
+      ],
       "repo": "chaos-design/skills",
       "homepage": "https://github.com/chaos-design/skills/tree/main/skills/geo-flow-map",
       "compat": [
@@ -168,6 +184,10 @@
       "version": "0.1.0",
       "category": "Presentation",
       "description": "Convert a complex question, review, comparison or explanation into one self-contained HTML brief with computed panel layout, flow and sequence diagrams, comparison tables, two themes and a light/dark switch. The agent writes a short Markdown draft; a bundled zero-dependency Python renderer computes geometry, colors and layout.",
+      "tags": [
+        "brief",
+        "html"
+      ],
       "repo": "chaos-design/skills",
       "homepage": "https://github.com/chaos-design/skills/tree/main/skills/html-brief",
       "compat": [
@@ -201,6 +221,10 @@
       "version": "0.1.0",
       "category": "Multimodal",
       "description": "Generates images from text descriptions with zero secrets: no API key, no .env, no base URL — every image is produced through the host environment's built-in image generation capability. Before the skill becomes active in a session it runs a mandatory capability gate: discover an image generation tool among the session's tools, then run one minimal probe generation and verify a real image comes back. Both steps must pass, or the skill refuses to operate and reports honestly instead of falling back to placeholders or key-based workarounds.",
+      "tags": [
+        "image",
+        "generation"
+      ],
       "repo": "chaos-design/skills",
       "homepage": "https://github.com/chaos-design/skills/tree/main/skills/image-generation",
       "compat": [
@@ -234,6 +258,10 @@
       "version": "0.1.0",
       "category": "Visualization",
       "description": "Render a JSON description of a running system as an always-running architecture panel: fixed layout, packets on the wires, scrolling log, counters, gauges that flip state past a threshold, and side triggers that light in turn. Outputs an H.264 mp4 for X or Xiaohongshu, or a self-contained page that runs live in any browser. Deterministic replay, plus headless checks for geometry, replay identity and log-versus-panel agreement.",
+      "tags": [
+        "dashboard",
+        "visualization"
+      ],
       "repo": "chaos-design/skills",
       "homepage": "https://github.com/chaos-design/skills/tree/main/skills/live-panel",
       "compat": [
@@ -267,6 +295,10 @@
       "version": "0.1.0",
       "category": "Workflow",
       "description": "Turn a non-trivial task into a plan file in a repository's plans/ directory (planing, pending, archive), tick progress as work is verified, report numeric status on request, and archive only when every task and Definition-of-Done item is checked. Directory is the single source of state; gates are enforced by a standard-library Python script.",
+      "tags": [
+        "planning",
+        "workflow"
+      ],
       "repo": "chaos-design/skills",
       "homepage": "https://github.com/chaos-design/skills/tree/main/skills/plan-flow",
       "compat": [
@@ -300,6 +332,10 @@
       "version": "0.1.0",
       "category": "Workflow",
       "description": "Inject modification feedback and adjustment instructions into a task the agent is already executing. Instructions are appended to a repo's .injects/inbox/ at any time (atomic writes, safe mid-run) and drained at fixed checkpoints. Four severity levels (halt, redirect, revise, note) decide whether the current step finishes, stops at the next tool boundary, or the direction is re-planned. Every application is acknowledged with evidence and appended to an audit log; halt requires a note, ids are never reused, and check --strict gates CI on a drained inbox. Directory is the single source of state; gates are enforced by a standard-library Python script.",
+      "tags": [
+        "tasks",
+        "workflow"
+      ],
       "repo": "chaos-design/skills",
       "homepage": "https://github.com/chaos-design/skills/tree/main/skills/task-inject",
       "compat": [
@@ -333,6 +369,10 @@
       "version": "0.1.0",
       "category": "Engineering",
       "description": "Selects the technology stack, tools, and architecture for a project. Inspects the file system to decide between initializing a pnpm monorepo and adding artifacts to an existing one, applies the default React + TypeScript + Vite CSR frontend stack with Tailwind CSS and shadcn/ui, a Node.js + TypeScript backend, pnpm and Biome tooling, and records a mandatory execution plan before any scaffolding runs.",
+      "tags": [
+        "tech",
+        "decision"
+      ],
       "repo": "chaos-design/skills",
       "homepage": "https://github.com/chaos-design/skills/tree/main/skills/technology-selection",
       "compat": [
@@ -366,6 +406,10 @@
       "version": "0.1.0",
       "category": "Extraction",
       "description": "Convert generic URLs, platform-specific social/content URLs, PDFs, DOCX files, Markdown files, plain text, screenshots, and pasted notes into faithful Markdown using platform fetcher bridging, Microsoft MarkItDown, Camofox fallback, and validation for source order, media, links, and code.",
+      "tags": [
+        "markdown",
+        "extraction"
+      ],
       "repo": "chaos-design/skills",
       "homepage": "https://github.com/chaos-design/skills/tree/main/skills/web-markdown",
       "compat": [
@@ -399,6 +443,10 @@
       "version": "2.1.0",
       "category": "Extraction",
       "description": "Fetch tweets, replies, user timelines, X Articles, growth monitoring data, and supported Chinese platform content without login or API keys for basic tweet extraction, with optional Camofox-backed workflows for richer sources.",
+      "tags": [
+        "twitter",
+        "extraction"
+      ],
       "repo": "chaos-design/skills",
       "homepage": "https://github.com/chaos-design/skills/tree/main/skills/x-tweet-fetcher",
       "compat": [
