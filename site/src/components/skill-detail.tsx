@@ -86,34 +86,35 @@ export function SkillDetail({ skillName }: { skillName: string }) {
               <span className="text-foreground">{skill.name}</span>
             </nav>
 
-            <header className="pb-6">
-              {/* Sticky title: the skill name stays on screen for the whole
-                  scroll, so the stats and activity below never lose context. */}
-              <div className="sticky top-14 z-30 border-b border-border bg-background/95 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-                <div className="flex flex-wrap items-center gap-3">
-                  <Link
-                    href="/"
-                    aria-label={t("detail.back")}
-                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border bg-background text-ds-gray-600 transition-colors hover:text-foreground"
-                  >
-                    <ArrowLeft className="h-4 w-4" />
-                  </Link>
-                  <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-                    {skill.name}
-                  </h1>
-                  <Badge
-                    variant="secondary"
-                    className="border-transparent bg-ds-gray-100 font-mono text-[11px] uppercase tracking-wider text-ds-gray-600"
-                  >
-                    {skill.category}
-                  </Badge>
-                </div>
+            {/* Sticky title: a direct child of the tall main column, so the
+                skill name stays on screen for the whole scroll; the stats and
+                activity below never lose context. A sticky element is
+                contained by its parent, so it must not sit inside a short
+                wrapper like a <header>. */}
+            <div className="sticky top-14 z-30 border-b border-border bg-background/95 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+              <div className="flex flex-wrap items-center gap-3">
+                <Link
+                  href="/"
+                  aria-label={t("detail.back")}
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border bg-background text-ds-gray-600 transition-colors hover:text-foreground"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                </Link>
+                <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+                  {skill.name}
+                </h1>
+                <Badge
+                  variant="secondary"
+                  className="border-transparent bg-ds-gray-100 font-mono text-[11px] uppercase tracking-wider text-ds-gray-600"
+                >
+                  {skill.category}
+                </Badge>
               </div>
+            </div>
 
-              <p className="mt-5 max-w-2xl text-[15px] leading-relaxed text-ds-gray-600">
-                {skill.description}
-              </p>
-            </header>
+            <p className="pb-6 pt-5 max-w-2xl text-[15px] leading-relaxed text-ds-gray-600">
+              {skill.description}
+            </p>
 
             <Installation skillName={skill.name} />
 
