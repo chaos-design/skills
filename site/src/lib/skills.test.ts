@@ -8,6 +8,8 @@ import {
   formatDate,
   getSkillByName,
   installCommand,
+  readmePath,
+  readmeSourceUrl,
   relatedSkills,
   repoMeta,
   type SkillsData,
@@ -169,6 +171,46 @@ describe("install strings", () => {
     expect(prompt).toContain(`npx skills use "${repoMeta.repoUrl}" --skill "domain-modeling"`);
     expect(prompt).toContain("follow the generated skill instructions");
     expect(prompt).toContain("supporting-files directory");
+  });
+});
+
+describe("readme paths", () => {
+  it("returns the public data path of the published README", () => {
+    expect(readmePath("web-markdown", "en")).toBe("data/skills/web-markdown/README.en.md");
+    expect(readmePath("web-markdown", "zh")).toBe("data/skills/web-markdown/README.zh.md");
+  });
+
+  it("links missing docs back to the source README on GitHub", () => {
+    expect(readmeSourceUrl("web-markdown", "en")).toBe(
+      `${repoMeta.repoUrl}/blob/main/skills/web-markdown/README.md`,
+    );
+    expect(readmeSourceUrl("web-markdown", "zh")).toBe(
+      `${repoMeta.repoUrl}/blob/main/skills/web-markdown/README.zh-CN.md`,
+    );
+  });
+});
+
+/**
+ * The published docs must render as standalone pages: no raw HTML images, no
+ * relative link targets, no cross-language switch lines that would push the
+ * reader back to GitHub.
+ */
+function readPublishedReadme(skillName: string, lang: "en" | "zh"): string {
+  const file = path.join(process.cwd(), "public", "data", "skills", skillName, `README.${lang}.md`);
+  return readFileSync(file, "utf8");
+}
+
+describe("published readme docs", () => {
+  it("ships both language copies for every skill in the dataset", () => {
+    for (const skill of skills) {
+      for (const lang of ["en", "zh"] as const) {
+        const text = readPublishedReadme(skill.name, lang);
+        expect(text.length, `${skill.name} ${lang} readme too small`).toBeGreaterThan(200);
+        expect(text).not.toContain("<img");
+        expect(text).not.toMatch(/\]\(\.{1,2}\//);
+        expect(text).not.toMatch(/^\s*\[(?:中文|English)\]\(\.\//m);
+      }
+    }
   });
 });
 

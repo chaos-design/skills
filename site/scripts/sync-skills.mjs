@@ -4,11 +4,15 @@
  * truth: skills/<name>/manifest.json (falling back to SKILL.md frontmatter)
  * plus the real commit history GitHub reports for each skill directory.
  *
+ * Also republishes every skill README under public/data/skills/<name>/ as
+ * README.en.md / README.zh.md, normalized so they render as standalone
+ * pages (relative links retargeted to the repository's main branch).
+ *
  * Run from the site directory:  node scripts/sync-skills.mjs
  *
- * The file lives in public/ so the browser can re-fetch it on every visit
- * (cache: "no-store"), which is what keeps the leaderboard fresh between
- * deploys. It is generated, never hand-written.
+ * The files live in public/ so the browser can re-fetch them on every visit
+ * (cache: "no-store" for the JSON), which is what keeps the leaderboard
+ * fresh between deploys. They are generated, never hand-written.
  *
  * Activity comes from the GitHub REST API rather than a local clone, so the
  * numbers do not depend on how deep the checkout happens to be. Set
@@ -16,18 +20,22 @@
  *
  * Exports the pure helpers so they can be unit tested without hitting the API.
  */
-import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(here, "..", "..");
 const skillsRoot = path.join(repoRoot, "skills");
-const outFile = path.resolve(here, "..", "public", "data", "skills.json");
+const dataDir = path.resolve(here, "..", "public", "data");
+const outFile = path.join(dataDir, "skills.json");
 
 export const REPO = "chaos-design/skills";
-export const REPO_URL = "https://github.com/chaos-design/skills";
+export const REPO_URL = `https://github.com/${REPO}`;
 export const INSTALL_PREFIX = `npx skills add ${REPO_URL} --skill`;
+/** Where a published README's relative links are retargeted at. */
+const RAW_BASE = `https://raw.githubusercontent.com/${REPO}/main`;
+const BLOB_BASE = `${REPO_URL}/blob/main`;
 
 export const WEEKS = 8;
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
@@ -246,6 +254,141 @@ function buildAgents(skills) {
     .sort((a, b) => b.skills - a.skills || a.name.localeCompare(b.name));
 }
 
+/**
+ * The skill READMEs the site publishes per language: source file inside
+ * skills/<name>/ and the flat target name under public/data/skills/<name>/.
+ */
+export const READMES = {
+  en: { source: "README.md", target: "README.en.md" },
+  zh: { source: "README.zh-CN.md", target: "README.zh.md" },
+};
+
+/**
+ * Resolve a README-relative path ("./LICENSE", "../web-markdown/README.md",
+ * "../../screenshots/x.webp") against the skill's directory in the repo.
+ * Pure string math, clamped at the repository root like path.resolve.
+ */
+export function resolveReadmePath(skillName, relative) {
+  const segments = [];
+  for (const part of `skills/${skillName}/${relative}`.split("/")) {
+    if (part === "" || part === ".") continue;
+    if (part === "..") {
+      if (segments.length > 0) segments.pop();
+      continue;
+    }
+    segments.push(part);
+  }
+  return segments.join("/");
+}
+
+const FENCE = /^\s*(```|~~~)/;
+
+/**
+ * The value of an HTML attribute, double-quoted, single-quoted or bare.
+ * Quoted forms keep whitespace inside the value ("template screenshot").
+ */
+function attrValue(attrs, name) {
+  const match = new RegExp(`${name}\\s*=\\s*("([^"]*)"|'([^']*)'|[^\\s"'>]+)`).exec(attrs);
+  if (!match) return "";
+  return match[2] ?? match[3] ?? match[1];
+}
+
+/**
+ * Rewrite a relative markdown image into raw.githubusercontent form.
+ */
+function rewriteImage(label, target, skillName) {
+  return `${label}(${RAW_BASE}/${resolveReadmePath(skillName, target)})`;
+}
+
+/**
+ * Rewrite a relative markdown link into a GitHub blob URL so the doc renders
+ * as a standalone page without the repository checkout around it.
+ */
+function rewriteLink(label, target, skillName) {
+  return `${label}(${BLOB_BASE}/${resolveReadmePath(skillName, target)})`;
+}
+
+/**
+ * Make a skill README renderable as a standalone document on the site:
+ *
+ * - raw <img> tags become markdown images (react-markdown renders markdown
+ *   images without a raw-HTML pass) pointing at raw.githubusercontent.com;
+ * - the "[中文](./README.zh-CN.md)" / "[English](./README.md)" switch lines
+ *   are dropped — the site has its own language toggle, so a link that
+ *   pushes the reader back to GitHub is noise;
+ * - every remaining relative link (./LICENSE, ../other-skill/README.md,
+ *   ../../screenshots/...) is retargeted to the repository's main branch,
+ *   as a blob URL for documents and a raw URL for images.
+ *
+ * Code fences are left byte-for-byte: the rules only apply to prose lines,
+ * so a ```bash block that mentions ./README.md survives untouched.
+ */
+export function normalizeReadme(text, skillName) {
+  const lines = String(text).split(/\r?\n/);
+  const out = [];
+  let inFence = false;
+  for (const line of lines) {
+    if (FENCE.test(line)) {
+      inFence = !inFence;
+      out.push(line);
+      continue;
+    }
+    if (inFence) {
+      out.push(line);
+      continue;
+    }
+    let next = line;
+    // Drop a language-switch line: the whole line is the switch link itself.
+    const switchLine = /^\s*\[(?:中文|English)\]\(\.\/README(?:\.zh-CN)?\.md\)\s*$/.exec(next);
+    if (switchLine) {
+      out.push("");
+      continue;
+    }
+    next = next.replace(/<img\s+([^>]*)>/gi, (_match, attrs) => {
+      const src = attrValue(attrs, "src");
+      const alt = attrValue(attrs, "alt");
+      // A repository-relative src is re-rooted; anything absolute stays.
+      const target = /^\.{1,2}\//.test(src)
+        ? `${RAW_BASE}/${resolveReadmePath(skillName, src)}`
+        : src;
+      // width/height are dropped on purpose: the site's own CSS sizes images.
+      return `![${alt}](${target})`;
+    });
+    next = next.replace(/(!?\[[^\]]+\])\((\.{1,2}\/[^()\s]+)\)/g, (_match, label, target) =>
+      label.startsWith("!")
+        ? rewriteImage(label, target, skillName)
+        : rewriteLink(label, target, skillName),
+    );
+    out.push(next);
+  }
+  // A dropped switch line can leave a double blank behind; fold it away.
+  return out.join("\n").replace(/\n{3,}/g, "\n\n");
+}
+
+/**
+ * Publish both READMEs of every skill into public/data/skills/<name>/.
+ * The subtree is rebuilt from scratch each run, so a removed language file
+ * never lingers in the export.
+ */
+function publishReadmes(names) {
+  rmSync(path.join(dataDir, "skills"), { recursive: true, force: true });
+  let count = 0;
+  for (const name of names) {
+    for (const { source, target } of Object.values(READMES)) {
+      const file = path.join(skillsRoot, name, source);
+      if (!existsSync(file)) continue;
+      const outDir = path.join(dataDir, "skills", name);
+      mkdirSync(outDir, { recursive: true });
+      writeFileSync(
+        path.join(outDir, target),
+        `${normalizeReadme(readFileSync(file, "utf8"), name)}\n`,
+      );
+      count += 1;
+    }
+  }
+  return count;
+}
+
 async function main() {
   const now = new Date();
   const names = readdirSync(skillsRoot, { withFileTypes: true })
@@ -271,10 +414,14 @@ async function main() {
     agents: buildAgents(skills),
     skills,
   };
-  mkdirSync(path.dirname(outFile), { recursive: true });
+  mkdirSync(dataDir, { recursive: true });
   writeFileSync(outFile, `${JSON.stringify(payload, null, 2)}\n`);
+  const readmes = publishReadmes(names);
   console.log(
-    `synced ${skills.length} skills -> ${path.relative(repoRoot, outFile)} (${payload.generatedAt} UTC+8)`,
+    `synced ${skills.length} skills and ${readmes} readme copies -> ${path.relative(
+      repoRoot,
+      dataDir,
+    )} (${payload.generatedAt} UTC+8)`,
   );
 }
 

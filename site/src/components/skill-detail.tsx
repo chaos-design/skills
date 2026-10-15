@@ -6,6 +6,7 @@ import { ActivitySparkline } from "@/components/activity-sparkline";
 import { Installation } from "@/components/installation";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { SkillReadme } from "@/components/skill-readme";
 import { useSkills } from "@/components/skills-provider";
 import { Badge } from "@/components/ui/badge";
 import { useI18n } from "@/lib/i18n";
@@ -115,6 +116,8 @@ export function SkillDetail({ skillName }: { skillName: string }) {
             </header>
 
             <Installation skillName={skill.name} />
+
+            <SkillReadme skillName={skill.name} />
 
             <section className="grid grid-cols-2 gap-4 border-t border-border py-6 sm:grid-cols-3">
               {stats.map((item) => (
