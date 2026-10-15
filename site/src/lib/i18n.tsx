@@ -28,7 +28,7 @@ const en = {
   "leaderboard.tabAll": "All Time ({count})",
   "leaderboard.tabTrending": "Trending (7d)",
   "leaderboard.tabHot": "Hot",
-  "leaderboard.empty": "No skills match your search.",
+  "leaderboard.empty": "No skills match your filters.",
   "table.rank": "#",
   "table.skill": "Skill",
   "table.activity": "8W Activity",

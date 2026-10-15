@@ -2,6 +2,10 @@
   "name": "technology-selection",
   "version": "0.1.0",
   "category": "Engineering · Project request → stack & architecture decision → execution plan",
+  "tags": [
+    "tech",
+    "decision"
+  ],
   "description": "Selects the technology stack, tools, and architecture for a project. Inspects the file system to decide between initializing a pnpm monorepo and adding artifacts to an existing one, applies the default React + TypeScript + Vite CSR frontend stack with Tailwind CSS and shadcn/ui, a Node.js + TypeScript backend, pnpm and Biome tooling, and records a mandatory execution plan before any scaffolding runs.",
   "homepage": "https://github.com/chaos-design/skills/tree/main/skills/technology-selection",
   "compat": [

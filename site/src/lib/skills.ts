@@ -8,6 +8,8 @@ export type Skill = {
   name: string;
   version: string;
   category: string;
+  /** Short, language-neutral labels the leaderboard filters and the detail page badges with. */
+  tags: string[];
   description: string;
   repo: string;
   homepage: string;
@@ -91,10 +93,37 @@ export function filterSkills(list: Skill[], query: string): Skill[] {
   const needle = query.trim().toLowerCase();
   if (!needle) return list;
   return list.filter((skill) =>
-    [skill.name, skill.repo, skill.category, skill.description].some((field) =>
+    [skill.name, skill.repo, skill.category, ...skill.tags, skill.description].some((field) =>
       field.toLowerCase().includes(needle),
     ),
   );
+}
+
+/**
+ * Narrow a list by the selected tag chips. A skill matches only when it carries
+ * every selected tag (AND) — picking "slides" then "presentation" leaves the
+ * slide decks. No selection returns the list unchanged.
+ */
+export function filterByTags(list: Skill[], selected: readonly string[]): Skill[] {
+  if (selected.length === 0) return list;
+  return list.filter((skill) => selected.every((tag) => skill.tags.includes(tag)));
+}
+
+/**
+ * Every distinct tag across the dataset with its member count, most common
+ * first (ties alphabetical). Feeds the leaderboard's filter chips; a count of
+ * one still shows, so single-skill labels stay filterable.
+ */
+export function tagCounts(list: Skill[]): { tag: string; count: number }[] {
+  const counts = new Map<string, number>();
+  for (const skill of list) {
+    for (const tag of skill.tags) {
+      counts.set(tag, (counts.get(tag) ?? 0) + 1);
+    }
+  }
+  return [...counts.entries()]
+    .map(([tag, count]) => ({ tag, count }))
+    .sort((a, b) => b.count - a.count || a.tag.localeCompare(b.tag));
 }
 
 /** Sort by the metric each leaderboard tab stands for. */

@@ -224,6 +224,16 @@ function buildSkill(name, anchor, history) {
     version: manifest.version ?? frontmatter.version ?? "0.0.0",
     category: categoryGroup(manifest.category ?? frontmatter.category),
     description: manifest.description ?? frontmatter.description ?? "",
+    // Short, language-neutral labels the site filters and badges with. Kept
+    // as an ordered, de-duplicated string list so the leaderboard's chip row
+    // stays stable across syncs.
+    tags: [
+      ...new Set(
+        (Array.isArray(manifest.tags) ? manifest.tags : []).filter(
+          (t) => typeof t === "string" && t.trim() !== "",
+        ),
+      ),
+    ],
     repo: REPO,
     homepage: manifest.homepage ?? `${REPO_URL}/tree/main/skills/${name}`,
     // Canonicalised and de-duplicated: Claude and Claude Code are one entry.

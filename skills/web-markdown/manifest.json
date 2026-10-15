@@ -2,6 +2,10 @@
   "name": "web-markdown",
   "version": "0.1.0",
   "category": "Extraction · URLs, web platforms, and documents → faithful Markdown",
+  "tags": [
+    "markdown",
+    "extraction"
+  ],
   "description": "Convert generic URLs, platform-specific social/content URLs, PDFs, DOCX files, Markdown files, plain text, screenshots, and pasted notes into faithful Markdown using platform fetcher bridging, Microsoft MarkItDown, Camofox fallback, and validation for source order, media, links, and code.",
   "homepage": "https://github.com/chaos-design/skills/tree/main/skills/web-markdown",
   "compat": [

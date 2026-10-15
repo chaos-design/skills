@@ -112,9 +112,22 @@ export function SkillDetail({ skillName }: { skillName: string }) {
               </div>
             </div>
 
-            <p className="pb-6 pt-5 max-w-2xl text-[15px] leading-relaxed text-ds-gray-600">
+            <p className="pt-5 max-w-2xl text-[15px] leading-relaxed text-ds-gray-600">
               {skill.description}
             </p>
+
+            {skill.tags.length > 0 && (
+              <div className="mb-6 mt-4 flex flex-wrap gap-1.5">
+                {skill.tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="rounded-full border border-border bg-ds-gray-100/60 px-2 py-0.5 font-mono text-xs text-ds-gray-600"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            )}
 
             <Installation skillName={skill.name} />
 

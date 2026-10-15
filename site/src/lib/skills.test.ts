@@ -3,6 +3,7 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   agentPrompt,
+  filterByTags,
   filterSkills,
   formatCompact,
   formatDate,
@@ -14,6 +15,7 @@ import {
   repoMeta,
   type SkillsData,
   sortSkills,
+  tagCounts,
 } from "./skills";
 
 /**
@@ -42,6 +44,11 @@ describe("generated skill data", () => {
       );
       expect(skill.category.length).toBeGreaterThan(0);
       expect(skill.version).toMatch(/^\d+\.\d+\.\d+$/);
+      expect(Array.isArray(skill.tags)).toBe(true);
+      expect(skill.tags.length).toBeGreaterThan(0);
+      for (const tag of skill.tags) {
+        expect(tag).toMatch(/^[a-z0-9-]+$/);
+      }
     }
   });
 
@@ -95,6 +102,34 @@ describe("filterSkills", () => {
 
   it("returns nothing for a query that matches no skill", () => {
     expect(filterSkills(skills, "kubernetes-helm-charts")).toEqual([]);
+  });
+});
+
+describe("filterByTags", () => {
+  it("returns the full list when nothing is selected", () => {
+    expect(filterByTags(skills, [])).toHaveLength(skills.length);
+  });
+
+  it("narrows to skills carrying every selected tag (AND)", () => {
+    const hits = filterByTags(skills, ["slides", "presentation"]);
+    expect(hits.map((skill) => skill.name).sort()).toEqual(["content-slides", "frontend-slides"]);
+  });
+
+  it("returns nothing when the tag combination matches no skill", () => {
+    // No skill is both "slides" and "twitter".
+    expect(filterByTags(skills, ["slides", "twitter"])).toEqual([]);
+  });
+});
+
+describe("tagCounts", () => {
+  it("counts every distinct tag with its member count, most common first", () => {
+    const counts = tagCounts(skills);
+    for (const { tag, count } of counts) {
+      const expected = skills.filter((skill) => skill.tags.includes(tag)).length;
+      expect(count).toBe(expected);
+    }
+    const values = counts.map((item) => item.count);
+    expect(values).toEqual([...values].sort((a, b) => b - a));
   });
 });
 
