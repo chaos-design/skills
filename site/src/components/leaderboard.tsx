@@ -11,7 +11,7 @@ import { filterByTags, filterSkills, type SortKey, sortSkills, tagCounts } from 
 
 // Only a 2px bottom underline marks the active tab — no side or top border.
 const TAB_TRIGGER_CLASS =
-  "rounded-none border-x-0 border-t-0 border-b-2 border-transparent bg-transparent px-0 pb-1.5 font-mono text-sm text-ds-gray-600 shadow-none transition-colors hover:text-foreground data-[state=active]:border-b-foreground data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none";
+  "rounded-none border-x-0 border-t-0 border-b-2 border-transparent bg-transparent px-0 pb-1.5 font-mono text-sm text-ds-gray-600 shadow-none transition-colors outline-none hover:text-foreground focus-visible:border-b-transparent focus-visible:ring-0 focus-visible:outline-0 focus-visible:shadow-none data-[state=active]:border-b-foreground data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none";
 
 export function Leaderboard() {
   const { t } = useI18n();
