@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-27 18:17:47",
+  "generatedAt": "2026-10-27 18:51:48",
   "repo": "chaos-design/skills",
   "repoUrl": "https://github.com/chaos-design/skills",
   "installPrefix": "npx skills add https://github.com/chaos-design/skills --skill",
@@ -110,7 +110,12 @@
       "version": "0.1.0",
       "category": "Documentation",
       "description": "Generate a responsive, multi-page, self-contained static documentation site from Markdown content and a small JSON config. Builds the doc structure automatically, wires a configurable navigation menu, integrates existing Markdown and data formats, and adds a data list page type with client-side sorting (commit count, last-updated), text filters and status badges. Layout follows the ragx site design (860px mobile breakpoint, full-screen nav panel, fluid content, lightbox, theme and EN/中 toggle).",
-      "tags": [],
+      "tags": [
+        "docs",
+        "static-site",
+        "markdown",
+        "responsive"
+      ],
       "repo": "chaos-design/skills",
       "homepage": "https://github.com/chaos-design/skills/tree/main/skills/docs-site",
       "compat": [

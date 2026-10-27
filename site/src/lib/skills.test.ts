@@ -59,9 +59,13 @@ describe("generated skill data", () => {
       expect(skill.stats.commits7d).toBe(skill.stats.weekly[7]);
       expect(skill.stats.commits7d).toBeLessThanOrEqual(skill.stats.commits8w);
       expect(skill.stats.commits8w).toBeLessThanOrEqual(skill.stats.totalCommits);
-      expect(skill.stats.totalCommits).toBeGreaterThan(0);
-      expect(skill.stats.lastCommit).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-      expect(skill.stats.contributors).toBeGreaterThan(0);
+      // A skill introduced on its own PR has no commit history on the default
+      // branch yet, so it legitimately ships zero commits. The date and
+      // contributor invariants only apply once it has real history.
+      if (skill.stats.totalCommits > 0) {
+        expect(skill.stats.lastCommit).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+        expect(skill.stats.contributors).toBeGreaterThan(0);
+      }
     }
   });
 
@@ -134,10 +138,33 @@ describe("tagCounts", () => {
 });
 
 describe("sortSkills", () => {
-  it("sorts all-time by total commits, descending", () => {
+  it("sorts the default (all-time) view by most recently updated, descending", () => {
     const rows = sortSkills(skills, "all");
+    const dates = rows.map((skill) => skill.stats.lastCommit ?? "");
+    expect(dates).toEqual([...dates].sort().reverse());
+  });
+
+  it("breaks all-time ties by total commit count", () => {
+    const rows = sortSkills(skills, "all");
+    for (let i = 0; i < rows.length - 1; i += 1) {
+      const a = rows[i];
+      const b = rows[i + 1];
+      if ((a.stats.lastCommit ?? "") === (b.stats.lastCommit ?? "")) {
+        expect(a.stats.totalCommits).toBeGreaterThanOrEqual(b.stats.totalCommits);
+      }
+    }
+  });
+
+  it("sorts the commits tab by total commit count, descending", () => {
+    const rows = sortSkills(skills, "commits");
     const totals = rows.map((skill) => skill.stats.totalCommits);
     expect(totals).toEqual([...totals].sort((a, b) => b - a));
+  });
+
+  it("sorts the updated tab by most recently updated, descending", () => {
+    const rows = sortSkills(skills, "updated");
+    const dates = rows.map((skill) => skill.stats.lastCommit ?? "");
+    expect(dates).toEqual([...dates].sort().reverse());
   });
 
   it("sorts trending by commits in the last 7 days, descending", () => {
@@ -146,15 +173,9 @@ describe("sortSkills", () => {
     expect(weekly).toEqual([...weekly].sort((a, b) => b - a));
   });
 
-  it("sorts hot by most recently updated", () => {
-    const rows = sortSkills(skills, "hot");
-    const dates = rows.map((skill) => skill.stats.lastCommit ?? "");
-    expect(dates).toEqual([...dates].sort().reverse());
-  });
-
   it("does not mutate the input list", () => {
     const before = skills.map((skill) => skill.name);
-    sortSkills(skills, "hot");
+    sortSkills(skills, "updated");
     expect(skills.map((skill) => skill.name)).toEqual(before);
   });
 });

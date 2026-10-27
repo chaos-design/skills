@@ -159,10 +159,12 @@ export function sortSkills(list: Skill[], key: SortKey): Skill[] {
           a.name.localeCompare(b.name),
       );
     default:
+      // "All Time" — most recently updated on top. Ties fall back to total
+      // commit count, then name, so the order is stable across renders.
       return rows.sort(
         (a, b) =>
-          b.stats.totalCommits - a.stats.totalCommits ||
           dateValue(b.stats.lastCommit) - dateValue(a.stats.lastCommit) ||
+          b.stats.totalCommits - a.stats.totalCommits ||
           a.name.localeCompare(b.name),
       );
   }
