@@ -1,0 +1,12 @@
+[
+  {"number": 10, "title": "feat(site): live skill data, shadcn toasts and detail-page overhaul", "author": "Rain120", "commits": 2, "status": "merged", "last_updated": "2026-10-14 18:13:07", "url": "https://github.com/chaos-design/skills/pull/10"},
+  {"number": 9, "title": "fix(vercel): framework set to null for static export of Next.js", "author": "Rain120", "commits": 1, "status": "merged", "last_updated": "2026-10-14 15:07:34", "url": "https://github.com/chaos-design/skills/pull/9"},
+  {"number": 8, "title": "feat(site): standalone skills directory site with mobile navigation panel", "author": "Rain120", "commits": 5, "status": "merged", "last_updated": "2026-10-14 14:17:19", "url": "https://github.com/chaos-design/ragx/pull/8"},
+  {"number": 7, "title": "feat(site): add standalone skills directory site", "author": "Rain120", "commits": 1, "status": "merged", "last_updated": "2026-10-13 11:02:55", "url": "https://github.com/chaos-design/skills/pull/7"},
+  {"number": 6, "title": "feat(image-generation): new zero-secret image skill with capability gate", "author": "Rain120", "commits": 4, "status": "merged", "last_updated": "2026-10-12 13:54:29", "url": "https://github.com/chaos-design/skills/pull/6"},
+  {"number": 5, "title": "feat(task-inject): dynamic instruction injection for running tasks", "author": "Rain120", "commits": 3, "status": "merged", "last_updated": "2026-10-10 14:24:22", "url": "https://github.com/chaos-design/skills/pull/5"},
+  {"number": 4, "title": "feat(plan-flow): plan creation, progress tracking and archiving", "author": "Rain120", "commits": 3, "status": "merged", "last_updated": "2026-10-07 16:56:48", "url": "https://github.com/chaos-design/skills/pull/4"},
+  {"number": 3, "title": "preserve: html-brief merge of 58d2ccf", "author": "Rain120", "commits": 1, "status": "closed", "last_updated": "2026-10-05 19:32:04", "url": "https://github.com/chaos-design/skills/pull/3"},
+  {"number": 2, "title": "feat(live-panel): live architecture panel skill", "author": "Rain120", "commits": 1, "status": "merged", "last_updated": "2026-10-05 19:32:49", "url": "https://github.com/chaos-design/skills/pull/2"},
+  {"number": 1, "title": "fix(html-brief): source escaping hardening", "author": "Rain120", "commits": 2, "status": "merged", "last_updated": "2026-10-05 15:13:52", "url": "https://github.com/chaos-design/skills/pull/1"}
+]
