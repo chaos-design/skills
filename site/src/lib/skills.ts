@@ -26,7 +26,7 @@ export type Skill = {
   };
 };
 
-export type SortKey = "all" | "trending" | "hot";
+export type SortKey = "all" | "trending" | "hot" | "commits" | "updated";
 
 /** Languages a published README exists in; must stay in lockstep with the
  *  READMES map in scripts/sync-skills.mjs. */
@@ -138,6 +138,20 @@ export function sortSkills(list: Skill[], key: SortKey): Skill[] {
           a.name.localeCompare(b.name),
       );
     case "hot":
+      return rows.sort(
+        (a, b) =>
+          dateValue(b.stats.lastCommit) - dateValue(a.stats.lastCommit) ||
+          b.stats.totalCommits - a.stats.totalCommits ||
+          a.name.localeCompare(b.name),
+      );
+    case "commits":
+      return rows.sort(
+        (a, b) =>
+          b.stats.totalCommits - a.stats.totalCommits ||
+          dateValue(b.stats.lastCommit) - dateValue(a.stats.lastCommit) ||
+          a.name.localeCompare(b.name),
+      );
+    case "updated":
       return rows.sort(
         (a, b) =>
           dateValue(b.stats.lastCommit) - dateValue(a.stats.lastCommit) ||

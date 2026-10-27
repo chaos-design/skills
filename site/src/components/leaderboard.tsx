@@ -102,6 +102,12 @@ export function Leaderboard() {
               <TabsTrigger value="hot" className={TAB_TRIGGER_CLASS}>
                 {t("leaderboard.tabHot")}
               </TabsTrigger>
+              <TabsTrigger value="commits" className={TAB_TRIGGER_CLASS}>
+                {t("leaderboard.tabCommits")}
+              </TabsTrigger>
+              <TabsTrigger value="updated" className={TAB_TRIGGER_CLASS}>
+                {t("leaderboard.tabUpdated")}
+              </TabsTrigger>
             </TabsList>
           </Tabs>
 
