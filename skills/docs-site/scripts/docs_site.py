@@ -3,7 +3,7 @@
 
 Zero-dependency. The agent supplies content (Markdown) plus a small JSON
 config; this script computes the HTML, navigation, themes, i18n and a
-responsive layout modeled on the ragx site work (PR #8):
+responsive, dependency-free layout:
 
 - 860px mobile breakpoint with a full-screen navigation panel.
 - Fluid content width that follows the viewport.

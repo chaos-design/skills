@@ -1,8 +1,9 @@
-# Design reference (based on ragx PR #8)
+# Design reference
 
-The generated layout is a faithful, dependency-free distillation of the ragx
-site work in `chaos-design/ragx` PR #8 ("mobile header navigation,
-full-screen navigation panel, fluid content width, and diagram zoom lightbox").
+The generated layout is a dependency-free, responsive documentation design:
+an 860px mobile breakpoint with a full-screen navigation panel, fluid content
+width, a diagram zoom lightbox, a light/dark theme switch, and an EN/中
+language toggle.
 
 ## Breakpoints
 

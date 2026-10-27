@@ -4,10 +4,10 @@ Generates a responsive, multi-page, self-contained static documentation site
 from Markdown content plus a small JSON config. No build step, no external
 runtime fetches — every page is an offline HTML file.
 
-The layout is a dependency-free distillation of the ragx site work
-(`chaos-design/ragx` PR #8): an 860px mobile breakpoint, a mobile top bar with
-a full-screen navigation panel, fluid content width, a diagram lightbox that
-zooms to the viewport, a light/dark theme switch, and an EN/中 toggle.
+The layout is a responsive, dependency-free documentation design: an 860px
+mobile breakpoint, a mobile top bar with a full-screen navigation panel,
+fluid content width, a diagram lightbox that zooms to the viewport, a
+light/dark theme switch, and an EN/中 toggle.
 
 ## Features
 
@@ -80,7 +80,7 @@ fixtures. Columns marked in `sortable` are click-to-reorder; the
   {"number": 8, "title": "feat(site): mobile navigation panel",
    "author": "Rain120", "commits": 5, "status": "merged",
    "last_updated": "2026-10-14 14:17:19",
-   "url": "https://github.com/chaos-design/ragx/pull/8"}
+   "url": "https://github.com/chaos-design/skills/pull/8"}
 ]
 ```
 

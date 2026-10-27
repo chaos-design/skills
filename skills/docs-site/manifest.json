@@ -8,7 +8,7 @@
     "markdown",
     "responsive"
   ],
-  "description": "Generate a responsive, multi-page, self-contained static documentation site from Markdown content and a small JSON config. Builds the doc structure automatically, wires a configurable navigation menu, integrates existing Markdown and data formats, and adds a data list page type with client-side sorting (commit count, last-updated), text filters and status badges. Layout follows the ragx site design (860px mobile breakpoint, full-screen nav panel, fluid content, lightbox, theme and EN/中 toggle).",
+  "description": "Generate a responsive, multi-page, self-contained static documentation site from Markdown content and a small JSON config. Builds the doc structure automatically, wires a configurable navigation menu, integrates existing Markdown and data formats, and adds a data list page type with client-side sorting (commit count, last-updated), text filters and status badges. Responsive layout: 860px mobile breakpoint, full-screen nav panel, fluid content width, diagram lightbox, light/dark theme and EN/中 toggle.",
   "homepage": "https://github.com/chaos-design/skills/tree/main/skills/docs-site",
   "compat": [
     "claude-code",

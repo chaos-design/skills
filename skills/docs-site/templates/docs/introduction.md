@@ -17,7 +17,7 @@ step, no external runtime fetches.
 
 ## Design language
 
-The layout follows the ragx site work (PR #8): an 860px mobile breakpoint
+The layout is a responsive, dependency-free documentation design: an 860px mobile breakpoint
 where the sidebar becomes a fixed full-screen navigation panel, fluid content
 width that tracks the viewport, and a diagram lightbox that zooms to fit the
 visible area.

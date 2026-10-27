@@ -19,8 +19,8 @@ multi-page, self-contained static documentation site. The output is a set of
 offline HTML files that open as-is — no build step, no external runtime
 fetches.
 
-The layout follows the ragx site work (PR #8): an 860px mobile breakpoint,
-a mobile top bar with a full-screen navigation panel, fluid content width,
+The layout is a responsive documentation design: an 860px mobile breakpoint
+with a mobile top bar and full-screen navigation panel, fluid content width,
 a diagram lightbox that zooms to the viewport, a theme switch, and an EN/中
 language toggle.
 

@@ -4,7 +4,7 @@
 
 将 Markdown 内容与一份小型 JSON 配置，生成为**响应式、多页面、自包含**的静态文档站。无构建步骤、无外部运行时请求——每个页面都是一个可离线打开的 HTML 文件。
 
-布局是对 ragx 站点工作（`chaos-design/ragx` PR #8）的零依赖蒸馏：860px 移动端断点、移动端顶栏 + 全屏导航面板、随视口自适应的内容宽度、可放大到视口的图表弹层、明暗主题切换、以及 中/EN 切换。
+布局是一套零依赖的响应式文档设计：860px 移动端断点、移动端顶栏 + 全屏导航面板、随视口自适应的内容宽度、可放大到视口的图表弹层、明暗主题切换、以及 中/EN 切换。
 
 ## 特性
 
@@ -66,7 +66,7 @@ python3 skills/docs-site/scripts/docs_site.py check --out ./out
   {"number": 8, "title": "feat(site): mobile navigation panel",
    "author": "Rain120", "commits": 5, "status": "merged",
    "last_updated": "2026-10-14 14:17:19",
-   "url": "https://github.com/chaos-design/ragx/pull/8"}
+   "url": "https://github.com/chaos-design/skills/pull/8"}
 ]
 ```
 
