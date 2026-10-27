@@ -54,10 +54,7 @@ export function SkillRow({ skill, rank }: { skill: Skill; rank: number }) {
       <div className="flex min-w-0 flex-col gap-1 lg:col-span-10 lg:flex-row lg:items-center lg:gap-2">
         <h3 className="relative z-10 flex min-w-0 items-center gap-1.5 font-semibold text-foreground">
           {/* The one escape hatch from "click anywhere copies". */}
-          <Link
-            href={`/${skill.name}/`}
-            className="truncate whitespace-nowrap underline-offset-4 hover:underline"
-          >
+          <Link href={`/${skill.name}/`} className="underline-offset-4 hover:underline break-words">
             {skill.name}
           </Link>
           <ChevronRight

@@ -138,7 +138,7 @@ export function Leaderboard() {
           )}
         </div>
 
-        <LeaderboardTable rows={rows} />
+        <LeaderboardTable rows={rows} generatedAt={data.generatedAt} />
       </div>
     </section>
   );

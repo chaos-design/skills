@@ -3,10 +3,13 @@
 import { ArrowDown, ArrowUp, SearchX } from "lucide-react";
 import { useMemo, useState } from "react";
 import { SkillRow } from "@/components/skill-row";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useI18n } from "@/lib/i18n";
-import type { Skill } from "@/lib/skills";
+import { formatDate, type Skill } from "@/lib/skills";
 
 type Column = "commits" | "updated";
+
+const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
 const dateValue = (iso: string | null): number => (iso ? Date.parse(`${iso}T00:00:00Z`) : 0);
 
@@ -31,7 +34,7 @@ function sortByColumn(rows: Skill[], column: Column, dir: "asc" | "desc"): Skill
   return sorted;
 }
 
-export function LeaderboardTable({ rows }: { rows: Skill[] }) {
+export function LeaderboardTable({ rows, generatedAt }: { rows: Skill[]; generatedAt?: string }) {
   const { t } = useI18n();
   const [colSort, setColSort] = useState<{ column: Column; dir: "asc" | "desc" } | null>(null);
 
@@ -39,6 +42,16 @@ export function LeaderboardTable({ rows }: { rows: Skill[] }) {
     () => (colSort ? sortByColumn(rows, colSort.column, colSort.dir) : rows),
     [rows, colSort],
   );
+
+  // 8-week activity window, ending at the data sync time the table was built
+  // from. Shown on hover of the "8W Activity" header so the range is explicit.
+  const range = useMemo(() => {
+    if (!generatedAt) return null;
+    const end = Date.parse(`${generatedAt.slice(0, 10)}T00:00:00Z`);
+    if (Number.isNaN(end)) return null;
+    const start = new Date(end - 8 * WEEK_MS).toISOString().slice(0, 10);
+    return { from: formatDate(start), to: formatDate(generatedAt.slice(0, 10)) };
+  }, [generatedAt]);
 
   const toggleColumn = (column: Column) =>
     setColSort((prev) =>
@@ -55,16 +68,14 @@ export function LeaderboardTable({ rows }: { rows: Skill[] }) {
         type="button"
         onClick={() => toggleColumn(column)}
         aria-label={`${label} ${active ? (colSort.dir === "desc" ? "descending" : "ascending") : "sort"}`}
-        className="grid w-full grid-cols-2 items-center gap-1 font-mono hover:text-foreground"
+        className="inline-flex items-center gap-1 whitespace-nowrap font-mono hover:text-foreground"
       >
         <span>{label}</span>
-        <span className="flex justify-end">
-          {Indicator ? (
-            <Indicator className="h-3 w-3" />
-          ) : (
-            <span className="text-ds-gray-400">⇅</span>
-          )}
-        </span>
+        {Indicator ? (
+          <Indicator className="h-3 w-3" />
+        ) : (
+          <span className="text-ds-gray-400">⇅</span>
+        )}
       </button>
     );
   };
@@ -72,9 +83,24 @@ export function LeaderboardTable({ rows }: { rows: Skill[] }) {
   return (
     <div className="relative min-h-[400px]">
       <div className="hidden gap-4 border-b border-border py-3 text-sm font-medium uppercase text-ds-gray-600 lg:grid lg:grid-cols-16">
-        <div className="col-span-1 font-mono">{t("table.rank")}</div>
-        <div className="col-span-10 font-mono">{t("table.skill")}</div>
-        <div className="col-span-2 text-right font-mono">{t("table.activity")}</div>
+        <div className="col-span-1 whitespace-nowrap font-mono">{t("table.rank")}</div>
+        <div className="col-span-10 whitespace-nowrap font-mono">{t("table.skill")}</div>
+        <div className="col-span-2 text-right">
+          {range ? (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="block w-full cursor-help whitespace-nowrap font-mono">
+                  {t("table.activity")}
+                </span>
+              </TooltipTrigger>
+              <TooltipContent className="max-w-60">
+                {t("table.activityRange", { from: range.from, to: range.to })}
+              </TooltipContent>
+            </Tooltip>
+          ) : (
+            <span className="block w-full whitespace-nowrap font-mono">{t("table.activity")}</span>
+          )}
+        </div>
         <div className="col-span-1 text-right">{header("commits", t("table.commits"))}</div>
         <div className="col-span-2 text-right">{header("updated", t("table.updated"))}</div>
       </div>
