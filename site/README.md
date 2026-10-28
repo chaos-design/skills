@@ -40,6 +40,10 @@ npm run build        # static export into out/
 
 - skill metadata comes from `skills/<name>/manifest.json`, falling back to
   `SKILL.md` frontmatter;
+- the installation guide comes from the same manifest's `install` block
+  (`dependsOn`, `optionalDeps`, `runtime`), which the site's detail page renders
+  automatically — required/optional in-repo co-install dependencies plus runtime
+  and setup notes;
 - activity metrics (total commits, 8 weekly buckets, last update, contributors)
   come from the **GitHub REST API** — `GET /repos/chaos-design/skills/commits?path=skills/<name>`,
   paginated — so the numbers do not depend on how deep the local checkout is;
@@ -150,7 +154,7 @@ site/
 |   |   |-- command-line.tsx   # wrapping token layout for a command
 |   |   |-- hero.tsx           # Try it now / Available for these agents split
 |   |   |-- install-command.tsx
-|   |   |-- installation.tsx   # Installation block: Command / Prompt switch
+|   |   |-- installation.tsx   # Installation block: Command / Prompt switch + data-driven install guide
 |   |   |-- leaderboard.tsx    # search + tabs (client)
 |   |   |-- leaderboard-table.tsx
 |   |   |-- skill-detail.tsx   # detail page body

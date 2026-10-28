@@ -8,6 +8,13 @@
   ],
   "description": "Generates images from text descriptions with zero secrets: no API key, no .env, no base URL — every image is produced through the host environment's built-in image generation capability. Before the skill becomes active in a session it runs a mandatory capability gate: discover an image generation tool among the session's tools, then run one minimal probe generation and verify a real image comes back. Both steps must pass, or the skill refuses to operate and reports honestly instead of falling back to placeholders or key-based workarounds.",
   "homepage": "https://github.com/chaos-design/skills/tree/main/skills/image-generation",
+  "install": {
+    "dependsOn": [],
+    "optionalDeps": [],
+    "runtime": [
+      "Host environment must expose a built-in image generation tool (capability gate; no secrets, no API key)"
+    ]
+  },
   "compat": [
     "claude-code",
     "claude-ai",

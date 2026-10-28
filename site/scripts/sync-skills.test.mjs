@@ -4,6 +4,7 @@ import {
   categoryGroup,
   commitDate,
   formatTimestamp,
+  installGuide,
   isoDate,
   normalizeReadme,
   parseFrontmatter,
@@ -218,5 +219,42 @@ describe("normalizeReadme", () => {
   it("keeps absolute URLs as they are", () => {
     const out = normalizeReadme("[site](https://github.com/chaos-design/skills)", "s");
     expect(out).toBe("[site](https://github.com/chaos-design/skills)");
+  });
+});
+
+describe("installGuide", () => {
+  const known = ["web-markdown", "x-tweet-fetcher", "html-brief"];
+
+  it("keeps only in-repo dependency names and trims runtime lines", () => {
+    const guide = installGuide(
+      {
+        dependsOn: ["web-markdown", "some-external-skill"],
+        optionalDeps: ["x-tweet-fetcher"],
+        runtime: ["Python 3.9+", "  pip install 'markitdown[all]'  "],
+      },
+      known,
+    );
+    expect(guide.dependsOn).toEqual(["web-markdown"]);
+    expect(guide.optionalDeps).toEqual(["x-tweet-fetcher"]);
+    expect(guide.runtime).toEqual(["Python 3.9+", "pip install 'markitdown[all]'"]);
+  });
+
+  it("returns an empty, well-formed guide when the manifest has none", () => {
+    expect(installGuide({}, known)).toEqual({
+      dependsOn: [],
+      optionalDeps: [],
+      runtime: [],
+    });
+    // Old manifests without an install block never crash the sync.
+    expect(installGuide(undefined, known)).toEqual({
+      dependsOn: [],
+      optionalDeps: [],
+      runtime: [],
+    });
+  });
+
+  it("drops empty or non-string entries", () => {
+    const guide = installGuide({ dependsOn: ["", "  ", null, "html-brief"] }, known);
+    expect(guide.dependsOn).toEqual(["html-brief"]);
   });
 });

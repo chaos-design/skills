@@ -43,6 +43,7 @@ and license file so that agents can install and use it independently.
 | `live-panel` | Turns a system description into an always-running architecture panel, rendered to an H.264 mp4 or a live page. | [English](./skills/live-panel/README.md) / [中文](./skills/live-panel/README.zh-CN.md) |
 | `plan-flow` | Turns a task into a plan file under `plans/`, tracks progress, and archives it only when every task and Definition-of-Done item is checked. | [English](./skills/plan-flow/README.md) / [中文](./skills/plan-flow/README.zh-CN.md) |
 | `task-inject` | Injects modification feedback and adjustment instructions into a task the agent is already executing; the running agent drains them at fixed checkpoints, by severity (halt / redirect / revise / note), with an audit log. | [English](./skills/task-inject/README.md) / [中文](./skills/task-inject/README.zh-CN.md) |
+| `technology-selection` | Selects the technology stack, tools, and architecture for a project: inspects the file system, applies the default React + TypeScript + Vite (Tailwind/shadcn) frontend and Node.js + TypeScript backend with pnpm/Biome, and records a mandatory execution plan before any scaffolding. | [English](./skills/technology-selection/README.md) / [中文](./skills/technology-selection/README.zh-CN.md) |
 | `web-markdown` | Fetches and converts web content into stable Markdown for other skills. | [English](./skills/web-markdown/README.md) / [中文](./skills/web-markdown/README.zh-CN.md) |
 | `x-tweet-fetcher` | Extracts X/Twitter content for workflows that need social-source input. | [English](./skills/x-tweet-fetcher/README.md) / [中文](./skills/x-tweet-fetcher/README.zh-CN.md) |
 
@@ -78,6 +79,7 @@ npx skills add https://github.com/chaos-design/skills --skill html-brief
 npx skills add https://github.com/chaos-design/skills --skill live-panel
 npx skills add https://github.com/chaos-design/skills --skill plan-flow
 npx skills add https://github.com/chaos-design/skills --skill task-inject
+npx skills add https://github.com/chaos-design/skills --skill technology-selection
 npx skills add https://github.com/chaos-design/skills --skill web-markdown
 npx skills add https://github.com/chaos-design/skills --skill x-tweet-fetcher
 ```
@@ -116,6 +118,25 @@ own. It accepts Markdown from `web-markdown`, a local document, or pasted text:
 npx skills add https://github.com/chaos-design/skills --skill web-markdown
 npx skills add https://github.com/chaos-design/skills --skill html-brief
 ```
+
+### Single source of truth for install guidance
+
+The co-install dependencies and runtime requirements shown above are declared in
+each skill's `manifest.json` under an `install` block — for example, `web-markdown`
+is a required dependency of `bilingual-reader` and `content-slides`. That block is
+the single source of truth:
+
+- The site's detail page renders it automatically as an **Installation guide**
+  (required skills, optional skills, and runtime & setup notes), and the generated
+  dataset carries it.
+- Because the page is driven by the manifest rather than this README, adding or
+  changing a skill's dependencies only touches that skill's `manifest.json`. This
+  README's install examples stay stable and do not need a new bullet every time a
+  skill's dependencies change.
+
+To update the on-page guide: edit the skill's `install` block in
+`skills/<skill>/manifest.json`, then run `npm run sync:skills` in `site/` so the
+next build reflects it.
 
 ## Usage Guide
 
