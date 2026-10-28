@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="en" data-theme="auto">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Quick start · Chaos Design Skills</title>
+<style>
+:root{
+  --bg:#f6f7f9;--card:#fff;--ink:#141414;--muted:#667085;--line:#d0d5dd;
+  --accent:#0b5fff;--accent-2:#7a3cff;--radius:12px;
+  --header-h:56px;--top-break:860px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;
+  -webkit-font-smoothing:antialiased}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+/* shell: two-col desktop */
+.shell{display:grid;grid-template-columns:280px minmax(0,1fr);min-height:100dvh}
+/* sidebar / header */
+.sidebar{position:sticky;top:0;height:100dvh;border-right:1px solid var(--line);
+  background:var(--card);display:flex;flex-direction:column;overflow:hidden}
+.brand{position:relative}
+.brand-row{display:flex;align-items:center;justify-content:space-between;gap:8px;
+  min-height:var(--header-h);padding:12px 16px;border-bottom:1px solid var(--line)}
+.brand a{font-weight:700;font-size:16px;color:var(--ink)}
+.brand a:hover{text-decoration:none;color:var(--accent)}
+.tagline{font-size:12px;color:var(--muted);padding:6px 16px}
+.sidebar-scroll{flex:1;overflow-y:auto;padding:12px}
+/* nav */
+.nav-group{margin-bottom:14px}
+.nav-group-label{font-size:11px;text-transform:uppercase;letter-spacing:.05em;
+  color:var(--muted);padding:4px 8px}
+.nav-link{display:block;padding:8px 10px;border-radius:8px;color:var(--ink);font-size:14px}
+.nav-link:hover{background:rgba(11,95,255,.08);text-decoration:none}
+.nav-link.is-active{background:rgba(11,95,255,.12);color:var(--accent);font-weight:600}
+/* top bar (mobile only, hidden desktop) */
+.topbar{display:none}
+.topbar-row{display:flex;align-items:center;justify-content:space-between;gap:8px;
+  min-height:var(--header-h);padding:0 12px;background:var(--card);
+  position:sticky;top:0;z-index:50;border-bottom:1px solid var(--line)}
+.icon-btn{width:36px;height:36px;border-radius:9px;border:1px solid var(--line);
+  background:var(--card);display:inline-flex;align-items:center;justify-content:center;
+  cursor:pointer;color:var(--ink);font-size:15px}
+.icon-btn:hover{border-color:var(--accent)}
+.icon-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.nav-toggle{position:relative}
+.nav-toggle span,.nav-toggle span::before,.nav-toggle span::after{content:'';
+  display:block;width:18px;height:2px;background:currentColor;border-radius:2px;position:relative}
+.nav-toggle span::before{position:absolute;top:-6px}
+.nav-toggle span::after{position:absolute;top:6px}
+/* content */
+.content{min-width:0;padding:0}
+.content-inner{padding:clamp(20px,3vw,56px)}
+.page-title{font-size:clamp(26px,4vw,40px);line-height:1.1;margin:4px 0 10px;font-weight:750}
+.page-desc{color:var(--muted);line-height:1.7;max-width:64ch}
+/* doc body */
+.doc-body{max-width:72ch;line-height:1.75;overflow-wrap:break-word;min-width:0}
+.doc-body :not(pre)>code{overflow-wrap:anywhere;background:rgba(100,116,139,.12);
+  padding:2px 5px;border-radius:5px;font-size:.9em}
+pre{background:#0f172a;color:#e2e8f0;padding:14px 16px;border-radius:10px;overflow-x:auto;font-size:13.5px}
+pre code{background:none;padding:0;color:inherit}
+.doc-h1,.doc-h2,.doc-h3{line-height:1.25;margin:24px 0 8px}
+.doc-h1{font-size:28px}.doc-h2{font-size:22px}.doc-h3{font-size:18px}
+.doc-list{line-height:1.7;padding-left:22px}
+blockquote{border-left:3px solid var(--accent);margin:12px 0;padding:6px 14px;
+  background:rgba(11,95,255,.06);border-radius:0 8px 8px 0}
+/* tables */
+.doc-table{border-collapse:collapse;width:100%;font-size:14px;margin:14px 0}
+.doc-table th,.doc-table td{border:1px solid var(--line);padding:9px 12px;text-align:left}
+.doc-table th{background:rgba(100,116,139,.08);font-weight:600}
+.list-scroll{overflow-x:auto}
+.list-table th{cursor:pointer;user-select:none;white-space:nowrap}
+.list-table th[data-sortable]::after{content:' ⇅';opacity:.4;font-size:11px}
+.list-table th.sort-asc::after{content:' ↑';opacity:1;color:var(--accent)}
+.list-table th.sort-desc::after{content:' ↓';opacity:1;color:var(--accent)}
+/* list toolbar */
+.list-toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:14px 0}
+.list-filter{font-size:13px;color:var(--muted);display:flex;gap:6px;align-items:center}
+.list-filter input,.list-filter select{padding:7px 10px;border:1px solid var(--line);
+  border-radius:8px;background:var(--card);font-size:13px}
+.list-filter input{width:220px}
+.list-count{font-size:13px;color:var(--muted);margin-left:auto}
+/* status badges */
+.status-badge{display:inline-block;padding:3px 9px;border-radius:999px;font-size:12px;
+  font-weight:600;line-height:1.4}
+.badge-open{background:rgba(22,163,74,.15);color:#15803d}
+.badge-merged{background:rgba(109,40,217,.15);color:#6d28d9}
+.badge-closed{background:rgba(100,116,139,.15);color:#475569}
+.badge-draft{background:rgba(217,119,6,.15);color:#b45309}
+.badge-in-review,.badge-changes-requested{background:rgba(234,179,8,.18);color:#854d0e}
+.badge-merged,.badge-approve,.badge-approved{background:rgba(109,40,217,.15);color:#6d28d9}
+.badge-default{background:rgba(100,116,139,.15);color:#475569}
+/* figure / lightbox */
+.doc-figure{margin:16px 0;background:var(--card);border:1px solid var(--line);
+  border-radius:12px;padding:14px;cursor:zoom-in;position:relative}
+.doc-figure .expand-mark{position:absolute;top:10px;right:10px;width:32px;height:32px;
+  display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--muted);
+  border:1px solid var(--line);border-radius:8px}
+.doc-figure figcaption{color:var(--muted);font-size:12px;margin-top:8px}
+.lightbox{display:none;position:fixed;inset:0;z-index:100;background:rgba(15,23,42,.86);
+  padding:clamp(12px,3vw,40px)}
+.lightbox.is-open{display:flex;flex-direction:column}
+.lightbox-head{display:flex;align-items:center;gap:10px;color:#e2e8f0;margin-bottom:10px}
+.lightbox-head .lb-title{flex:1;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lightbox-stage{flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;
+  transform-origin:center}
+.lightbox pre{max-width:100%;max-height:100%;margin:0;transform-origin:center}
+.lightbox .lb-btn{width:40px;height:40px;border-radius:9px;border:1px solid rgba(255,255,255,.25);
+  background:rgba(255,255,255,.08);color:#fff;cursor:pointer;font-size:15px}
+/* footer */
+.footer{border-top:1px solid var(--line);padding:18px 0;color:var(--muted);font-size:13px}
+/* theme controls */
+.theme-ctl,.lang-ctl{display:flex;gap:6px}
+.theme-ctl button,.lang-ctl button{width:36px;height:30px;border-radius:8px;border:1px solid var(--line);
+  background:var(--card);color:var(--ink);cursor:pointer;font-size:12px}
+/* ===== MOBILE (≤ breakpoint) ===== */
+@media (max-width:860px){
+  .shell{display:block}
+  .sidebar{position:fixed;inset:0;top:var(--header-h);width:100%;height:calc(100dvh - var(--header-h));
+    z-index:40;transform:translateY(-120%);transition:transform .18s ease;box-shadow:0 12px 30px rgba(0,0,0,.25)}
+  body.nav-open .sidebar{transform:translateY(0)}
+  .sidebar::after{content:'';position:fixed;inset:0;top:var(--header-h);background:rgba(15,23,42,.4);z-index:-1}
+  .topbar{display:block}
+  .topbar-row{position:sticky}
+  .nav-toggle.is-open span{background:transparent}
+  .nav-toggle.is-open span::before{top:0;transform:rotate(45deg)}
+  .nav-toggle.is-open span::after{top:0;transform:rotate(-45deg)}
+  .content-inner{padding:20px 16px calc(20px + env(safe-area-inset-bottom))}
+}
+/* dark theme */
+[data-theme='dark']{--bg:#0b0d12;--card:#14171f;--ink:#e6e8ee;--muted:#9aa3b2;--line:#2a2f3a}
+[data-theme='dark'] .list-table th{background:rgba(148,163,184,.1)}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-row">
+    <a class="brand-link" href="./index.html">Chaos Design Skills</a>
+    <div class="brand-meta">
+      <div class="lang-ctl"><button data-i18n="lang">EN / 中</button></div>
+      <button class="icon-btn nav-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Toggle navigation menu"><span></span></button>
+    </div>
+  </div>
+</header>
+<div class="shell">
+  <aside class="sidebar" id="site-nav">
+    <div class="brand"><div class="brand-row"><a href="./index.html">Chaos Design Skills</a>
+      <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">◐</button></div></div>
+    <div class="tagline">Production-oriented agent skills, docs and artifacts.</div>
+    <div class="sidebar-scroll"><a class="nav-link" href="#introduction">Introduction</a>
+<a class="nav-link" href="#pull-requests">Pull Requests</a>
+<div class="nav-group"><div class="nav-group-label">Guides</div>
+<a class="nav-link is-active" href="#quick-start">Quick start</a>
+</div></div>
+    <div class="footer">github.com/chaos-design/skills</div>
+  </aside>
+  <main class="content">
+    <div class="content-inner">
+      <h1 class="page-title">Quick start</h1>
+      <p class="page-desc">A multi-page, responsive documentation site generated by the docs-site skill.</p>
+      <h1 id='quick-start' class='doc-h1'>Quick start</h1>
+<p>Generate a site in one command:</p>
+<pre><code class='language-bash'>python3 skills/docs-site/scripts/docs_site.py generate \
+  --config site.json \
+  --content ./docs \
+  --out ./out</code></pre>
+<p>Then validate the output:</p>
+<pre><code class='language-bash'>python3 skills/docs-site/scripts/docs_site.py check --out ./out</code></pre>
+<h2 id='config-fields' class='doc-h2'>Config fields</h2>
+<table class='doc-table'>
+<thead><tr>
+<th>Field</th>
+<th>Purpose</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>---</td>
+<td>---</td>
+</tr>
+<tr>
+<td><code>title</code></td>
+<td>Site name shown in the brand and title bar.</td>
+</tr>
+<tr>
+<td><code>nav</code></td>
+<td>Navigation menu; each entry has <code>slug</code>, <code>label</code>, optional <code>label_zh</code>, and <code>group</code>/<code>items</code> for grouped sections.</td>
+</tr>
+<tr>
+<td><code>pages</code></td>
+<td>One entry per page. <code>type</code> is <code>doc</code> (markdown) or <code>list</code> (data table).</td>
+</tr>
+<tr>
+<td><code>pages[].type: list</code></td>
+<td>Reads JSON data, defines <code>columns</code>, <code>sortable</code>, <code>status_field</code> and <code>filters</code>.</td>
+</tr>
+</tbody>
+</table>
+<h2 id='list-pages' class='doc-h2'>List pages</h2>
+<p>A list page sorts by any column marked in <code>sortable</code> (typically commit count</p>
+<p>and last-updated time), supports a status filter and free-text search, and</p>
+<p>renders <code>status_field</code> values as color-coded badges.</p>
+      
+    </div>
+  </main>
+</div>
+<script>
+(function(){
+  var root=document.documentElement;
+  var mode=localStorage.getItem('docs-theme')||'auto';
+  function apply(m){root.setAttribute('data-theme',m);}
+  if(mode==='auto'){apply(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');}
+  else{apply(mode);}
+  var btns=document.querySelectorAll('[data-theme-toggle]');
+  btns.forEach(function(b){b.addEventListener('click',function(){
+    var cur=root.getAttribute('data-theme');
+    var next=(cur==='dark')?'light':'dark';
+    apply(next);localStorage.setItem('docs-theme',next);
+  });});
+})();
+</script>
+<script>
+(function(){
+  var toggle=document.querySelector('.nav-toggle');
+  var body=document.body;
+  if(!toggle)return;
+  function close(){body.classList.remove('nav-open');toggle.classList.remove('is-open');toggle.setAttribute('aria-expanded','false');}
+  function open(){body.classList.add('nav-open');toggle.classList.add('is-open');toggle.setAttribute('aria-expanded','true');}
+  toggle.addEventListener('click',function(){body.classList.contains('nav-open')?close():open();});
+  document.querySelectorAll('.nav-link').forEach(function(a){
+    a.addEventListener('click',function(){close();});
+  });
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&body.classList.contains('nav-open')){close();toggle.focus();}});
+  var mq=window.matchMedia('screen and (max-width:860px)');
+  function sync(){if(!mq.matches)close();}
+  if(mq.addEventListener)mq.addEventListener('change',sync);else mq.addListener(sync);
+})();
+</script>
+<script>
+(function(){
+  var lb=document.querySelector('.lightbox');
+  if(!lb)return;
+  var stage=lb.querySelector('.lightbox-stage');
+  var cur=1;
+  function fit(){var pre=stage.querySelector('pre');if(!pre)return;pre.style.transform='scale('+cur+')';}
+  function open(fig){lb.classList.add('is-open');cur=1;fit();document.body.style.overflow='hidden';}
+  function closeLb(){lb.classList.remove('is-open');document.body.style.overflow='';}
+  document.querySelectorAll('.doc-figure[data-lightbox]').forEach(function(f){
+    f.addEventListener('click',function(){open(f);});
+    f.addEventListener('keydown',function(e){if(e.key==='Enter')open(f);});
+  });
+  lb.querySelectorAll('[data-lb-close]').forEach(function(b){b.addEventListener('click',closeLb);});
+  lb.querySelectorAll('[data-lb-fit]').forEach(function(b){b.addEventListener('click',function(){cur=1;fit();});});
+  lb.querySelectorAll('[data-lb-plus]').forEach(function(b){b.addEventListener('click',function(){cur=Math.min(4,cur+0.25);fit();});});
+  lb.querySelectorAll('[data-lb-minus]').forEach(function(b){b.addEventListener('click',function(){cur=Math.max(0.4,cur-0.25);fit();});});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&lb.classList.contains('is-open'))closeLb();});
+  window.addEventListener('resize',fit);
+})();
+</script>
+
+</body>
+</html>

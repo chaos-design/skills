@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-15 17:24:17",
+  "generatedAt": "2026-10-27 21:58:08",
   "repo": "chaos-design/skills",
   "repoUrl": "https://github.com/chaos-design/skills",
   "installPrefix": "npx skills add https://github.com/chaos-design/skills --skill",
@@ -7,27 +7,27 @@
     {
       "id": "claude-ai",
       "name": "Claude",
-      "skills": 12
+      "skills": 13
     },
     {
       "id": "codex-cli",
       "name": "Codex CLI",
-      "skills": 12
+      "skills": 13
     },
     {
       "id": "cursor",
       "name": "Cursor",
-      "skills": 12
+      "skills": 13
     },
     {
       "id": "gemini-cli",
       "name": "Gemini CLI",
-      "skills": 12
+      "skills": 13
     },
     {
       "id": "opencode",
       "name": "OpenCode",
-      "skills": 12
+      "skills": 13
     }
   ],
   "skills": [
@@ -50,9 +50,9 @@
         "opencode"
       ],
       "stats": {
-        "totalCommits": 8,
-        "commits8w": 1,
-        "commits7d": 0,
+        "totalCommits": 9,
+        "commits8w": 2,
+        "commits7d": 1,
         "weekly": [
           0,
           0,
@@ -61,10 +61,10 @@
           0,
           0,
           1,
-          0
+          1
         ],
         "firstCommit": "2026-06-19",
-        "lastCommit": "2026-10-02",
+        "lastCommit": "2026-10-15",
         "contributors": 1
       }
     },
@@ -87,7 +87,46 @@
         "opencode"
       ],
       "stats": {
-        "totalCommits": 7,
+        "totalCommits": 8,
+        "commits8w": 1,
+        "commits7d": 1,
+        "weekly": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1
+        ],
+        "firstCommit": "2026-06-19",
+        "lastCommit": "2026-10-15",
+        "contributors": 1
+      }
+    },
+    {
+      "name": "docs-site",
+      "version": "0.1.0",
+      "category": "Documentation",
+      "description": "Generate a responsive, multi-page, self-contained static documentation site from Markdown content and a small JSON config. Builds the doc structure automatically, wires a configurable navigation menu, integrates existing Markdown and data formats, and adds a data list page type with client-side sorting (commit count, last-updated), text filters and status badges. Responsive layout: 860px mobile breakpoint, full-screen nav panel, fluid content width, diagram lightbox, light/dark theme and EN/中 toggle.",
+      "tags": [
+        "docs",
+        "static-site",
+        "markdown",
+        "responsive"
+      ],
+      "repo": "chaos-design/skills",
+      "homepage": "https://github.com/chaos-design/skills/tree/main/skills/docs-site",
+      "compat": [
+        "claude-ai",
+        "cursor",
+        "codex-cli",
+        "gemini-cli",
+        "opencode"
+      ],
+      "stats": {
+        "totalCommits": 0,
         "commits8w": 0,
         "commits7d": 0,
         "weekly": [
@@ -100,9 +139,9 @@
           0,
           0
         ],
-        "firstCommit": "2026-06-19",
-        "lastCommit": "2026-06-21",
-        "contributors": 1
+        "firstCommit": null,
+        "lastCommit": null,
+        "contributors": 0
       }
     },
     {
@@ -124,9 +163,9 @@
         "opencode"
       ],
       "stats": {
-        "totalCommits": 3,
-        "commits8w": 1,
-        "commits7d": 0,
+        "totalCommits": 4,
+        "commits8w": 2,
+        "commits7d": 1,
         "weekly": [
           0,
           0,
@@ -135,10 +174,10 @@
           0,
           0,
           1,
-          0
+          1
         ],
         "firstCommit": "2026-06-19",
-        "lastCommit": "2026-10-02",
+        "lastCommit": "2026-10-15",
         "contributors": 1
       }
     },
@@ -161,9 +200,9 @@
         "opencode"
       ],
       "stats": {
-        "totalCommits": 3,
-        "commits8w": 1,
-        "commits7d": 0,
+        "totalCommits": 4,
+        "commits8w": 2,
+        "commits7d": 1,
         "weekly": [
           0,
           0,
@@ -172,10 +211,10 @@
           0,
           0,
           1,
-          0
+          1
         ],
         "firstCommit": "2026-06-19",
-        "lastCommit": "2026-10-02",
+        "lastCommit": "2026-10-15",
         "contributors": 1
       }
     },
@@ -198,9 +237,9 @@
         "opencode"
       ],
       "stats": {
-        "totalCommits": 6,
-        "commits8w": 6,
-        "commits7d": 0,
+        "totalCommits": 7,
+        "commits8w": 7,
+        "commits7d": 1,
         "weekly": [
           0,
           0,
@@ -209,10 +248,10 @@
           0,
           0,
           6,
-          0
+          1
         ],
         "firstCommit": "2026-10-04",
-        "lastCommit": "2026-10-05",
+        "lastCommit": "2026-10-15",
         "contributors": 1
       }
     },
@@ -235,9 +274,9 @@
         "opencode"
       ],
       "stats": {
-        "totalCommits": 3,
-        "commits8w": 3,
-        "commits7d": 3,
+        "totalCommits": 4,
+        "commits8w": 4,
+        "commits7d": 4,
         "weekly": [
           0,
           0,
@@ -246,10 +285,10 @@
           0,
           0,
           0,
-          3
+          4
         ],
         "firstCommit": "2026-10-11",
-        "lastCommit": "2026-10-11",
+        "lastCommit": "2026-10-15",
         "contributors": 1
       }
     },
@@ -272,9 +311,9 @@
         "opencode"
       ],
       "stats": {
-        "totalCommits": 1,
-        "commits8w": 1,
-        "commits7d": 0,
+        "totalCommits": 2,
+        "commits8w": 2,
+        "commits7d": 1,
         "weekly": [
           0,
           0,
@@ -283,11 +322,11 @@
           0,
           0,
           1,
-          0
+          1
         ],
         "firstCommit": "2026-10-05",
-        "lastCommit": "2026-10-05",
-        "contributors": 1
+        "lastCommit": "2026-10-15",
+        "contributors": 2
       }
     },
     {
@@ -309,8 +348,8 @@
         "opencode"
       ],
       "stats": {
-        "totalCommits": 1,
-        "commits8w": 1,
+        "totalCommits": 2,
+        "commits8w": 2,
         "commits7d": 1,
         "weekly": [
           0,
@@ -319,11 +358,11 @@
           0,
           0,
           0,
-          0,
+          1,
           1
         ],
         "firstCommit": "2026-10-07",
-        "lastCommit": "2026-10-07",
+        "lastCommit": "2026-10-15",
         "contributors": 1
       }
     },
@@ -346,9 +385,9 @@
         "opencode"
       ],
       "stats": {
-        "totalCommits": 2,
-        "commits8w": 2,
-        "commits7d": 2,
+        "totalCommits": 3,
+        "commits8w": 3,
+        "commits7d": 3,
         "weekly": [
           0,
           0,
@@ -357,10 +396,10 @@
           0,
           0,
           0,
-          2
+          3
         ],
         "firstCommit": "2026-10-09",
-        "lastCommit": "2026-10-09",
+        "lastCommit": "2026-10-15",
         "contributors": 1
       }
     },
@@ -383,9 +422,9 @@
         "opencode"
       ],
       "stats": {
-        "totalCommits": 1,
-        "commits8w": 1,
-        "commits7d": 1,
+        "totalCommits": 2,
+        "commits8w": 2,
+        "commits7d": 2,
         "weekly": [
           0,
           0,
@@ -394,10 +433,10 @@
           0,
           0,
           0,
-          1
+          2
         ],
         "firstCommit": "2026-10-12",
-        "lastCommit": "2026-10-12",
+        "lastCommit": "2026-10-15",
         "contributors": 1
       }
     },
@@ -420,9 +459,9 @@
         "opencode"
       ],
       "stats": {
-        "totalCommits": 3,
-        "commits8w": 0,
-        "commits7d": 0,
+        "totalCommits": 4,
+        "commits8w": 1,
+        "commits7d": 1,
         "weekly": [
           0,
           0,
@@ -431,10 +470,10 @@
           0,
           0,
           0,
-          0
+          1
         ],
         "firstCommit": "2026-06-19",
-        "lastCommit": "2026-06-20",
+        "lastCommit": "2026-10-15",
         "contributors": 1
       }
     },
@@ -457,9 +496,9 @@
         "opencode"
       ],
       "stats": {
-        "totalCommits": 3,
-        "commits8w": 1,
-        "commits7d": 0,
+        "totalCommits": 4,
+        "commits8w": 2,
+        "commits7d": 1,
         "weekly": [
           0,
           0,
@@ -468,10 +507,10 @@
           0,
           0,
           1,
-          0
+          1
         ],
         "firstCommit": "2026-06-19",
-        "lastCommit": "2026-10-02",
+        "lastCommit": "2026-10-15",
         "contributors": 1
       }
     }

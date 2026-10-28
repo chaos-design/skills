@@ -29,6 +29,7 @@ Chaos Design Skills 是一组面向真实工作流的 Agent Skills，项目地�
 | --- | --- | --- |
 | `bilingual-reader` | 生成包含结构化总结、翻译和词汇表的双语阅读页面。 | [中文](./skills/bilingual-reader/README.zh-CN.md) / [English](./skills/bilingual-reader/README.md) |
 | `content-slides` | 将标准化内容转换为自包含的演示幻灯片。 | [中文](./skills/content-slides/README.zh-CN.md) / [English](./skills/content-slides/README.md) |
+| `docs-site` | 基于 Markdown + 配置快速创建响应式、多页面静态文档站：自动结构、可配置导航、Markdown/数据集成、支持按提交数与最后更新时间排序/筛选/状态徽章的拉取请求列表页，响应式布局与多页面支持。 | [中文](./skills/docs-site/README.zh-CN.md) / [English](./skills/docs-site/README.md) |
 | `frontend-slides` | 生成面向前端展示场景的幻灯片页面和视觉材料。 | [中文](./skills/frontend-slides/README.zh-CN.md) / [English](./skills/frontend-slides/README.md) |
 | `geo-flow-map` | 基于结构化流动数据生成地理流向地图可视化。 | [中文](./skills/geo-flow-map/README.zh-CN.md) / [English](./skills/geo-flow-map/README.md) |
 | `image-generation` | 根据文本描述生成图片，零密钥设计；生效前通过能力检查确认当前模型支持图片输出。 | [中文](./skills/image-generation/README.zh-CN.md) / [English](./skills/image-generation/README.md) |

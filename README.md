@@ -35,6 +35,7 @@ and license file so that agents can install and use it independently.
 | --- | --- | --- |
 | `bilingual-reader` | Builds bilingual reading pages with structured summaries, translations, and glossary support. | [English](./skills/bilingual-reader/README.md) / [中文](./skills/bilingual-reader/README.zh-CN.md) |
 | `content-slides` | Converts normalized content into self-contained presentation slides. | [English](./skills/content-slides/README.md) / [中文](./skills/content-slides/README.zh-CN.md) |
+| `docs-site` | Quickly creates a responsive, multi-page static documentation site from Markdown + config: auto structure, configurable navigation, Markdown/data integration, a pull-request list page with sorting/filtering/status, responsive layout and multi-page support. | [English](./skills/docs-site/README.md) / [中文](./skills/docs-site/README.zh-CN.md) |
 | `frontend-slides` | Generates frontend-oriented slide pages and visual presentation material. | [English](./skills/frontend-slides/README.md) / [中文](./skills/frontend-slides/README.zh-CN.md) |
 | `geo-flow-map` | Produces geographic flow map visualizations from structured movement data. | [English](./skills/geo-flow-map/README.md) / [中文](./skills/geo-flow-map/README.zh-CN.md) |
 | `image-generation` | Generates images from text descriptions with zero secrets, gated by a capability check that confirms the current model supports image output before first use. | [English](./skills/image-generation/README.md) / [中文](./skills/image-generation/README.zh-CN.md) |
