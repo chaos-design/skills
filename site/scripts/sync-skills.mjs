@@ -197,7 +197,29 @@ export function categoryGroup(raw) {
   return group || "Skill";
 }
 
-function buildSkill(name, anchor, history) {
+/**
+ * Normalise a manifest's `install` block into a stable shape. Missing fields
+ * (old manifests) yield empty lists so the dataset is always total. Only
+ * in-repo co-install dependencies are kept: entries that name a skill that
+ * is not itself in this repository are dropped, so the generated page never
+ * links to a dependency that cannot be installed from here.
+ */
+export function installGuide(raw, knownSkillNames = []) {
+  const known = new Set(knownSkillNames);
+  const knownFilter = (list) => stringArray(list).filter((name) => known.has(name));
+  return {
+    dependsOn: knownFilter(raw?.dependsOn),
+    optionalDeps: knownFilter(raw?.optionalDeps),
+    runtime: stringArray(raw?.runtime),
+  };
+}
+
+function stringArray(value) {
+  if (!Array.isArray(value)) return [];
+  return value.map((entry) => String(entry ?? "").trim()).filter(Boolean);
+}
+
+function buildSkill(name, anchor, history, knownSkillNames) {
   const dir = path.join(skillsRoot, name);
   let manifest = {};
   try {
@@ -236,6 +258,9 @@ function buildSkill(name, anchor, history) {
     ],
     repo: REPO,
     homepage: manifest.homepage ?? `${REPO_URL}/tree/main/skills/${name}`,
+    // Install knowledge, single-sourced from the manifest so the page and the
+    // generated dataset can never drift apart.
+    install: installGuide(manifest.install, knownSkillNames),
     // Canonicalised and de-duplicated: Claude and Claude Code are one entry.
     compat: [
       ...new Set((Array.isArray(manifest.compat) ? manifest.compat : []).map(canonicalAgent)),
@@ -415,7 +440,7 @@ async function main() {
     .map((commit) => Date.parse(commitDate(commit) ?? ""))
     .filter(Number.isFinite);
   const anchor = new Date(newest.length > 0 ? Math.max(...newest) : 0);
-  const skills = names.map((name, index) => buildSkill(name, anchor, histories[index]));
+  const skills = names.map((name, index) => buildSkill(name, anchor, histories[index], names));
   const payload = {
     generatedAt: formatTimestamp(now),
     repo: REPO,

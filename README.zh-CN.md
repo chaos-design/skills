@@ -37,6 +37,7 @@ Chaos Design Skills 是一组面向真实工作流的 Agent Skills，项目地�
 | `live-panel` | 把系统描述变成一直在运行的架构看板，渲染为 H.264 mp4 或活的网页。 | [中文](./skills/live-panel/README.zh-CN.md) / [English](./skills/live-panel/README.md) |
 | `plan-flow` | 把任务落成 `plans/` 下的计划文件，跟踪进度，仅在全部任务与完成标准勾选后归档。 | [中文](./skills/plan-flow/README.zh-CN.md) / [English](./skills/plan-flow/README.md) |
 | `task-inject` | 向 Agent 正在执行的任务中动态注入修改意见与调整指令；运行中的 Agent 在固定检查点按严重级别（halt / redirect / revise / note）消化指令，并留审计日志。 | [中文](./skills/task-inject/README.zh-CN.md) / [English](./skills/task-inject/README.md) |
+| `technology-selection` | 为项目选型技术栈、工具与架构：先勘察文件系统，应用默认的前端 React + TypeScript + Vite（Tailwind/shadcn）、后端 Node.js + TypeScript，配合 pnpm/Biome，并强制记录一份执行计划后才开始脚手架。 | [中文](./skills/technology-selection/README.zh-CN.md) / [English](./skills/technology-selection/README.md) |
 | `web-markdown` | 抓取并转换网页内容，输出稳定 Markdown，供其他 Skill 使用。 | [中文](./skills/web-markdown/README.zh-CN.md) / [English](./skills/web-markdown/README.md) |
 | `x-tweet-fetcher` | 提取 X/Twitter 内容，为需要社交来源输入的流程提供支持。 | [中文](./skills/x-tweet-fetcher/README.zh-CN.md) / [English](./skills/x-tweet-fetcher/README.md) |
 
@@ -70,6 +71,7 @@ npx skills add https://github.com/chaos-design/skills --skill html-brief
 npx skills add https://github.com/chaos-design/skills --skill live-panel
 npx skills add https://github.com/chaos-design/skills --skill plan-flow
 npx skills add https://github.com/chaos-design/skills --skill task-inject
+npx skills add https://github.com/chaos-design/skills --skill technology-selection
 npx skills add https://github.com/chaos-design/skills --skill web-markdown
 npx skills add https://github.com/chaos-design/skills --skill x-tweet-fetcher
 ```
@@ -106,6 +108,21 @@ Markdown 当作草稿输入，也可以直接使用本地文档或粘贴文本�
 npx skills add https://github.com/chaos-design/skills --skill web-markdown
 npx skills add https://github.com/chaos-design/skills --skill html-brief
 ```
+
+### 安装引导的唯一事实来源
+
+上面展示的各项依赖与运行时要求，都在每个 Skill 的 `manifest.json` 的 `install` 块中
+声明——例如 `web-markdown` 是 `bilingual-reader` 与 `content-slides` 的必需依赖。
+该块是唯一事实来源：
+
+- 站点的详情页会自动把它渲染为「安装引导」（所需技能、可选技能、运行时与配置说明），
+  生成的数据集也一并携带这些字段。
+- 由于页面由 manifest 驱动而非由本 README 驱动，新增或修改某个 Skill 的依赖时只需
+  改动该 Skill 的 `manifest.json`。本 README 的安装示例因此保持稳定，不必每改一次
+  依赖就手动补一行。
+
+要更新页面上的安装引导：编辑 `skills/<skill>/manifest.json` 的 `install` 块，再到
+`site/` 下运行 `npm run sync:skills`，下一次构建即生效。
 
 ## 使用指南
 

@@ -8,6 +8,15 @@
   ],
   "description": "Convert generic URLs, platform-specific social/content URLs, PDFs, DOCX files, Markdown files, plain text, screenshots, and pasted notes into faithful Markdown using platform fetcher bridging, Microsoft MarkItDown, Camofox fallback, and validation for source order, media, links, and code.",
   "homepage": "https://github.com/chaos-design/skills/tree/main/skills/web-markdown",
+  "install": {
+    "dependsOn": [],
+    "optionalDeps": ["x-tweet-fetcher"],
+    "runtime": [
+      "Python 3.9+",
+      "pip install 'markitdown[all]'",
+      "Optional: local Camofox service on localhost:9377 for rendered-page fallback"
+    ]
+  },
   "compat": [
     "claude-code",
     "claude-ai",

@@ -8,6 +8,11 @@
   ],
   "description": "Generate deck-stage HTML presentation pages from articles, notes, documents, images, or PPT-style content, using curated visual templates, the shared deck-stage runtime, direct section slides, and browser verification.",
   "homepage": "https://github.com/chaos-design/skills/tree/main/skills/frontend-slides",
+  "install": {
+    "dependsOn": [],
+    "optionalDeps": [],
+    "runtime": []
+  },
   "compat": [
     "claude-code",
     "claude-ai",

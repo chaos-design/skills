@@ -9,6 +9,7 @@ import {
   formatDate,
   getSkillByName,
   installCommand,
+  installSet,
   readmePath,
   readmeSourceUrl,
   relatedSkills,
@@ -48,6 +49,18 @@ describe("generated skill data", () => {
       expect(skill.tags.length).toBeGreaterThan(0);
       for (const tag of skill.tags) {
         expect(tag).toMatch(/^[a-z0-9-]+$/);
+      }
+    }
+  });
+
+  it("carries a well-formed installation guide for every skill", () => {
+    for (const skill of skills) {
+      expect(Array.isArray(skill.install.dependsOn)).toBe(true);
+      expect(Array.isArray(skill.install.optionalDeps)).toBe(true);
+      expect(Array.isArray(skill.install.runtime)).toBe(true);
+      // A required dep must itself be a skill that exists in this repository.
+      for (const dep of skill.install.dependsOn) {
+        expect(new Set(skills.map((item) => item.name)).has(dep)).toBe(true);
       }
     }
   });
@@ -267,6 +280,42 @@ describe("published readme docs", () => {
         expect(text).not.toMatch(/^\s*\[(?:中文|English)\]\(\.\//m);
       }
     }
+  });
+});
+
+describe("installSet", () => {
+  it("lists in-repo dependencies as required, resolvable from the dataset", () => {
+    // bilingual-reader declares a hard dependency on web-markdown.
+    const set = installSet(skills, "bilingual-reader");
+    expect(set.self?.name).toBe("bilingual-reader");
+    expect(set.required.map((skill) => skill.name)).toContain("web-markdown");
+    // Every required dep resolves to a real skill that actually exists.
+    for (const dep of set.required) {
+      expect(getSkillByName(skills, dep.name)).toBeDefined();
+    }
+  });
+
+  it("excludes required deps from the optional list", () => {
+    const set = installSet(skills, "bilingual-reader");
+    const optionalNames = set.optional.map((skill) => skill.name);
+    const requiredNames = set.required.map((skill) => skill.name);
+    for (const name of requiredNames) {
+      expect(optionalNames).not.toContain(name);
+    }
+  });
+
+  it("surfaces optional dependencies for a skill that has them", () => {
+    // web-markdown lists x-tweet-fetcher as an optional dependency.
+    const set = installSet(skills, "web-markdown");
+    expect(set.optional.map((skill) => skill.name)).toContain("x-tweet-fetcher");
+    expect(set.required).toHaveLength(0);
+  });
+
+  it("returns an empty guide for an unknown skill without throwing", () => {
+    const set = installSet(skills, "does-not-exist");
+    expect(set.required).toHaveLength(0);
+    expect(set.optional).toHaveLength(0);
+    expect(set.self).toBeUndefined();
   });
 });
 
