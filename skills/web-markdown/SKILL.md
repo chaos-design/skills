@@ -4,8 +4,10 @@ description: >
   Converts URLs, PDFs, DOCX files, Markdown files, plain text, screenshots, and
   pasted notes into faithful Markdown archives using Microsoft MarkItDown, with
   platform-aware URL fetcher bridging, Camofox as a rendered URL fallback, and
-  an auditable extraction harness. Invoke when users ask to fetch, archive,
-  preserve, or convert web/document/social/content URLs into Markdown.
+  an auditable extraction harness. Remote images are downloaded into an
+  `assets/` folder beside the Markdown file so archives stay readable offline.
+  Invoke when users ask to fetch, archive, preserve, or convert
+  web/document/social/content URLs into Markdown.
 ---
 
 # Web Markdown
@@ -36,7 +38,8 @@ Phase 1  Source -> Markdown
          with Camofox only as generic URL or HTML fallback.
   🔽
 Phase 2  Prepare
-         Derive the target path and notes path. Do not write final output yet.
+         Derive the target path and notes path. Reserve the `assets/` folder
+         beside the target Markdown. Do not write final output yet.
   🔽
 Phase 3  Extraction Notes
          Write source/extraction-notes.md only when requested, when fallback or
@@ -44,8 +47,10 @@ Phase 3  Extraction Notes
          multi-input traceability.
   🔽
 Phase 4  Validation
-         Run the inline checklist for title, source metadata, non-empty body,
-         code fences, images, links, source language, and notes accuracy.
+         Download remote images into `assets/`, rewrite image links to relative
+         paths, then run the inline checklist for title, source metadata,
+         non-empty body, code fences, images, links, source language, and notes
+         accuracy.
   🔽
 Phase 5  Review / Repair
          Use review only for low confidence, failed validation, translated
@@ -56,8 +61,8 @@ Phase 6  User Confirmation
          AskUserQuestion to ask whether the user wants modifications.
   🔽
 Phase 7  Delivery
-         Report Markdown path, word count, source, confidence, notes path when
-         present, and any residual risk.
+         Report Markdown path, word count, source, confidence, assets folder,
+         notes path when present, and any residual risk.
 ```
 
 ## Checkpoints
@@ -71,6 +76,7 @@ C: before delivery, stop only when a reviewer found unresolved source-loss risk.
 ```text
 <workspace>/
   source/   original.url|original.*  original.md  original.<lang>.md  extraction-notes.md
+            assets/   downloaded images referenced by original.md
   review/   source-review.md
 ```
 
@@ -101,19 +107,23 @@ editorial notes unless the user separately asks after faithful extraction.
    `--html-file`, use MarkItDown first. If MarkItDown fails for generic URL or
    HTML, try Camofox-rendered HTML and then the built-in HTML parser fallback.
 3. Prepare output: derive the target path without overwriting existing files;
-   append `-2`, `-3`, etc. when needed.
-4. Validate: check title, source metadata, non-empty body, balanced code fences,
-   source order, images, links, language preservation, and notes accuracy.
-5. Review/repair: review only when confidence is low, validation fails, a
+   append `-2`, `-3`, etc. when needed, and reserve `assets/` beside it.
+4. Localize images: download every remote image into the sibling `assets/`
+   folder and rewrite the link to a relative `assets/<file>` path. Keep the
+   original URL only when the download fails, and record that failure.
+5. Validate: check title, source metadata, non-empty body, balanced code fences,
+   source order, images, links, language preservation, on-disk asset files, and
+   notes accuracy.
+6. Review/repair: review only when confidence is low, validation fails, a
    translated source copy is produced, or the user asks. Fix minimal slices and
    rerun validation before reporting success.
-6. Confirm: after validation/review passes and before final output, call
+7. Confirm: after validation/review passes and before final output, call
    `AskUserQuestion` with the question "是否需要修改生成的 Markdown？". If the
    user chooses modify/regenerate, apply the requested change and rerun
    validation/review. Continue only when the user confirms no changes are
    needed.
-7. Deliver: write UTF-8 Markdown, then report Markdown path, word count, source, confidence, and notes path
-   when present.
+8. Deliver: write UTF-8 Markdown, then report Markdown path, word count, source, confidence,
+   assets folder, and notes path when present.
 
 Create `review/source-review.md` only for complex, low-confidence, or
 user-requested review cases, or when a translated `original.<lang>.md` is
@@ -126,8 +136,12 @@ produced. Review must compare generated Markdown with the real source content.
    blockquotes, inline code, or fenced code blocks.
 2. Preserve source order. The Markdown must follow the same reading sequence as
    the rendered page or document.
-3. Preserve images as Markdown image links. Use existing `alt` text when
-   present; leave alt text empty when absent.
+3. Preserve images as Markdown image links, and keep the archive readable
+   offline: download every remote image into `assets/` beside the Markdown file
+   and reference it relatively, for example
+   `![diagram](assets/diagram-1a2b3c4d.png)`. Use existing `alt` text when
+   present; leave alt text empty when absent. If a download fails, keep the
+   original absolute URL and record the failure instead of dropping the image.
 4. Preserve code exactly. Inline `<code>` becomes inline Markdown code, and
    `<pre>` / multi-line code blocks become fenced code blocks. Drop rendered
    line-number gutters and add a language hint when it can be inferred from
@@ -140,6 +154,34 @@ produced. Review must compare generated Markdown with the real source content.
    converted, the URL cannot be rendered, or validation fails, stop and report
    the concrete error instead of producing a partial archive.
 
+## Images And Assets
+
+Remote images are localized by default so the Markdown stays readable without
+network access:
+
+```text
+web/
+  example-article.md
+  assets/
+    architecture-diagram-1a2b3c4d.png
+    benchmark-chart-9f8e7d6c.webp
+```
+
+- The folder is always a sibling of the Markdown file: `web/<slug>.md` uses
+  `web/assets/`, and `source/original.md` uses `source/assets/`.
+- File names are `<url-slug>-<sha1-prefix>.<ext>`, so they are stable,
+  human-readable, and never collide across pages sharing one `assets/` folder.
+- Every URL is downloaded once per run, even when the page shows it repeatedly.
+- Absolute `http://` and `https://` images are downloaded, and page-relative
+  image links are resolved against the source URL first. `data:`, `blob:`,
+  `file:`, and other non-web references are left untouched.
+- Downloads use a browser user agent and the source URL as `Referer`, with a
+  30-second timeout and a 25 MB ceiling per image.
+- A failed download keeps the original absolute URL, is listed in
+  `extraction-notes.md`, and lowers confidence from `high` to `medium`.
+- `--assets-dir <name>` renames the folder; `--no-download-images` keeps remote
+  URLs everywhere.
+
 ## Script
 
 ```bash
@@ -148,6 +190,9 @@ python3 skills/web-markdown/scripts/web_markdown.py \
   --output web/example-article.md \
   --notes-output source/extraction-notes.md
 ```
+
+Images land in `web/assets/` beside the Markdown file. Use `--assets-dir media`
+to rename that folder, or `--no-download-images` to keep remote image URLs.
 
 Supported inputs: HTTP(S) URL, X/Twitter, Weibo, Zhihu, Xiaohongshu, Bilibili,
 WeChat Articles, PDF, DOCX, Markdown, text file, screenshot/image, PPTX,
@@ -181,7 +226,7 @@ The Markdown starts with source metadata followed by the extracted content:
 > Source: <URL>
 > Fetched: <YYYY-MM-DD HH:mm:ss>
 
-<Complete rendered main content converted to Markdown>
+<Complete rendered main content converted to Markdown, with images referencing assets/<file>>
 ```
 
 When the page has no reliable title, use the source host as the heading. Do not
@@ -194,6 +239,7 @@ Extraction notes, when written, must include:
 
 - Source: <URL-or-file>
 - Output: <path>
+- Assets: <image-count-and-assets-folder-or-none>
 - Source Language: <source-language>
 - Target Language: <target-language-or-none>
 - Translated Source: <path-or-none>

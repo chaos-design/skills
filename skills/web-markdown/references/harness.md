@@ -148,13 +148,50 @@ Preserve all meaningful source content:
   line-number gutters from the code, and add a language hint on the opening
   fence when it can be inferred from `language-*` / `highlight-source-*` classes
   or a `data-language` attribute.
-- Images become `![alt](absolute-url)`.
+- Images become `![alt](assets/<file>)`; see Phase 2e for the download rules.
 - Links become `[text](absolute-url)`.
 - Line breaks that are semantically visible remain line breaks.
 
 Do not summarise, translate, paraphrase, reorder, or add editorial notes.
 
-### 1.7 Phase 3 - Extraction Notes
+### 1.7 Phase 2e - Localize Images
+
+Assets are part of the deliverable. A Markdown archive that points at remote CDN
+URLs breaks as soon as the page changes, so download every remote image into an
+`assets/` folder beside the output file and rewrite the reference to a relative
+path before the Markdown is written:
+
+```text
+web/
+  example-article.md      # ![](assets/architecture-1a2b3c4d.png)
+  assets/
+    architecture-1a2b3c4d.png
+```
+
+Rules:
+
+- The folder is always a sibling of the Markdown file: `web/<slug>.md` uses
+  `web/assets/`, and `source/original.md` uses `source/assets/`.
+- File names are `<url-slug>-<sha1-prefix>.<extension>`, which keeps them
+  readable, stable across runs, and collision-free when several pages share one
+  folder.
+- Download each distinct URL once per run.
+- Download absolute `http://` / `https://` sources, and resolve page-relative
+  image links against the source URL first. Leave `data:`, `blob:`, `file:`, and
+  other non-web references unchanged.
+- Send a browser user agent and the source page as `Referer`; apply a 30-second
+  timeout and a 25 MB ceiling per image.
+- Accept a payload only when its signature or `Content-Type` identifies an
+  image. HTML error pages and hotlink placeholders count as failures.
+- On failure keep the original absolute URL, record
+  `Image download failed: <url> (<reason>)` in the notes, and demote `high`
+  confidence to `medium`.
+- Never drop the image, and never ship a relative link whose file is missing.
+- `--assets-dir <name>` renames the folder. `--no-download-images` keeps remote
+  URLs and is only appropriate when the user explicitly accepts a
+  network-dependent archive.
+
+### 1.8 Phase 3 - Extraction Notes
 
 Write extraction notes when:
 
@@ -171,6 +208,7 @@ Write extraction notes when:
 
 - Source: <URL-or-file>
 - Output: <path>
+- Assets: <image-count-and-assets-folder-or-none>
 - Source Language: <detected-or-user-provided-source-language>
 - Target Language: <requested-translation-language-or-none>
 - Translated Source: <path-to-original.lang.md-or-none>
@@ -183,7 +221,7 @@ Write extraction notes when:
 Do not use extraction notes for summaries, commentary, or invented source
 metadata.
 
-### 1.8 Phase 4 - Validate
+### 1.9 Phase 4 - Validate
 
 Default output path:
 
@@ -209,6 +247,10 @@ as tab-based structure with an indent width of 2 spaces for nested Markdown
 structures such as lists, blockquotes, and tables, while preserving source
 fenced-code indentation exactly as extracted.
 
+Then verify the assets: every relative image reference inside the assets folder
+must resolve to an existing file next to the Markdown output. A missing file is
+a validation failure, not a warning.
+
 Run the checklist in section 2 before declaring success.
 
 For low-confidence sources, compare the Markdown against the original source or
@@ -221,7 +263,7 @@ or regenerate the Markdown. If the user requests changes, apply them and rerun
 validation/review. Write output only after the user confirms no changes are
 needed.
 
-### 1.9 Phase 5 - Repair
+### 1.10 Phase 5 - Repair
 
 Repair only the smallest affected slice:
 
@@ -231,18 +273,21 @@ Repair only the smallest affected slice:
 - Rendered line-number gutters in code: strip gutters while preserving code.
 - Tables split by blank lines: merge rows into one contiguous table block.
 - Broken source order: rerun extraction or stop if it cannot be fixed.
+- Failed image download: keep the absolute URL, or retry once; never invent a
+  local path.
 
 After repair, rerun validation.
 
-### 1.10 Phase 6 - Confirm And Report
+### 1.11 Phase 6 - Confirm And Report
 
 After user confirmation and a successful write, report:
 
 ```text
-Saved web/<slug>.md - <word_count> words - <source> - confidence <level>
+Saved web/<slug>.md - <word_count> words - <source> - confidence <level> - assets <count> images in assets/
 ```
 
-When notes are written, also report the notes path.
+When notes are written, also report the notes path. When any image download
+failed, report the failed count explicitly.
 
 If the command fails, report the failing phase and exact error. Do not write a
 partial Markdown file.
@@ -257,6 +302,10 @@ Before declaring success:
 - [ ] No placeholder text such as `TODO`, `FIXME`, or `<Title>` remains.
 - [ ] Every fenced code block has both opening and closing fences.
 - [ ] Every image from the extracted content appears as a Markdown image.
+- [ ] Every remote image is either downloaded into `assets/` with a relative
+      reference, or reported as a failed download and left as an absolute URL.
+- [ ] Every `assets/<file>` reference resolves to a file that exists next to
+      the Markdown output.
 - [ ] Every link from the extracted content appears as a Markdown link or plain
       URL when the source text itself is the URL.
 - [ ] `source/original.md` remains in the original source language.
@@ -276,7 +325,16 @@ The Markdown starts with source metadata followed by extracted content:
 > Source: <URL-or-file>
 > Fetched: <YYYY-MM-DD HH:mm:ss>
 
-<Complete rendered main content converted to Markdown>
+<Complete rendered main content converted to Markdown, images under assets/>
+```
+
+The companion asset folder sits beside the Markdown file:
+
+```text
+web/
+  <slug>.md
+  assets/
+    <image-slug>-<sha1-prefix>.<ext>
 ```
 
 When the page has no reliable title, use the source host. For local files, use
@@ -297,6 +355,8 @@ the file stem. For pasted text, use `Pasted Notes`.
 | Rendered content cannot be read | Surface the content retrieval error and stop. |
 | Extracted content is empty | Stop and report that no readable content area was found. |
 | Output file exists | Use a numeric suffix; never overwrite silently. |
+| Image download fails, returns HTML, or exceeds the size ceiling | Keep the absolute URL, record the failure in the notes, demote confidence, and continue. |
+| A rewritten `assets/<file>` link has no file on disk | Fail validation and report the missing path. |
 | Markdown validation fails | Fix the conversion or stop with the validation error. |
 | Notes file exists | Use a numeric suffix; never overwrite silently. |
 
