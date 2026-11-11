@@ -1167,16 +1167,6 @@ def split_fenced_blocks(markdown: str) -> list[tuple[bool, str]]:
     return segments
 
 
-def iter_prose_segments(markdown: str) -> Iterable[str]:
-    """Yield prose fragments that sit outside fences and inline code spans."""
-    for is_code, segment in split_fenced_blocks(markdown):
-        if is_code:
-            continue
-        for index, piece in enumerate(INLINE_CODE_RE.split(segment)):
-            if index % 2 == 0 and piece:
-                yield piece
-
-
 def rewrite_images_outside_code(markdown: str, rewrite) -> str:
     """Rewrite image links without touching code samples."""
     output: list[str] = []
@@ -1228,27 +1218,6 @@ def parse_image_destination(markdown: str, start: int) -> tuple[int, str, str] |
     if not match:
         return cursor + 1, "", ""
     return cursor + 1, match.group(1), match.group(2) or ""
-
-
-def image_destinations(markdown: str) -> list[str]:
-    """Collect every rendered image destination, ignoring code samples."""
-    destinations: list[str] = []
-    for text in iter_prose_segments(markdown):
-        index = 0
-        for match in IMAGE_OPEN_RE.finditer(text):
-            if match.start() < index:
-                continue
-            parsed = parse_image_destination(text, match.end())
-            if parsed is None:
-                continue
-            end, destination, _tail = parsed
-            index = end
-            if destination:
-                destinations.append(destination)
-        for tag in HTML_IMG_TAG_RE.finditer(text):
-            for attribute in HTML_IMG_SRC_RE.finditer(tag.group(0)):
-                destinations.append(html.unescape(attribute.group("value")))
-    return destinations
 
 
 def rewrite_markdown_images(markdown: str, rewrite) -> str:
@@ -1417,6 +1386,9 @@ def localize_images(
             return ""
         if image_url in cache:
             return cache[image_url]
+        # A failed download must keep an absolute link; upgrade resolved
+        # relative sources so no stale relative path stays in the archive.
+        fallback = image_url if image_url != value.strip() else ""
         try:
             data, content_type = fetch_image_bytes(image_url, base_url, timeout, max_bytes)
             extension = image_extension(image_url, content_type, data)
@@ -1429,9 +1401,9 @@ def localize_images(
                 target.write_bytes(data)
             relative = f"{directory_name}/{name}"
         except Exception as exc:
-            cache[image_url] = ""
+            cache[image_url] = fallback
             report.failures.append((image_url, str(exc) or exc.__class__.__name__))
-            return ""
+            return fallback
         cache[image_url] = relative
         report.downloaded[image_url] = target
         return relative
@@ -1440,18 +1412,19 @@ def localize_images(
     return localized, report
 
 
-def validate_local_assets(markdown: str, output: Path, assets_dir: str = DEFAULT_ASSETS_DIR) -> None:
-    """Fail loudly when a rewritten asset link has no file on disk."""
-    prefix = normalize_assets_dir(assets_dir) + "/"
-    missing = []
-    for destination in image_destinations(markdown):
-        if not destination.startswith(prefix):
-            continue
-        path = output.parent / urllib.parse.unquote(destination)
-        if not path.is_file():
-            missing.append(destination)
-    if missing:
-        raise ValueError("Downloaded image assets are missing: " + ", ".join(sorted(set(missing))))
+def validate_local_assets(markdown: str, output: Path, report: AssetReport) -> None:
+    """Fail loudly when a rewritten asset link has no file on disk.
+
+    Only links the localization pass itself produced are checked, so relative
+    asset paths that pre-existed in the source never fail the conversion.
+    """
+    problems = []
+    for _, path in sorted(report.downloaded.items(), key=lambda item: item[1].name):
+        destination = f"{report.folder}/{path.name}"
+        if destination not in markdown or not (output.parent / destination).is_file():
+            problems.append(destination)
+    if problems:
+        raise ValueError("Downloaded image assets are missing: " + ", ".join(problems))
 
 
 def workspace_original_output(args: argparse.Namespace) -> Path | None:
@@ -1597,7 +1570,7 @@ def main(argv: list[str] | None = None) -> int:
             )
             if report.touched:
                 validate_markdown(markdown)
-                validate_local_assets(markdown, output, args.assets_dir)
+                validate_local_assets(markdown, output, report)
             if report.failures:
                 document.issues.extend(
                     f"Image download failed: {url} ({reason})" for url, reason in report.failures
