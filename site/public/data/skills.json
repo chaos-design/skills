@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-28 12:38:32",
+  "generatedAt": "2026-11-09 13:58:11",
   "repo": "chaos-design/skills",
   "repoUrl": "https://github.com/chaos-design/skills",
   "installPrefix": "npx skills add https://github.com/chaos-design/skills --skill",
@@ -57,9 +57,9 @@
         "opencode"
       ],
       "stats": {
-        "totalCommits": 9,
-        "commits8w": 2,
-        "commits7d": 0,
+        "totalCommits": 10,
+        "commits8w": 3,
+        "commits7d": 1,
         "weekly": [
           0,
           0,
@@ -68,10 +68,10 @@
           1,
           0,
           1,
-          0
+          1
         ],
         "firstCommit": "2026-06-19",
-        "lastCommit": "2026-10-15",
+        "lastCommit": "2026-10-28",
         "contributors": 1
       }
     },
@@ -101,9 +101,9 @@
         "opencode"
       ],
       "stats": {
-        "totalCommits": 8,
-        "commits8w": 1,
-        "commits7d": 0,
+        "totalCommits": 9,
+        "commits8w": 2,
+        "commits7d": 1,
         "weekly": [
           0,
           0,
@@ -112,10 +112,10 @@
           0,
           0,
           1,
-          0
+          1
         ],
         "firstCommit": "2026-06-19",
-        "lastCommit": "2026-10-15",
+        "lastCommit": "2026-10-28",
         "contributors": 1
       }
     },
@@ -149,9 +149,9 @@
         "opencode"
       ],
       "stats": {
-        "totalCommits": 3,
-        "commits8w": 3,
-        "commits7d": 3,
+        "totalCommits": 4,
+        "commits8w": 4,
+        "commits7d": 4,
         "weekly": [
           0,
           0,
@@ -160,10 +160,10 @@
           0,
           0,
           0,
-          3
+          4
         ],
         "firstCommit": "2026-10-27",
-        "lastCommit": "2026-10-27",
+        "lastCommit": "2026-10-28",
         "contributors": 1
       }
     },
@@ -191,9 +191,9 @@
         "opencode"
       ],
       "stats": {
-        "totalCommits": 4,
-        "commits8w": 2,
-        "commits7d": 0,
+        "totalCommits": 5,
+        "commits8w": 3,
+        "commits7d": 1,
         "weekly": [
           0,
           0,
@@ -202,10 +202,10 @@
           1,
           0,
           1,
-          0
+          1
         ],
         "firstCommit": "2026-06-19",
-        "lastCommit": "2026-10-15",
+        "lastCommit": "2026-10-28",
         "contributors": 1
       }
     },
@@ -233,9 +233,9 @@
         "opencode"
       ],
       "stats": {
-        "totalCommits": 4,
-        "commits8w": 2,
-        "commits7d": 0,
+        "totalCommits": 5,
+        "commits8w": 3,
+        "commits7d": 1,
         "weekly": [
           0,
           0,
@@ -244,10 +244,10 @@
           1,
           0,
           1,
-          0
+          1
         ],
         "firstCommit": "2026-06-19",
-        "lastCommit": "2026-10-15",
+        "lastCommit": "2026-10-28",
         "contributors": 1
       }
     },
@@ -279,9 +279,9 @@
         "opencode"
       ],
       "stats": {
-        "totalCommits": 7,
-        "commits8w": 7,
-        "commits7d": 0,
+        "totalCommits": 8,
+        "commits8w": 8,
+        "commits7d": 1,
         "weekly": [
           0,
           0,
@@ -290,10 +290,10 @@
           6,
           0,
           1,
-          0
+          1
         ],
         "firstCommit": "2026-10-04",
-        "lastCommit": "2026-10-15",
+        "lastCommit": "2026-10-28",
         "contributors": 1
       }
     },
@@ -323,9 +323,9 @@
         "opencode"
       ],
       "stats": {
-        "totalCommits": 4,
-        "commits8w": 4,
-        "commits7d": 0,
+        "totalCommits": 5,
+        "commits8w": 5,
+        "commits7d": 1,
         "weekly": [
           0,
           0,
@@ -334,10 +334,10 @@
           0,
           3,
           1,
-          0
+          1
         ],
         "firstCommit": "2026-10-11",
-        "lastCommit": "2026-10-15",
+        "lastCommit": "2026-10-28",
         "contributors": 1
       }
     },
@@ -368,9 +368,9 @@
         "opencode"
       ],
       "stats": {
-        "totalCommits": 2,
-        "commits8w": 2,
-        "commits7d": 0,
+        "totalCommits": 3,
+        "commits8w": 3,
+        "commits7d": 1,
         "weekly": [
           0,
           0,
@@ -379,10 +379,10 @@
           1,
           0,
           1,
-          0
+          1
         ],
         "firstCommit": "2026-10-05",
-        "lastCommit": "2026-10-15",
+        "lastCommit": "2026-10-28",
         "contributors": 2
       }
     },
@@ -412,9 +412,9 @@
         "opencode"
       ],
       "stats": {
-        "totalCommits": 2,
-        "commits8w": 2,
-        "commits7d": 0,
+        "totalCommits": 3,
+        "commits8w": 3,
+        "commits7d": 1,
         "weekly": [
           0,
           0,
@@ -423,10 +423,10 @@
           0,
           1,
           1,
-          0
+          1
         ],
         "firstCommit": "2026-10-07",
-        "lastCommit": "2026-10-15",
+        "lastCommit": "2026-10-28",
         "contributors": 1
       }
     },
@@ -458,9 +458,9 @@
         "opencode"
       ],
       "stats": {
-        "totalCommits": 3,
-        "commits8w": 3,
-        "commits7d": 0,
+        "totalCommits": 4,
+        "commits8w": 4,
+        "commits7d": 1,
         "weekly": [
           0,
           0,
@@ -469,10 +469,10 @@
           0,
           2,
           1,
-          0
+          1
         ],
         "firstCommit": "2026-10-09",
-        "lastCommit": "2026-10-15",
+        "lastCommit": "2026-10-28",
         "contributors": 1
       }
     },
@@ -502,9 +502,9 @@
         "opencode"
       ],
       "stats": {
-        "totalCommits": 2,
-        "commits8w": 2,
-        "commits7d": 0,
+        "totalCommits": 3,
+        "commits8w": 3,
+        "commits7d": 1,
         "weekly": [
           0,
           0,
@@ -513,10 +513,10 @@
           0,
           1,
           1,
-          0
+          1
         ],
         "firstCommit": "2026-10-12",
-        "lastCommit": "2026-10-15",
+        "lastCommit": "2026-10-28",
         "contributors": 1
       }
     },
@@ -524,7 +524,7 @@
       "name": "web-markdown",
       "version": "0.1.0",
       "category": "Extraction",
-      "description": "Convert generic URLs, platform-specific social/content URLs, PDFs, DOCX files, Markdown files, plain text, screenshots, and pasted notes into faithful Markdown using platform fetcher bridging, Microsoft MarkItDown, Camofox fallback, and validation for source order, media, links, and code.",
+      "description": "Convert generic URLs, platform-specific social/content URLs, PDFs, DOCX files, Markdown files, plain text, screenshots, and pasted notes into faithful Markdown using platform fetcher bridging, Microsoft MarkItDown, Camofox fallback, local image assets, and validation for source order, media, links, and code.",
       "tags": [
         "markdown",
         "extraction"
@@ -550,9 +550,9 @@
         "opencode"
       ],
       "stats": {
-        "totalCommits": 4,
-        "commits8w": 1,
-        "commits7d": 0,
+        "totalCommits": 5,
+        "commits8w": 2,
+        "commits7d": 1,
         "weekly": [
           0,
           0,
@@ -561,10 +561,10 @@
           0,
           0,
           1,
-          0
+          1
         ],
         "firstCommit": "2026-06-19",
-        "lastCommit": "2026-10-15",
+        "lastCommit": "2026-10-28",
         "contributors": 1
       }
     },
@@ -595,9 +595,9 @@
         "opencode"
       ],
       "stats": {
-        "totalCommits": 4,
-        "commits8w": 2,
-        "commits7d": 0,
+        "totalCommits": 5,
+        "commits8w": 3,
+        "commits7d": 1,
         "weekly": [
           0,
           0,
@@ -606,10 +606,10 @@
           1,
           0,
           1,
-          0
+          1
         ],
         "firstCommit": "2026-06-19",
-        "lastCommit": "2026-10-15",
+        "lastCommit": "2026-10-28",
         "contributors": 1
       }
     }

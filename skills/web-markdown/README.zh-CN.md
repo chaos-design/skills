@@ -19,6 +19,7 @@ npx skills add https://github.com/chaos-design/skills --skill web-markdown
 - 从 `article`、`main`、`[role=main]` 或面向正文的容器中提取主要内容区域。
 - 移除常见样板区域，包括导航、页眉、页脚、侧栏、Cookie 横幅、广告和分享组件。
 - 将渲染后的 HTML 转换为 Markdown，并保留正文文本、图片、链接、引用、列表、表格、行内代码和围栏代码块。
+- 将远程图片下载到 Markdown 文件同级的 `assets/` 文件夹，并把图片链接改写为相对路径，确保归档在离线环境下也能稳定阅读。
 - 将表格输出为连续的 Markdown 表格块，移除代码块中由页面渲染产生的行号槽，并在可推断时为围栏代码块补充语言标识。
 - 默认每个来源生成一个 Markdown 产物并写入 `web/<slug>.md`；也支持显式指定输出路径。
 
@@ -78,6 +79,24 @@ python3 skills/web-markdown/scripts/web_markdown.py \
   --output web/example-article.md
 ```
 
+## 图片资源
+
+远程图片会下载到 Markdown 文件同级目录，归档在没有网络时也能正常显示：
+
+```text
+web/
+  example-article.md
+  assets/
+    architecture-diagram-1a2b3c4d.png
+    benchmark-chart-9f8e7d6c.webp
+```
+
+- 目录始终与 Markdown 文件同级：`web/<slug>.md` 使用 `web/assets/`，`source/original.md` 使用 `source/assets/`。
+- 文件名格式为 `<url-slug>-<sha1-prefix>.<ext>`，可读、多次运行稳定，且多个页面共用同一目录时不会冲突。
+- 下载 `http://`、`https://` 和页面内相对路径图片，相对路径会先用来源 URL 解析；`data:`、`blob:`、`file:` 保持不变。
+- 下载失败时保留原始绝对链接，在提取笔记中记录 `Image download failed`，并把置信度从 `high` 降为 `medium`。
+- `--assets-dir <name>` 可修改目录名；`--no-download-images` 保留远程图片链接。
+
 ## 完整处理流程
 
 `web-markdown` 是生成可持久归档 Markdown 的标准来源标准化技能。完整流程会先判断输入类型，执行选定的转换路线，校验 Markdown 产物，并仅在校验结果或置信度要求时进入审查与修复。
@@ -95,7 +114,7 @@ flowchart TD
   I -- 是 --> G
   I -- 否 --> J[使用内置 HTML 解析器兜底]
   J --> G
-  G --> K[校验元数据, 正文, 结构, 媒体和时间戳]
+  G --> K[下载图片到 assets 并校验元数据, 正文, 结构, 媒体和时间戳]
   K --> L{校验和审查是否通过?}
   L -- 否 --> M[修复最小受影响部分或报告来源阻塞]
   M --> K
@@ -108,7 +127,7 @@ flowchart TD
 2. 配置 Python、`markitdown[all]`、可选 Camofox 渲染、输出位置和覆盖策略。
 3. 在依赖检测或转换前先判断资源类型。平台 URL 路由到 `x-tweet-fetcher`；通用 URL 使用 MarkItDown，并以 Camofox 作为兜底；本地文件和粘贴文本使用 MarkItDown。
 4. 仅执行选定的转换路线。HTML 文件也优先使用 MarkItDown；如果通用 URL 或 HTML 转换失败，必要时使用 Camofox 渲染 HTML，再使用内置 HTML 解析器兜底。
-5. 校验来源元数据、正文完整性、媒体保留情况、代码与表格结构，以及 UTC+8 时间戳格式。
+5. 将图片下载到输出文件同级的 `assets/`，再校验来源元数据、正文完整性、媒体保留情况、代码与表格结构、本地图片文件是否存在，以及 UTC+8 时间戳格式。
 6. 仅当置信度低、校验失败或用户明确要求审查时，才执行审查或修复。
 7. 写入输出前，必须通过 `AskUserQuestion` 询问用户是否需要修改；用户确认无需修改后，才写入并交付产物。
 
