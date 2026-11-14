@@ -33,8 +33,8 @@ Severity decides what happens to the current work:
 ## Design
 
 Detailed architecture, message lifecycle, checkpoint decision procedure and the
-principles behind each choice: [docs/design.md](docs/design.md) ·
-[设计说明（中文）](docs/design.zh-CN.md).
+principles behind each choice: [docs/design.md](https://github.com/chaos-design/skills/blob/main/skills/task-inject/docs/design.md) ·
+[设计说明（中文）](https://github.com/chaos-design/skills/blob/main/skills/task-inject/docs/design.zh-CN.md).
 
 - **The directory is the state.** Pending instructions are files in `inbox/`,
   consumed ones in `applied/`; the log is append-only. Nothing can drift.
@@ -103,5 +103,5 @@ Five fixed checkpoints, and no polling in between:
 
 ## License
 
-Apache-2.0. See [`LICENSE`](LICENSE).
+Apache-2.0. See [`LICENSE`](https://github.com/chaos-design/skills/blob/main/skills/task-inject/LICENSE).
 

@@ -326,7 +326,7 @@ function rewriteLink(label, target, skillName) {
  * - the "[中文](./README.zh-CN.md)" / "[English](./README.md)" switch lines
  *   are dropped — the site has its own language toggle, so a link that
  *   pushes the reader back to GitHub is noise;
- * - every remaining relative link (./LICENSE, ../other-skill/README.md,
+ * - every remaining relative link (./LICENSE, LICENSE, ../other-skill/README.md,
  *   ../../screenshots/...) is retargeted to the repository's main branch,
  *   as a blob URL for documents and a raw URL for images.
  *
@@ -364,10 +364,15 @@ export function normalizeReadme(text, skillName) {
       // width/height are dropped on purpose: the site's own CSS sizes images.
       return `![${alt}](${target})`;
     });
-    next = next.replace(/(!?\[[^\]]+\])\((\.{1,2}\/[^()\s]+)\)/g, (_match, label, target) =>
-      label.startsWith("!")
-        ? rewriteImage(label, target, skillName)
-        : rewriteLink(label, target, skillName),
+    // A link target is repository-relative when it carries no scheme, is not
+    // protocol/root-relative ("/x", "//host") and is not an in-page anchor.
+    // Bare paths ("LICENSE") count, alongside "./LICENSE" and "../x/y.md".
+    next = next.replace(
+      /(!?\[[^\]]+\])\(((?!(?:[a-z][a-z0-9+.-]*:|\/|#))[^()\s]+)\)/g,
+      (_match, label, target) =>
+        label.startsWith("!")
+          ? rewriteImage(label, target, skillName)
+          : rewriteLink(label, target, skillName),
     );
     out.push(next);
   }

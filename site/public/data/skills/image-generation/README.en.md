@@ -92,5 +92,5 @@ The skill is instruction-driven; the agent follows `SKILL.md`:
 
 ## License
 
-Apache-2.0. See [`LICENSE`](LICENSE).
+Apache-2.0. See [`LICENSE`](https://github.com/chaos-design/skills/blob/main/skills/image-generation/LICENSE).
 

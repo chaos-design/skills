@@ -133,5 +133,5 @@ curl http://localhost:9377/health
 
 ## 许可证
 
-Apache-2.0，详见 [`LICENSE`](LICENSE)。
+Apache-2.0，详见 [`LICENSE`](https://github.com/chaos-design/skills/blob/main/skills/web-markdown/LICENSE)。
 

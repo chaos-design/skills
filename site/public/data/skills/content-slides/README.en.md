@@ -155,7 +155,7 @@ skills/content-slides/
     └── extract_content.py
 ```
 
-Read [SKILL.md](SKILL.md) for the full workflow and generation rules.
+Read [SKILL.md](https://github.com/chaos-design/skills/blob/main/skills/content-slides/SKILL.md) for the full workflow and generation rules.
 
 ## Updating Screenshots
 

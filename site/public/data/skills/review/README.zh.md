@@ -61,5 +61,5 @@ review https://github.com/org/repo/pull/9，并且comment   # 评审并发到 PR
 
 ## 许可证
 
-Apache-2.0，见 [`LICENSE`](LICENSE)。
+Apache-2.0，见 [`LICENSE`](https://github.com/chaos-design/skills/blob/main/skills/review/LICENSE)。
 

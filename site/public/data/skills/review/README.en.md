@@ -79,5 +79,5 @@ counts per severity and whether the change can merge as-is.
 
 ## License
 
-Apache-2.0. See [`LICENSE`](LICENSE).
+Apache-2.0. See [`LICENSE`](https://github.com/chaos-design/skills/blob/main/skills/review/LICENSE).
 
