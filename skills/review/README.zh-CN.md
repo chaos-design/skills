@@ -50,6 +50,23 @@ review https://github.com/org/repo/pull/9，并且comment   # 评审并将结论
 
 每条发现引用 `path:line`，说明哪里会坏、需要什么场景、建议怎么改。报告以一行结论收尾：各严重程度的数量，以及是否可以直接合并。
 
+## 示例（One-shot）
+
+```text
+review https://github.com/org/repo/pull/42
+```
+
+报告形态（示意）：
+
+> **P1** `src/lib/upstream.ts:31` — 创建了 5 秒的 `AbortSignal.timeout`，但没有传给
+> `fetch`：上游停滞时不会按 5 秒快速失败，而是挂到平台默认超时。任何经过卡死代理的
+> 请求都会触发。修复：`fetch(url, { signal })`。
+>
+> **P2** `src/lib/upstream.ts:12` — `MAX_RETRIES` 只在本模块内引用，导出是多余的，
+> 建议移除。
+>
+> 结论：0 P0 · 1 P1 · 1 P2 — 修复 P1 后即可合并。
+
 ## 依赖
 
 - diff 模式需要 `git`；PR 模式需要已认证的 `gh`（`gh auth status`）。

@@ -65,6 +65,24 @@ Each finding references `path:line`, states what breaks, the exact scenario
 required, and the suggested fix. The report ends with a one-line verdict:
 counts per severity and whether the change can merge as-is.
 
+## One-shot example
+
+```text
+review https://github.com/org/repo/pull/42
+```
+
+Report shape (illustrative):
+
+> **P1** `src/lib/upstream.ts:31` — the 5-second `AbortSignal.timeout` is created
+> but never passed to `fetch`, so a stalled upstream hangs until the platform
+> default timeout instead of failing fast. Needs a wedged upstream to trigger;
+> any request routed through a stalled proxy does it. Fix: `fetch(url, { signal })`.
+>
+> **P2** `src/lib/upstream.ts:12` — `MAX_RETRIES` is referenced only inside this
+> module; the export is unnecessary. Drop it.
+>
+> Verdict: 0 P0 · 1 P1 · 1 P2 — mergeable after the P1 fix.
+
 ## Requirements
 
 - `git` for diff modes; `gh` authenticated (`gh auth status`) for PR mode.

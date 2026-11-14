@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-14 18:49:27",
+  "generatedAt": "2026-11-14 18:52:30",
   "repo": "chaos-design/skills",
   "repoUrl": "https://github.com/chaos-design/skills",
   "installPrefix": "npx skills add https://github.com/chaos-design/skills --skill",
@@ -445,7 +445,9 @@
       "install": {
         "dependsOn": [],
         "optionalDeps": [],
-        "runtime": []
+        "runtime": [
+          "git for diff modes; gh authenticated for PR mode"
+        ]
       },
       "compat": [
         "claude-ai",
