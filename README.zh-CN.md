@@ -36,6 +36,7 @@ Chaos Design Skills 是一组面向真实工作流的 Agent Skills，项目地�
 | `html-brief` | 把复杂答案渲染成单文件 HTML 简报：面板栅格、流程图与时序图、对比表、双主题与明暗切换。 | [中文](./skills/html-brief/README.zh-CN.md) / [English](./skills/html-brief/README.md) |
 | `live-panel` | 把系统描述变成一直在运行的架构看板，渲染为 H.264 mp4 或活的网页。 | [中文](./skills/live-panel/README.zh-CN.md) / [English](./skills/live-panel/README.md) |
 | `plan-flow` | 把任务落成 `plans/` 下的计划文件，跟踪进度，仅在全部任务与完成标准勾选后归档。 | [中文](./skills/plan-flow/README.zh-CN.md) / [English](./skills/plan-flow/README.md) |
+| `review` | 评审代码变更——未提交 diff、某次提交、分支或 GitHub PR——输出按严重程度分级的结论；要求时把评审以评论发到 PR。 | [中文](./skills/review/README.zh-CN.md) / [English](./skills/review/README.md) |
 | `task-inject` | 向 Agent 正在执行的任务中动态注入修改意见与调整指令；运行中的 Agent 在固定检查点按严重级别（halt / redirect / revise / note）消化指令，并留审计日志。 | [中文](./skills/task-inject/README.zh-CN.md) / [English](./skills/task-inject/README.md) |
 | `web-markdown` | 抓取并转换网页内容，输出稳定 Markdown，供其他 Skill 使用。 | [中文](./skills/web-markdown/README.zh-CN.md) / [English](./skills/web-markdown/README.md) |
 | `x-tweet-fetcher` | 提取 X/Twitter 内容，为需要社交来源输入的流程提供支持。 | [中文](./skills/x-tweet-fetcher/README.zh-CN.md) / [English](./skills/x-tweet-fetcher/README.md) |
@@ -69,6 +70,7 @@ npx skills add https://github.com/chaos-design/skills --skill image-generation
 npx skills add https://github.com/chaos-design/skills --skill html-brief
 npx skills add https://github.com/chaos-design/skills --skill live-panel
 npx skills add https://github.com/chaos-design/skills --skill plan-flow
+npx skills add https://github.com/chaos-design/skills --skill review
 npx skills add https://github.com/chaos-design/skills --skill task-inject
 npx skills add https://github.com/chaos-design/skills --skill web-markdown
 npx skills add https://github.com/chaos-design/skills --skill x-tweet-fetcher
