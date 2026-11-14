@@ -17,9 +17,9 @@ npx skills add https://github.com/chaos-design/skills --skill review
 | Input | Trigger | Result |
 | --- | --- | --- |
 | None (default) | "review my changes" | `git diff`, `git diff --cached` and untracked files, reviewed in place |
-| Commit hash | "review abc1234" | `git show <hash>` |
+| Commit hash | "review 4d97295" | `git show <hash>` |
 | Branch | "review this branch against main" | `git diff <branch>...HEAD` |
-| PR URL / number | "review https://github.com/org/repo/pull/9 并且comment" | PR context plus diff via `gh pr`; review posted as a PR comment when requested |
+| PR URL / number | "review https://github.com/org/repo/pull/9，并且comment" | PR context plus diff via `gh pr`; review posted as a PR comment when requested |
 
 The request is free-form: the target may sit in the same sentence as extra
 instructions, so the skill extracts the target and any flags before running
@@ -47,10 +47,10 @@ Reviews are triggered by asking, in any of the four modes:
 
 ```text
 review                              # uncommitted changes (default)
-review 4d97295                      # one commit
-review main...HEAD                  # branch diff
-review https://github.com/org/repo/pull/9
-review https://github.com/org/repo/pull/9，并且comment   # also post to the PR
+review 4d97295                      # a specific commit
+review main...HEAD                  # branch diff against main
+review https://github.com/org/repo/pull/9            # a pull request
+review https://github.com/org/repo/pull/9，并且comment   # review and post to the PR
 ```
 
 Findings are ordered by severity:

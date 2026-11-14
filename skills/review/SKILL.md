@@ -5,9 +5,9 @@ description: >
   the finished review to the pull request. Handles four input modes: uncommitted
   working-tree changes (default), a commit hash, a branch diff, and a GitHub
   pull request URL or number. Use whenever the user asks to review, check, 审查,
-  评审 or 检查 code changes — "review my changes", "看一下这次提交有没有问题",
-  "review https://github.com/org/repo/pull/9 并且comment" — even when they only
-  say "看看改动". When the request contains "comment" / "评论", post the review
+  评审 or 检查 code changes — "review my changes", "review commit 4d97295",
+  "审查当前分支相对 main 的改动", "review https://github.com/org/repo/pull/9
+  并且comment". When the request contains "comment" / "评论", post the review
   to the PR as a comment via gh.
 ---
 
@@ -20,7 +20,7 @@ review code that was not modified.
 ## 1. Determine what to review
 
 The request is free-form: the target may sit in the same sentence as extra
-instructions, e.g. `https://github.com/chaos-design/moss/pull/9，并且comment`.
+instructions, e.g. `review https://github.com/org/repo/pull/9，并且comment`.
 Extract the target and any flags before running anything. When the request
 contains "comment" / "评论" / "留言", post the finished review to the PR
 (section 6).
