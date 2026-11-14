@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-09 13:58:11",
+  "generatedAt": "2026-11-14 19:17:33",
   "repo": "chaos-design/skills",
   "repoUrl": "https://github.com/chaos-design/skills",
   "installPrefix": "npx skills add https://github.com/chaos-design/skills --skill",
@@ -7,27 +7,27 @@
     {
       "id": "claude-ai",
       "name": "Claude",
-      "skills": 13
+      "skills": 14
     },
     {
       "id": "codex-cli",
       "name": "Codex CLI",
-      "skills": 13
+      "skills": 14
     },
     {
       "id": "cursor",
       "name": "Cursor",
-      "skills": 13
+      "skills": 14
     },
     {
       "id": "gemini-cli",
       "name": "Gemini CLI",
-      "skills": 13
+      "skills": 14
     },
     {
       "id": "opencode",
       "name": "OpenCode",
-      "skills": 13
+      "skills": 14
     }
   ],
   "skills": [
@@ -59,16 +59,16 @@
       "stats": {
         "totalCommits": 10,
         "commits8w": 3,
-        "commits7d": 1,
+        "commits7d": 0,
         "weekly": [
           0,
           0,
-          0,
-          0,
           1,
           0,
           1,
-          1
+          1,
+          0,
+          0
         ],
         "firstCommit": "2026-06-19",
         "lastCommit": "2026-10-28",
@@ -103,16 +103,16 @@
       "stats": {
         "totalCommits": 9,
         "commits8w": 2,
-        "commits7d": 1,
+        "commits7d": 0,
         "weekly": [
           0,
           0,
           0,
           0,
-          0,
-          0,
           1,
-          1
+          1,
+          0,
+          0
         ],
         "firstCommit": "2026-06-19",
         "lastCommit": "2026-10-28",
@@ -151,16 +151,16 @@
       "stats": {
         "totalCommits": 4,
         "commits8w": 4,
-        "commits7d": 4,
+        "commits7d": 0,
         "weekly": [
           0,
           0,
           0,
           0,
           0,
+          4,
           0,
-          0,
-          4
+          0
         ],
         "firstCommit": "2026-10-27",
         "lastCommit": "2026-10-28",
@@ -193,16 +193,16 @@
       "stats": {
         "totalCommits": 5,
         "commits8w": 3,
-        "commits7d": 1,
+        "commits7d": 0,
         "weekly": [
           0,
           0,
-          0,
-          0,
           1,
           0,
           1,
-          1
+          1,
+          0,
+          0
         ],
         "firstCommit": "2026-06-19",
         "lastCommit": "2026-10-28",
@@ -235,16 +235,16 @@
       "stats": {
         "totalCommits": 5,
         "commits8w": 3,
-        "commits7d": 1,
+        "commits7d": 0,
         "weekly": [
           0,
           0,
-          0,
-          0,
           1,
           0,
           1,
-          1
+          1,
+          0,
+          0
         ],
         "firstCommit": "2026-06-19",
         "lastCommit": "2026-10-28",
@@ -281,16 +281,16 @@
       "stats": {
         "totalCommits": 8,
         "commits8w": 8,
-        "commits7d": 1,
+        "commits7d": 0,
         "weekly": [
-          0,
-          0,
           0,
           0,
           6,
           0,
           1,
-          1
+          1,
+          0,
+          0
         ],
         "firstCommit": "2026-10-04",
         "lastCommit": "2026-10-28",
@@ -325,16 +325,16 @@
       "stats": {
         "totalCommits": 5,
         "commits8w": 5,
-        "commits7d": 1,
+        "commits7d": 0,
         "weekly": [
-          0,
-          0,
           0,
           0,
           0,
           3,
           1,
-          1
+          1,
+          0,
+          0
         ],
         "firstCommit": "2026-10-11",
         "lastCommit": "2026-10-28",
@@ -370,16 +370,16 @@
       "stats": {
         "totalCommits": 3,
         "commits8w": 3,
-        "commits7d": 1,
+        "commits7d": 0,
         "weekly": [
           0,
           0,
-          0,
-          0,
           1,
           0,
           1,
-          1
+          1,
+          0,
+          0
         ],
         "firstCommit": "2026-10-05",
         "lastCommit": "2026-10-28",
@@ -414,20 +414,66 @@
       "stats": {
         "totalCommits": 3,
         "commits8w": 3,
-        "commits7d": 1,
+        "commits7d": 0,
+        "weekly": [
+          0,
+          0,
+          1,
+          0,
+          1,
+          1,
+          0,
+          0
+        ],
+        "firstCommit": "2026-10-07",
+        "lastCommit": "2026-10-28",
+        "contributors": 1
+      }
+    },
+    {
+      "name": "pr-review",
+      "version": "0.1.0",
+      "category": "Workflow",
+      "description": "Review a GitHub pull request — or any other code change: an uncommitted working-tree diff, a commit, a branch — and return severity-graded actionable findings that name the exact scenario each issue needs. Reads full files and the PR's stated intent, not just diffs, and when the request says comment / 评论, posts the finished review to the PR as one plain comment via gh.",
+      "tags": [
+        "code-review",
+        "pull-request",
+        "git",
+        "workflow"
+      ],
+      "repo": "chaos-design/skills",
+      "homepage": "https://github.com/chaos-design/skills/tree/main/skills/pr-review",
+      "install": {
+        "dependsOn": [],
+        "optionalDeps": [],
+        "runtime": [
+          "git for diff modes; gh authenticated for PR mode"
+        ]
+      },
+      "compat": [
+        "claude-ai",
+        "cursor",
+        "codex-cli",
+        "gemini-cli",
+        "opencode"
+      ],
+      "stats": {
+        "totalCommits": 0,
+        "commits8w": 0,
+        "commits7d": 0,
         "weekly": [
           0,
           0,
           0,
           0,
           0,
-          1,
-          1,
-          1
+          0,
+          0,
+          0
         ],
-        "firstCommit": "2026-10-07",
-        "lastCommit": "2026-10-28",
-        "contributors": 1
+        "firstCommit": null,
+        "lastCommit": null,
+        "contributors": 0
       }
     },
     {
@@ -460,16 +506,16 @@
       "stats": {
         "totalCommits": 4,
         "commits8w": 4,
-        "commits7d": 1,
+        "commits7d": 0,
         "weekly": [
-          0,
-          0,
           0,
           0,
           0,
           2,
           1,
-          1
+          1,
+          0,
+          0
         ],
         "firstCommit": "2026-10-09",
         "lastCommit": "2026-10-28",
@@ -504,16 +550,16 @@
       "stats": {
         "totalCommits": 3,
         "commits8w": 3,
-        "commits7d": 1,
+        "commits7d": 0,
         "weekly": [
           0,
           0,
           0,
-          0,
-          0,
           1,
           1,
-          1
+          1,
+          0,
+          0
         ],
         "firstCommit": "2026-10-12",
         "lastCommit": "2026-10-28",
@@ -550,21 +596,21 @@
         "opencode"
       ],
       "stats": {
-        "totalCommits": 5,
-        "commits8w": 2,
-        "commits7d": 1,
+        "totalCommits": 7,
+        "commits8w": 4,
+        "commits7d": 2,
         "weekly": [
           0,
           0,
           0,
           0,
-          0,
-          0,
           1,
-          1
+          1,
+          0,
+          2
         ],
         "firstCommit": "2026-06-19",
-        "lastCommit": "2026-10-28",
+        "lastCommit": "2026-11-11",
         "contributors": 1
       }
     },
@@ -597,16 +643,16 @@
       "stats": {
         "totalCommits": 5,
         "commits8w": 3,
-        "commits7d": 1,
+        "commits7d": 0,
         "weekly": [
           0,
           0,
-          0,
-          0,
           1,
           0,
           1,
-          1
+          1,
+          0,
+          0
         ],
         "firstCommit": "2026-06-19",
         "lastCommit": "2026-10-28",

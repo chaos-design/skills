@@ -194,5 +194,5 @@ curl http://localhost:9377/health
 
 ## License
 
-Apache-2.0. See [`LICENSE`](LICENSE).
+Apache-2.0. See [`LICENSE`](https://github.com/chaos-design/skills/blob/main/skills/web-markdown/LICENSE).
 

@@ -78,5 +78,5 @@ npx skills add https://github.com/chaos-design/skills --skill image-generation
 
 ## 许可证
 
-Apache-2.0，见 [`LICENSE`](LICENSE)。
+Apache-2.0，见 [`LICENSE`](https://github.com/chaos-design/skills/blob/main/skills/image-generation/LICENSE)。
 

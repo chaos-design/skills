@@ -47,5 +47,5 @@ npx skills add https://github.com/chaos-design/skills --skill technology-selecti
 
 ## 许可证
 
-Apache-2.0，详见 [`LICENSE`](LICENSE)。
+Apache-2.0，详见 [`LICENSE`](https://github.com/chaos-design/skills/blob/main/skills/technology-selection/LICENSE)。
 

@@ -296,8 +296,6 @@
 .doc-markdown table {
   display: block;
   overflow-x: auto;
-  border: 1px solid var(--border);
-  border-radius: 8px;
   border-collapse: collapse;
   width: 100%;
   font-size: 0.9em;
@@ -308,13 +306,27 @@
   padding: 6px 10px;
   text-align: left;
 }
+/* Inner grid only: cells keep their separators, and the edge trims below
+   remove the frame the same borders would draw around the table itself. */
+.doc-markdown tr th:first-child,
+.doc-markdown tr td:first-child {
+  border-left: none;
+}
+.doc-markdown tr th:last-child,
+.doc-markdown tr td:last-child {
+  border-right: none;
+}
 .doc-markdown th {
+  border-top: none;
   background: var(--secondary);
   font-family: var(--font-mono);
   font-size: 0.75rem;
   font-weight: 500;
   letter-spacing: 0.05em;
   text-transform: uppercase;
+}
+.doc-markdown tr:last-child td {
+  border-bottom: none;
 }
 .doc-markdown hr {
   margin: 1.5em 0;

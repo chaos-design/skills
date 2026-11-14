@@ -197,6 +197,21 @@ describe("normalizeReadme", () => {
     );
   });
 
+  it("rewrites bare relative links without a ./ prefix", () => {
+    const out = normalizeReadme("Apache-2.0，见 [`LICENSE`](LICENSE)。", "review");
+    expect(out).toBe(
+      "Apache-2.0，见 [`LICENSE`](https://github.com/chaos-design/skills/blob/main/skills/review/LICENSE)。",
+    );
+  });
+
+  it("keeps anchors, root-relative and protocol-relative targets untouched", () => {
+    const out = normalizeReadme(
+      "[jump](#usage) [root](/data.json) [proto](//cdn.example.com/x.js)",
+      "review",
+    );
+    expect(out).toBe("[jump](#usage) [root](/data.json) [proto](//cdn.example.com/x.js)");
+  });
+
   it("rewrites relative markdown images to raw URLs", () => {
     const out = normalizeReadme("![diagram](../../screenshots/s/flow.svg)", "s");
     expect(out).toBe(
