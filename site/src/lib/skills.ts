@@ -4,6 +4,19 @@ export type Agent = {
   skills: number;
 };
 
+/**
+ * Install knowledge for one skill. Single-sourced from the skill's manifest so
+ * the page and the dataset can never drift apart.
+ * - `dependsOn`: in-repo skills that must be installed together.
+ * - `optionalDeps`: in-repo skills that extend it, not required.
+ * - `runtime`: runtime / setup requirements (runtimes, pip/npm lines, services).
+ */
+export type InstallGuide = {
+  dependsOn: string[];
+  optionalDeps: string[];
+  runtime: string[];
+};
+
 export type Skill = {
   name: string;
   version: string;
@@ -14,6 +27,7 @@ export type Skill = {
   repo: string;
   homepage: string;
   compat: string[];
+  install: InstallGuide;
   stats: {
     totalCommits: number;
     commits8w: number;
@@ -86,6 +100,33 @@ export function installCommand(skillName: string): string {
  */
 export function agentPrompt(skillName: string): string {
   return `Run \`npx skills use "${repoMeta.repoUrl}" --skill "${skillName}"\` and follow the generated skill instructions now. Read its complete output, redirecting it to a temporary file first if necessary. Resolve relative paths from the supporting-files directory it provides.`;
+}
+
+/**
+ * The install set for one skill: the skill itself plus every in-repo skill it
+ * depends on (required first, then optional). Each entry is a copyable command.
+ * Required deps come before optional ones so the ordering reads top-to-bottom.
+ */
+export function installSet(
+  list: Skill[],
+  skillName: string,
+): {
+  required: Skill[];
+  optional: Skill[];
+  self: Skill | undefined;
+} {
+  const byName = new Map(list.map((skill) => [skill.name, skill]));
+  const self = byName.get(skillName);
+  const guide = self?.install ?? { dependsOn: [], optionalDeps: [], runtime: [] };
+  const required = guide.dependsOn
+    .filter(Boolean)
+    .map((dep) => byName.get(dep))
+    .filter((dep): dep is Skill => Boolean(dep));
+  const optional = guide.optionalDeps
+    .filter((dep) => !required.some((item) => item.name === dep))
+    .map((dep) => byName.get(dep))
+    .filter((dep): dep is Skill => Boolean(dep));
+  return { required, optional, self };
 }
 
 /** Case-insensitive match across the fields a visitor would search by. */

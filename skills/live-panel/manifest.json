@@ -8,6 +8,11 @@
   ],
   "description": "Render a JSON description of a running system as an always-running architecture panel: fixed layout, packets on the wires, scrolling log, counters, gauges that flip state past a threshold, and side triggers that light in turn. Outputs an H.264 mp4 for X or Xiaohongshu, or a self-contained page that runs live in any browser. Deterministic replay, plus headless checks for geometry, replay identity and log-versus-panel agreement.",
   "homepage": "https://github.com/chaos-design/skills/tree/main/skills/live-panel",
+  "install": {
+    "dependsOn": [],
+    "optionalDeps": [],
+    "runtime": ["Python 3.8+ standard library only, no pip packages", "Chrome or Chromium for mp4 export"]
+  },
   "compat": [
     "claude-code",
     "claude-ai",

@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import email.utils
+import hashlib
 import html
 import json
 import re
@@ -65,6 +66,52 @@ KNOWN_LANGS = {
 }
 UTC_PLUS_8 = timezone(timedelta(hours=8))
 FETCHED_RE = re.compile(r"^> Fetched:\s*(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})$", re.MULTILINE)
+MERMAID_BLOCK_RE = re.compile(
+    r"(^[ \t]*```mermaid[^\n]*\n)(.*?)(^[ \t]*```[ \t]*$)",
+    re.DOTALL | re.MULTILINE,
+)
+
+DEFAULT_ASSETS_DIR = "assets"
+IMAGE_TIMEOUT_SECONDS = 30
+IMAGE_MAX_BYTES = 25 * 1024 * 1024
+IMAGE_USER_AGENT = (
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 web-markdown"
+)
+IMAGE_OPEN_RE = re.compile(r"!\[([^\]\n]*)\]\(")
+HTML_IMG_TAG_RE = re.compile(r"<img\b[^>]*>", re.IGNORECASE)
+HTML_IMG_SRC_RE = re.compile(
+    r"""(?P<prefix>\b(?:data-)?src\s*=\s*)(?P<quote>["'])(?P<value>[^"']*)(?P=quote)""",
+    re.IGNORECASE,
+)
+IMAGE_CONTENT_TYPES = {
+    "image/png": ".png",
+    "image/jpeg": ".jpg",
+    "image/jpg": ".jpg",
+    "image/pjpeg": ".jpg",
+    "image/gif": ".gif",
+    "image/webp": ".webp",
+    "image/svg+xml": ".svg",
+    "image/avif": ".avif",
+    "image/bmp": ".bmp",
+    "image/x-ms-bmp": ".bmp",
+    "image/tiff": ".tiff",
+    "image/x-icon": ".ico",
+    "image/vnd.microsoft.icon": ".ico",
+}
+IMAGE_URL_EXTENSIONS = (
+    ".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg", ".avif", ".bmp",
+    ".ico", ".tif", ".tiff",
+)
+IMAGE_MAGIC_PREFIXES = (
+    (b"\x89PNG\r\n\x1a\n", ".png"),
+    (b"\xff\xd8\xff", ".jpg"),
+    (b"GIF87a", ".gif"),
+    (b"GIF89a", ".gif"),
+    (b"BM", ".bmp"),
+    (b"\x00\x00\x01\x00", ".ico"),
+)
+NON_IMAGE_CONTENT_PREFIXES = ("text/", "application/json")
 
 
 @dataclass
@@ -99,6 +146,31 @@ class SourceRoute:
     kind: str
     value: str | Path
     platform: str = ""
+
+
+@dataclass
+class AssetReport:
+    """Images downloaded next to the Markdown output."""
+
+    folder: str = DEFAULT_ASSETS_DIR
+    downloaded: dict[str, Path] = field(default_factory=dict)
+    failures: list[tuple[str, str]] = field(default_factory=list)
+
+    @property
+    def count(self) -> int:
+        return len(self.downloaded)
+
+    @property
+    def touched(self) -> bool:
+        return bool(self.downloaded or self.failures)
+
+    def summary(self) -> str:
+        if not self.touched:
+            return "none"
+        folder = f"{self.folder.rstrip('/')}/"
+        if not self.failures:
+            return f"{self.count} images in {folder}"
+        return f"{self.count} images in {folder}, {len(self.failures)} failed"
 
 
 class TreeBuilder(HTMLParser):
@@ -1059,11 +1131,300 @@ def default_output_path(markdown: str) -> Path:
     return Path(platform_folder) / slugify(title)
 
 
-def write_markdown(markdown: str, output: Path | None) -> Path:
-    target = unique_output_path(output or default_output_path(markdown))
+def write_markdown(markdown: str, target: Path) -> Path:
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(markdown, encoding="utf-8")
     return target
+
+
+FENCE_RE = re.compile(r"^[ \t]*(`{3,}|~{3,})")
+INLINE_CODE_RE = re.compile(r"(`[^`\n]*`)")
+
+
+def split_fenced_blocks(markdown: str) -> list[tuple[bool, str]]:
+    """Split Markdown into prose and fenced-code segments, keeping order."""
+    segments: list[tuple[bool, str]] = []
+    buffer: list[str] = []
+    fence = ""
+    for line in markdown.splitlines(keepends=True):
+        match = FENCE_RE.match(line)
+        if not fence:
+            if match:
+                if buffer:
+                    segments.append((False, "".join(buffer)))
+                    buffer = []
+                fence = match.group(1)
+            buffer.append(line)
+            continue
+        buffer.append(line)
+        if match and match.group(1)[0] == fence[0] and len(match.group(1)) >= len(fence):
+            if not line.strip().strip(fence[0]).strip():
+                segments.append((True, "".join(buffer)))
+                buffer = []
+                fence = ""
+    if buffer:
+        segments.append((bool(fence), "".join(buffer)))
+    return segments
+
+
+def rewrite_images_outside_code(markdown: str, rewrite) -> str:
+    """Rewrite image links without touching code samples."""
+    output: list[str] = []
+    for is_code, segment in split_fenced_blocks(markdown):
+        if is_code:
+            output.append(segment)
+            continue
+        for index, piece in enumerate(INLINE_CODE_RE.split(segment)):
+            if index % 2:
+                output.append(piece)
+                continue
+            piece = rewrite_markdown_images(piece, rewrite)
+            output.append(rewrite_html_images(piece, rewrite))
+    return "".join(output)
+
+
+def parse_image_destination(markdown: str, start: int) -> tuple[int, str, str] | None:
+    """Return the end offset, destination, and inline title of a Markdown image."""
+    index = start
+    length = len(markdown)
+    while index < length and markdown[index] in " \t\n":
+        index += 1
+    if index < length and markdown[index] == "<":
+        close = markdown.find(">", index + 1)
+        if close == -1:
+            return None
+        end = markdown.find(")", close + 1)
+        if end == -1:
+            return None
+        return end + 1, markdown[index + 1:close], markdown[close + 1:end]
+    depth = 1
+    cursor = index
+    while cursor < length:
+        char = markdown[cursor]
+        if char == "\\":
+            cursor += 2
+            continue
+        if char == "(":
+            depth += 1
+        elif char == ")":
+            depth -= 1
+            if depth == 0:
+                break
+        cursor += 1
+    if cursor >= length:
+        return None
+    segment = markdown[index:cursor].strip()
+    match = re.match(r"^(\S+)(\s+.*)?$", segment, re.DOTALL)
+    if not match:
+        return cursor + 1, "", ""
+    return cursor + 1, match.group(1), match.group(2) or ""
+
+
+def rewrite_markdown_images(markdown: str, rewrite) -> str:
+    """Rewrite Markdown image destinations while preserving alt text and titles."""
+    parts: list[str] = []
+    index = 0
+    for match in IMAGE_OPEN_RE.finditer(markdown):
+        if match.start() < index:
+            continue
+        parsed = parse_image_destination(markdown, match.end())
+        if parsed is None:
+            continue
+        end, destination, tail = parsed
+        replacement = rewrite(destination) if destination else ""
+        if not replacement:
+            continue
+        parts.append(markdown[index:match.start()])
+        parts.append(f"![{match.group(1)}]({replacement}{tail})")
+        index = end
+    if not parts:
+        return markdown
+    parts.append(markdown[index:])
+    return "".join(parts)
+
+
+def rewrite_html_images(markdown: str, rewrite) -> str:
+    """Rewrite `src` (or `data-src`) inside raw HTML image tags."""
+
+    def replace_tag(match: re.Match[str]) -> str:
+        tag = match.group(0)
+        attributes = list(HTML_IMG_SRC_RE.finditer(tag))
+        if not attributes:
+            return tag
+        chosen = next(
+            (item for item in attributes if item.group("prefix").strip().lower() == "src="),
+            attributes[0],
+        )
+        replacement = rewrite(html.unescape(chosen.group("value")))
+        if not replacement:
+            return tag
+        start, end = chosen.span("value")
+        return f"{tag[:start]}{replacement}{tag[end:]}"
+
+    return HTML_IMG_TAG_RE.sub(replace_tag, markdown)
+
+
+def image_source_url(value: str, base_url: str = "") -> str:
+    """Resolve a fetchable absolute http(s) image URL, skipping inline payloads."""
+    candidate = html.unescape(value).strip().strip("'\"")
+    if not candidate:
+        return ""
+    if candidate.startswith("//"):
+        candidate = f"https:{candidate}"
+    lowered = candidate.lower()
+    if lowered.startswith(("data:", "blob:", "javascript:", "about:", "file:", "ftp:")):
+        return ""
+    if is_http_url(candidate):
+        parsed = urllib.parse.urlparse(candidate)
+        return "" if parsed.username or parsed.password else candidate
+    if not base_url or not is_http_url(base_url):
+        return ""
+    resolved = urllib.parse.urljoin(base_url, candidate)
+    return resolved if is_http_url(resolved) else ""
+
+
+def sniff_image_extension(data: bytes) -> str:
+    """Detect an image extension from the payload signature."""
+    for prefix, extension in IMAGE_MAGIC_PREFIXES:
+        if data.startswith(prefix):
+            return extension
+    if data[:4] == b"RIFF" and data[8:12] == b"WEBP":
+        return ".webp"
+    if data[4:8] == b"ftyp" and data[8:12] in {b"avif", b"avis"}:
+        return ".avif"
+    if data[:4] in {b"II*\x00", b"MM\x00*"}:
+        return ".tiff"
+    head = data[:1024].lstrip().lower()
+    if (head.startswith(b"<svg") or head.startswith(b"<?xml")) and b"<svg" in data[:4096].lower():
+        return ".svg"
+    return ""
+
+
+def image_extension(image_url: str, content_type: str, data: bytes) -> str:
+    """Pick a stable file extension for a downloaded image."""
+    sniffed = sniff_image_extension(data)
+    if sniffed:
+        return sniffed
+    mapped = IMAGE_CONTENT_TYPES.get((content_type or "").split(";")[0].strip().lower())
+    if mapped:
+        return mapped
+    suffix = Path(urllib.parse.urlparse(image_url).path).suffix.lower()
+    if suffix in IMAGE_URL_EXTENSIONS:
+        return ".jpg" if suffix == ".jpeg" else suffix
+    return ""
+
+
+def asset_filename(image_url: str, extension: str) -> str:
+    """Build a readable, collision-free, URL-free file name for an image."""
+    stem = Path(urllib.parse.unquote(urllib.parse.urlparse(image_url).path)).stem
+    stem = re.sub(r"[^a-z0-9]+", "-", stem.lower()).strip("-")[:60].strip("-")
+    digest = hashlib.sha1(image_url.encode("utf-8")).hexdigest()[:8]
+    return f"{stem or 'image'}-{digest}{extension}"
+
+
+def fetch_image_bytes(
+    image_url: str,
+    referer: str = "",
+    timeout: float = IMAGE_TIMEOUT_SECONDS,
+    max_bytes: int = IMAGE_MAX_BYTES,
+) -> tuple[bytes, str]:
+    """Download one image with a browser-like request and a hard size ceiling."""
+    headers = {
+        "User-Agent": IMAGE_USER_AGENT,
+        "Accept": "image/avif,image/webp,image/apng,image/*,*/*;q=0.8",
+    }
+    if referer and is_http_url(referer):
+        headers["Referer"] = referer
+    request = urllib.request.Request(image_url, headers=headers)
+    with urllib.request.urlopen(request, timeout=timeout) as response:
+        content_type = (response.headers.get("Content-Type") or "").split(";")[0].strip().lower()
+        declared = response.headers.get("Content-Length")
+        if declared:
+            try:
+                if int(declared) > max_bytes:
+                    raise RuntimeError(f"image is larger than {max_bytes // (1024 * 1024)} MB")
+            except ValueError:
+                pass
+        data = response.read(max_bytes + 1)
+    if not data:
+        raise RuntimeError("empty response body")
+    if len(data) > max_bytes:
+        raise RuntimeError(f"image is larger than {max_bytes // (1024 * 1024)} MB")
+    if content_type.startswith(NON_IMAGE_CONTENT_PREFIXES) and not sniff_image_extension(data):
+        raise RuntimeError(f"response is not an image ({content_type})")
+    return data, content_type
+
+
+def normalize_assets_dir(value: str) -> str:
+    """Keep the asset folder relative so it always sits beside the Markdown file."""
+    raw = (value or "").strip()
+    if not raw:
+        return DEFAULT_ASSETS_DIR
+    path = Path(raw)
+    if path.is_absolute() or ".." in path.parts:
+        raise ValueError("--assets-dir must be a relative folder beside the Markdown output.")
+    return path.as_posix().strip("/") or DEFAULT_ASSETS_DIR
+
+
+def localize_images(
+    markdown: str,
+    output: Path,
+    base_url: str = "",
+    assets_dir: str = DEFAULT_ASSETS_DIR,
+    timeout: float = IMAGE_TIMEOUT_SECONDS,
+    max_bytes: int = IMAGE_MAX_BYTES,
+) -> tuple[str, AssetReport]:
+    """Download remote images beside the Markdown output and use relative links."""
+    report = AssetReport(folder=normalize_assets_dir(assets_dir))
+    directory_name = report.folder
+    directory = output.parent / directory_name
+    cache: dict[str, str] = {}
+
+    def resolve(value: str) -> str:
+        image_url = image_source_url(value, base_url)
+        if not image_url:
+            return ""
+        if image_url in cache:
+            return cache[image_url]
+        # A failed download must keep an absolute link; upgrade resolved
+        # relative sources so no stale relative path stays in the archive.
+        fallback = image_url if image_url != value.strip() else ""
+        try:
+            data, content_type = fetch_image_bytes(image_url, base_url, timeout, max_bytes)
+            extension = image_extension(image_url, content_type, data)
+            if not extension:
+                raise RuntimeError(f"unsupported image payload ({content_type or 'unknown type'})")
+            directory.mkdir(parents=True, exist_ok=True)
+            name = asset_filename(image_url, extension)
+            target = directory / name
+            if not target.exists() or target.stat().st_size != len(data):
+                target.write_bytes(data)
+            relative = f"{directory_name}/{name}"
+        except Exception as exc:
+            cache[image_url] = fallback
+            report.failures.append((image_url, str(exc) or exc.__class__.__name__))
+            return fallback
+        cache[image_url] = relative
+        report.downloaded[image_url] = target
+        return relative
+
+    localized = rewrite_images_outside_code(markdown, resolve)
+    return localized, report
+
+
+def validate_local_assets(markdown: str, output: Path, report: AssetReport) -> None:
+    """Fail loudly when a rewritten asset link has no file on disk.
+
+    Only links the localization pass itself produced are checked, so relative
+    asset paths that pre-existed in the source never fail the conversion.
+    """
+    problems = []
+    for _, path in sorted(report.downloaded.items(), key=lambda item: item[1].name):
+        destination = f"{report.folder}/{path.name}"
+        if destination not in markdown or not (output.parent / destination).is_file():
+            problems.append(destination)
+    if problems:
+        raise ValueError("Downloaded image assets are missing: " + ", ".join(problems))
 
 
 def workspace_original_output(args: argparse.Namespace) -> Path | None:
@@ -1079,13 +1440,19 @@ def translated_source_path(output: Path, target_language: str) -> str:
     return str(output.with_name(f"original.{target_language}.md"))
 
 
-def build_extraction_notes(document: MarkdownDocument, output: Path, validation: str = "pass") -> str:
+def build_extraction_notes(
+    document: MarkdownDocument,
+    output: Path,
+    validation: str = "pass",
+    assets: str = "none",
+) -> str:
     issues = document.issues or ["none"]
     issue_lines = "\n".join(f"  - {issue}" for issue in issues)
     return (
         "# Extraction Notes\n\n"
         f"- Source: {document.source}\n"
         f"- Output: {output}\n"
+        f"- Assets: {assets}\n"
         f"- Source Language: {document.source_language}\n"
         f"- Target Language: {document.target_language}\n"
         f"- Translated Source: {translated_source_path(output, document.target_language)}\n"
@@ -1097,12 +1464,17 @@ def build_extraction_notes(document: MarkdownDocument, output: Path, validation:
     )
 
 
-def write_extraction_notes(document: MarkdownDocument, output: Path, notes_output: Path | None) -> Path | None:
+def write_extraction_notes(
+    document: MarkdownDocument,
+    output: Path,
+    notes_output: Path | None,
+    assets: str = "none",
+) -> Path | None:
     if notes_output is None:
         return None
     target = unique_output_path(notes_output)
     target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_text(build_extraction_notes(document, output), encoding="utf-8")
+    target.write_text(build_extraction_notes(document, output, assets=assets), encoding="utf-8")
     return target
 
 
@@ -1162,6 +1534,16 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--output", type=Path, help="Optional output Markdown path.")
     parser.add_argument("--workspace", type=Path, help="Workspace root; defaults output to source/original.md.")
     parser.add_argument("--notes-output", type=Path, help="Optional extraction notes Markdown path.")
+    parser.add_argument(
+        "--assets-dir",
+        default=DEFAULT_ASSETS_DIR,
+        help="Folder beside the Markdown file that stores downloaded images. Defaults to assets.",
+    )
+    parser.add_argument(
+        "--no-download-images",
+        action="store_true",
+        help="Keep remote image URLs instead of downloading them into the assets folder.",
+    )
     parser.add_argument("--source-language", help="Original source language label for extraction notes.")
     parser.add_argument("--target-language", help="Requested translation language label, such as zh-CN or en.")
     parser.add_argument("--html-file", type=Path, help="Use a local rendered HTML file as URL fallback input.")
@@ -1177,14 +1559,34 @@ def main(argv: list[str] | None = None) -> int:
     try:
         document = convert_source_to_document(args)
         markdown = wrap_markdown_document(document)
-        output = write_markdown(markdown, workspace_original_output(args))
-        notes = write_extraction_notes(document, output, args.notes_output)
+        output = unique_output_path(workspace_original_output(args) or default_output_path(markdown))
+        report = AssetReport()
+        if not args.no_download_images:
+            markdown, report = localize_images(
+                markdown,
+                output,
+                base_url=document.source,
+                assets_dir=args.assets_dir,
+            )
+            if report.touched:
+                validate_markdown(markdown)
+                validate_local_assets(markdown, output, report)
+            if report.failures:
+                document.issues.extend(
+                    f"Image download failed: {url} ({reason})" for url, reason in report.failures
+                )
+                if document.confidence == "high":
+                    document.confidence = "medium"
+        write_markdown(markdown, output)
+        notes = write_extraction_notes(document, output, args.notes_output, report.summary())
     except Exception as exc:
         print(f"web-markdown failed: {exc}", file=sys.stderr)
         return 1
     word_count = len(re.findall(r"\w+", markdown))
     source_label = metadata_source(markdown)
     message = f"Saved {output} - {word_count} words - {source_label} - confidence {document.confidence}"
+    if report.touched:
+        message += f" - assets {report.summary()}"
     if notes:
         message += f" - notes {notes}"
     print(message)

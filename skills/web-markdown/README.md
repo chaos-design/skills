@@ -32,6 +32,8 @@ npx skills add https://github.com/chaos-design/skills --skill web-markdown
   sidebars, cookie banners, advertisements, and sharing widgets.
 - Converts rendered HTML to Markdown while preserving body text, images, links,
   blockquotes, lists, tables, inline code, and fenced code blocks.
+- Downloads remote images into an `assets/` folder beside the Markdown file and
+  rewrites the links to relative paths, so the archive stays readable offline.
 - Emits Markdown tables as contiguous table blocks, removes rendered line-number
   gutters from code blocks, and adds language identifiers to fences when they
   can be inferred.
@@ -104,6 +106,32 @@ python3 skills/web-markdown/scripts/web_markdown.py \
   --output web/example-article.md
 ```
 
+## Image Assets
+
+Remote images are downloaded next to the Markdown file so the archive renders
+without network access:
+
+```text
+web/
+  example-article.md
+  assets/
+    architecture-diagram-1a2b3c4d.png
+    benchmark-chart-9f8e7d6c.webp
+```
+
+- The folder is always a sibling of the Markdown file: `web/<slug>.md` uses
+  `web/assets/`, and `source/original.md` uses `source/assets/`.
+- File names are `<url-slug>-<sha1-prefix>.<ext>`, so they stay readable,
+  stable across runs, and collision-free when several pages share one folder.
+- `http://`, `https://`, and page-relative images are downloaded; relative
+  links are resolved against the source URL first. `data:`, `blob:`, and
+  `file:` links are left unchanged.
+- A failed download keeps the original absolute URL, records
+  `Image download failed` in the extraction notes, and lowers confidence from
+  `high` to `medium`.
+- `--assets-dir <name>` renames the folder; `--no-download-images` keeps remote
+  image URLs.
+
 ## End-to-End Processing Flow
 
 `web-markdown` is the standard source-normalization skill for durable Markdown
@@ -124,7 +152,7 @@ flowchart TD
   I -- Yes --> G
   I -- No --> J[Use built-in HTML parser fallback]
   J --> G
-  G --> K[Validate metadata, body, structure, media, and timestamp]
+  G --> K[Download images into assets and validate metadata, body, structure, media, and timestamp]
   K --> L{Validation and review passed?}
   L -- No --> M[Repair the minimal affected section or report a blocked source]
   M --> K
@@ -137,7 +165,7 @@ flowchart TD
 2. Configure Python, `markitdown[all]`, optional Camofox rendering, output location, and overwrite policy.
 3. Classify the resource type before dependency checks or conversion. Platform URLs route to `x-tweet-fetcher`; generic URLs use MarkItDown with Camofox fallback; local files and pasted text use MarkItDown.
 4. Execute only the selected conversion route. HTML files also use MarkItDown first; if generic URL or HTML conversion fails, use Camofox-rendered HTML and then the built-in HTML parser fallback when necessary.
-5. Validate source metadata, body completeness, media preservation, code and table structure, and UTC+8 timestamp formatting.
+5. Localize images into `assets/` beside the output, then validate source metadata, body completeness, media preservation, code and table structure, asset files on disk, and UTC+8 timestamp formatting.
 6. Run review or repair only when confidence is low, validation fails, or the user explicitly requests review.
 7. Before writing the output, use `AskUserQuestion` to ask whether the user wants modifications. Write and deliver the artifact only after the user confirms that no changes are needed.
 
