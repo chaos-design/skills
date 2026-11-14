@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-14 18:52:30",
+  "generatedAt": "2026-11-14 19:17:33",
   "repo": "chaos-design/skills",
   "repoUrl": "https://github.com/chaos-design/skills",
   "installPrefix": "npx skills add https://github.com/chaos-design/skills --skill",
@@ -431,17 +431,18 @@
       }
     },
     {
-      "name": "review",
+      "name": "pr-review",
       "version": "0.1.0",
       "category": "Workflow",
-      "description": "Review code changes — uncommitted working-tree diff, a commit, a branch, or a GitHub pull request — and return severity-graded actionable findings that name the exact scenario each issue needs. Reads full files, not just diffs, and when the request says comment / 评论, posts the finished review to the PR as one plain comment via gh.",
+      "description": "Review a GitHub pull request — or any other code change: an uncommitted working-tree diff, a commit, a branch — and return severity-graded actionable findings that name the exact scenario each issue needs. Reads full files and the PR's stated intent, not just diffs, and when the request says comment / 评论, posts the finished review to the PR as one plain comment via gh.",
       "tags": [
         "code-review",
+        "pull-request",
         "git",
         "workflow"
       ],
       "repo": "chaos-design/skills",
-      "homepage": "https://github.com/chaos-design/skills/tree/main/skills/review",
+      "homepage": "https://github.com/chaos-design/skills/tree/main/skills/pr-review",
       "install": {
         "dependsOn": [],
         "optionalDeps": [],

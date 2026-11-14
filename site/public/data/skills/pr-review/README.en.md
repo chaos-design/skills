@@ -1,25 +1,25 @@
-# Review
+# PR Review
 
-Reviews code changes and returns actionable, severity-graded findings. Bugs
-come first; structure, performance and behavior changes follow. Works from
-uncommitted working-tree changes, a commit, a branch diff, or a GitHub pull
-request — and when the request says "comment" / "评论", posts the finished
-review to the PR via `gh`.
+Reviews a GitHub pull request and returns actionable, severity-graded
+findings. Bugs come first; structure, performance and behavior changes
+follow. The same workflow also covers an uncommitted working-tree diff, a
+single commit, or a branch diff — and when the request says "comment" /
+"评论", posts the finished review to the PR via `gh`.
 
 ## Install
 
 ```bash
-npx skills add https://github.com/chaos-design/skills --skill review
+npx skills add https://github.com/chaos-design/skills --skill pr-review
 ```
 
 ## What it does
 
 | Input | Trigger | Result |
 | --- | --- | --- |
+| PR URL / number | "review `https://github.com/org/repo/pull/9`，并且comment" | PR context plus diff via `gh pr`; review posted as a PR comment when requested |
 | None (default) | "review my changes" | `git diff`, `git diff --cached` and untracked files, reviewed in place |
 | Commit hash | "review 4d97295" | `git show <hash>` |
 | Branch | "review this branch against main" | `git diff <branch>...HEAD` |
-| PR URL / number | "review https://github.com/org/repo/pull/9，并且comment" | PR context plus diff via `gh pr`; review posted as a PR comment when requested |
 
 The request is free-form: the target may sit in the same sentence as extra
 instructions, so the skill extracts the target and any flags before running
@@ -46,11 +46,11 @@ anything.
 Reviews are triggered by asking, in any of the four modes:
 
 ```text
+review https://github.com/org/repo/pull/9            # a pull request
+review https://github.com/org/repo/pull/9，并且comment   # review and post to the PR
 review                              # uncommitted changes (default)
 review 4d97295                      # a specific commit
 review main...HEAD                  # branch diff against main
-review https://github.com/org/repo/pull/9            # a pull request
-review https://github.com/org/repo/pull/9，并且comment   # review and post to the PR
 ```
 
 Findings are ordered by severity:
@@ -97,5 +97,5 @@ Report shape (illustrative):
 
 ## License
 
-Apache-2.0. See [`LICENSE`](https://github.com/chaos-design/skills/blob/main/skills/review/LICENSE).
+Apache-2.0. See [`LICENSE`](https://github.com/chaos-design/skills/blob/main/skills/pr-review/LICENSE).
 

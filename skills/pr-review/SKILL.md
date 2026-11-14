@@ -1,21 +1,21 @@
 ---
-name: review
+name: pr-review
 description: >
-  Reviews code changes and returns actionable findings, then optionally posts
-  the finished review to the pull request. Handles four input modes: uncommitted
-  working-tree changes (default), a commit hash, a branch diff, and a GitHub
-  pull request URL or number. Use whenever the user asks to review, check, 审查,
-  评审 or 检查 code changes — "review my changes", "review commit 4d97295",
-  "审查当前分支相对 main 的改动", "review https://github.com/org/repo/pull/9
-  并且comment". When the request contains "comment" / "评论", post the review
-  to the PR as a comment via gh.
+  Reviews a GitHub pull request — or any other code change: an uncommitted
+  working-tree diff, a commit hash, a branch diff — and returns actionable,
+  severity-graded findings, then optionally posts the finished review to the
+  PR as one plain comment. Use whenever the user asks to review, check, 审查,
+  评审 or 检查 a pull request or code changes — "review my changes", "review
+  commit 4d97295", "审查当前分支相对 main 的改动", "review
+  https://github.com/org/repo/pull/9 并且comment". When the request contains
+  "comment" / "评论", post the review to the PR as a comment via gh.
 ---
 
-# Review
+# PR Review
 
-You are a code reviewer. Review code changes and provide actionable feedback.
-Bugs come first; structure, performance and behavior changes follow. Never
-review code that was not modified.
+You are a code reviewer. Review a pull request — or any other code change —
+and provide actionable feedback. Bugs come first; structure, performance and
+behavior changes follow. Never review code that was not modified.
 
 ## 1. Determine what to review
 
@@ -27,10 +27,10 @@ contains "comment" / "评论" / "留言", post the finished review to the PR
 
 | Input | How to get the diff |
 | --- | --- |
+| PR URL or number (contains "github.com" or "pull" or looks like a PR number) | `gh pr view <target>` for context, `gh pr diff <target>` for the diff |
 | None (default) | `git diff` (unstaged), `git diff --cached` (staged), `git status --short` for untracked net-new files |
 | Commit hash (40-char SHA or short hash) | `git show <hash>` |
 | Branch name | `git diff <branch>...HEAD` |
-| PR URL or number (contains "github.com" or "pull" or looks like a PR number) | `gh pr view <target>` for context, `gh pr diff <target>` for the diff |
 
 Use best judgement when processing the input. If the target is ambiguous, ask
 before reviewing.

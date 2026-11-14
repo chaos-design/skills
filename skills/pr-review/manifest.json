@@ -1,0 +1,26 @@
+{
+  "name": "pr-review",
+  "version": "0.1.0",
+  "category": "Workflow · PR review → findings → PR comment",
+  "tags": [
+    "code-review",
+    "pull-request",
+    "git",
+    "workflow"
+  ],
+  "description": "Review a GitHub pull request — or any other code change: an uncommitted working-tree diff, a commit, a branch — and return severity-graded actionable findings that name the exact scenario each issue needs. Reads full files and the PR's stated intent, not just diffs, and when the request says comment / 评论, posts the finished review to the PR as one plain comment via gh.",
+  "homepage": "https://github.com/chaos-design/skills/tree/main/skills/pr-review",
+  "install": {
+    "dependsOn": [],
+    "optionalDeps": [],
+    "runtime": ["git for diff modes; gh authenticated for PR mode"]
+  },
+  "compat": [
+    "claude-code",
+    "claude-ai",
+    "cursor",
+    "codex-cli",
+    "gemini-cli",
+    "opencode"
+  ]
+}

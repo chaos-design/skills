@@ -42,7 +42,7 @@ and license file so that agents can install and use it independently.
 | `html-brief` | Renders a complex answer as one self-contained HTML brief: panel grid, flow and sequence diagrams, comparison tables, two themes and a light/dark switch. | [English](./skills/html-brief/README.md) / [中文](./skills/html-brief/README.zh-CN.md) |
 | `live-panel` | Turns a system description into an always-running architecture panel, rendered to an H.264 mp4 or a live page. | [English](./skills/live-panel/README.md) / [中文](./skills/live-panel/README.zh-CN.md) |
 | `plan-flow` | Turns a task into a plan file under `plans/`, tracks progress, and archives it only when every task and Definition-of-Done item is checked. | [English](./skills/plan-flow/README.md) / [中文](./skills/plan-flow/README.zh-CN.md) |
-| `review` | Reviews code changes — uncommitted diff, a commit, a branch, or a GitHub PR — and returns severity-graded findings; posts the review as a PR comment when asked. | [English](./skills/review/README.md) / [中文](./skills/review/README.zh-CN.md) |
+| `pr-review` | Reviews a GitHub pull request — or an uncommitted diff, a commit, a branch — and returns severity-graded findings; posts the review as a PR comment when asked. | [English](./skills/pr-review/README.md) / [中文](./skills/pr-review/README.zh-CN.md) |
 | `task-inject` | Injects modification feedback and adjustment instructions into a task the agent is already executing; the running agent drains them at fixed checkpoints, by severity (halt / redirect / revise / note), with an audit log. | [English](./skills/task-inject/README.md) / [中文](./skills/task-inject/README.zh-CN.md) |
 | `technology-selection` | Selects the technology stack, tools, and architecture for a project: inspects the file system, applies the default React + TypeScript + Vite (Tailwind/shadcn) frontend and Node.js + TypeScript backend with pnpm/Biome, and records a mandatory execution plan before any scaffolding. | [English](./skills/technology-selection/README.md) / [中文](./skills/technology-selection/README.zh-CN.md) |
 | `web-markdown` | Fetches and converts web content into stable Markdown for other skills. | [English](./skills/web-markdown/README.md) / [中文](./skills/web-markdown/README.zh-CN.md) |
@@ -79,7 +79,7 @@ npx skills add https://github.com/chaos-design/skills --skill image-generation
 npx skills add https://github.com/chaos-design/skills --skill html-brief
 npx skills add https://github.com/chaos-design/skills --skill live-panel
 npx skills add https://github.com/chaos-design/skills --skill plan-flow
-npx skills add https://github.com/chaos-design/skills --skill review
+npx skills add https://github.com/chaos-design/skills --skill pr-review
 npx skills add https://github.com/chaos-design/skills --skill task-inject
 npx skills add https://github.com/chaos-design/skills --skill technology-selection
 npx skills add https://github.com/chaos-design/skills --skill web-markdown

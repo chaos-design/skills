@@ -1,23 +1,21 @@
-# Review 代码评审
+# PR Review（代码评审）
 
-[English](./README.md)
-
-评审代码变更，给出按严重程度分级、可直接执行的结论。Bug 优先，其次才是结构、性能与行为变化。支持四种输入：未提交的工作区改动、某次提交、分支差异、GitHub Pull Request——当请求里带 "comment" / "评论" 时，评审完成后通过 `gh` 以评论形式发到 PR 上。
+评审一个 GitHub Pull Request，输出按严重程度分级、可直接执行的结论。Bug 优先，其次才是结构、性能与行为变化。同一套流程也覆盖未提交的工作区改动、单次提交与分支差异——当请求里带 "comment" / "评论" 时，评审完成后通过 `gh` 以评论形式发到 PR 上。
 
 ## 安装
 
 ```bash
-npx skills add https://github.com/chaos-design/skills --skill review
+npx skills add https://github.com/chaos-design/skills --skill pr-review
 ```
 
 ## 能力
 
 | 输入 | 触发 | 结果 |
 | --- | --- | --- |
+| PR 链接 / 编号 | "review `https://github.com/org/repo/pull/9`，并且comment" | 通过 `gh pr` 获取上下文与 diff；要求时以 PR 评论发出评审 |
 | 无参数（默认） | "review 未提交的改动" | 评审 `git diff`、`git diff --cached` 与未跟踪的新文件 |
 | 提交哈希 | "review 4d97295" | `git show <hash>` |
 | 分支 | "review main...HEAD" / "对照 main 评审当前分支" | `git diff <branch>...HEAD` |
-| PR 链接 / 编号 | "review https://github.com/org/repo/pull/9，并且comment" | 通过 `gh pr` 获取上下文与 diff；要求时以 PR 评论发出评审 |
 
 请求是自由文本：目标可能和附加指令写在同一句话里，技能会先解析出目标和标志位（如 "comment"），再开始执行。
 
@@ -33,11 +31,11 @@ npx skills add https://github.com/chaos-design/skills --skill review
 直接用自然语言触发，四种模式任选：
 
 ```text
+review https://github.com/org/repo/pull/9            # 评审指定 Pull Request
+review https://github.com/org/repo/pull/9，并且comment   # 评审并将结论发布为 PR 评论
 review                              # 评审未提交的改动（默认）
 review 4d97295                      # 评审指定提交
 review main...HEAD                  # 评审相对 main 的分支差异
-review https://github.com/org/repo/pull/9            # 评审指定 Pull Request
-review https://github.com/org/repo/pull/9，并且comment   # 评审并将结论发布为 PR 评论
 ```
 
 发现按严重程度排序：
@@ -80,4 +78,5 @@ review https://github.com/org/repo/pull/42
 
 ## 许可证
 
-Apache-2.0，见 [`LICENSE`](LICENSE)。
+Apache-2.0，见 [`LICENSE`](https://github.com/chaos-design/skills/blob/main/skills/pr-review/LICENSE)。
+
