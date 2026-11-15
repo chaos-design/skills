@@ -333,3 +333,22 @@
   border: none;
   border-top: 1px solid var(--border);
 }
+
+/*
+ * Thin local scrollbar for the tag filter when it overflows the 3-row cap.
+ * Width-track stays transparent so only the thumb reads as a scroll affordance.
+ */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--ds-gray-300) transparent;
+}
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: var(--ds-gray-300);
+  border-radius: 9999px;
+}

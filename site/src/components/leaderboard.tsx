@@ -112,9 +112,10 @@ export function Leaderboard() {
           </Tabs>
 
           {/* Tag filter: every distinct tag as a pill, most common first.
-              Toggling narrows the table to skills carrying all selected tags. */}
+              Toggling narrows the table to skills carrying all selected tags.
+              Capped at 3 rows; anything beyond scrolls inside this box. */}
           {chips.length > 0 && (
-            <div className="mt-3 flex flex-wrap items-center gap-1.5">
+            <div className="mt-3 flex max-h-[90px] flex-wrap content-start gap-1.5 overflow-y-auto pr-1 scrollbar-thin">
               {chips.map(({ tag, count }) => {
                 const active = selectedTags.includes(tag);
                 return (
