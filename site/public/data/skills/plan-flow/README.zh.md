@@ -60,5 +60,5 @@ python3 $S move 01 archive
 
 ## 许可证
 
-Apache-2.0，见 [`LICENSE`](LICENSE)。
+Apache-2.0，见 [`LICENSE`](https://github.com/chaos-design/skills/blob/main/skills/plan-flow/LICENSE)。
 

@@ -29,7 +29,7 @@ npx skills add https://github.com/chaos-design/skills --skill task-inject
 ## 设计
 
 架构图、消息生命周期、检查点决策流程与各设计选择背后的原理：
-[设计说明（中文）](docs/design.zh-CN.md) · [docs/design.md](docs/design.md)。
+[设计说明（中文）](https://github.com/chaos-design/skills/blob/main/skills/task-inject/docs/design.zh-CN.md) · [docs/design.md](https://github.com/chaos-design/skills/blob/main/skills/task-inject/docs/design.md)。
 
 - **目录即状态。** 待处理指令是 `inbox/` 里的文件，已处理在 `applied/`，日志只追加。没有第二份状态，不会漂移。
 - **注入与执行解耦。** 通道就是仓库本身，因此运行中可用、共享仓库的多台机器可用、自动化流程也可用——不依赖套接字或聊天流。
@@ -88,5 +88,5 @@ python3 $S log [--last 5]
 
 ## 许可
 
-Apache-2.0，见 [`LICENSE`](LICENSE)。
+Apache-2.0，见 [`LICENSE`](https://github.com/chaos-design/skills/blob/main/skills/task-inject/LICENSE)。
 

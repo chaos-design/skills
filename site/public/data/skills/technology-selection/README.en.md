@@ -51,5 +51,5 @@ will follow the four steps in [`SKILL.md`](https://github.com/chaos-design/skill
 
 ## License
 
-Apache-2.0. See [`LICENSE`](LICENSE).
+Apache-2.0. See [`LICENSE`](https://github.com/chaos-design/skills/blob/main/skills/technology-selection/LICENSE).
 

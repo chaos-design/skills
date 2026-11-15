@@ -73,5 +73,5 @@ the working directory.
 
 ## License
 
-Apache-2.0. See [`LICENSE`](LICENSE).
+Apache-2.0. See [`LICENSE`](https://github.com/chaos-design/skills/blob/main/skills/plan-flow/LICENSE).
 

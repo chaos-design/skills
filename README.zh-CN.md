@@ -36,6 +36,7 @@ Chaos Design Skills 是一组面向真实工作流的 Agent Skills，项目地�
 | `html-brief` | 把复杂答案渲染成单文件 HTML 简报：面板栅格、流程图与时序图、对比表、双主题与明暗切换。 | [中文](./skills/html-brief/README.zh-CN.md) / [English](./skills/html-brief/README.md) |
 | `live-panel` | 把系统描述变成一直在运行的架构看板，渲染为 H.264 mp4 或活的网页。 | [中文](./skills/live-panel/README.zh-CN.md) / [English](./skills/live-panel/README.md) |
 | `plan-flow` | 把任务落成 `plans/` 下的计划文件，跟踪进度，仅在全部任务与完成标准勾选后归档。 | [中文](./skills/plan-flow/README.zh-CN.md) / [English](./skills/plan-flow/README.md) |
+| `pr-review` | 评审一个 GitHub Pull Request——或未提交 diff、某次提交、分支——输出按严重程度分级的结论；要求时把评审以评论发到 PR。 | [中文](./skills/pr-review/README.zh-CN.md) / [English](./skills/pr-review/README.md) |
 | `task-inject` | 向 Agent 正在执行的任务中动态注入修改意见与调整指令；运行中的 Agent 在固定检查点按严重级别（halt / redirect / revise / note）消化指令，并留审计日志。 | [中文](./skills/task-inject/README.zh-CN.md) / [English](./skills/task-inject/README.md) |
 | `technology-selection` | 为项目选型技术栈、工具与架构：先勘察文件系统，应用默认的前端 React + TypeScript + Vite（Tailwind/shadcn）、后端 Node.js + TypeScript，配合 pnpm/Biome，并强制记录一份执行计划后才开始脚手架。 | [中文](./skills/technology-selection/README.zh-CN.md) / [English](./skills/technology-selection/README.md) |
 | `web-markdown` | 抓取并转换网页内容，输出稳定 Markdown，供其他 Skill 使用。 | [中文](./skills/web-markdown/README.zh-CN.md) / [English](./skills/web-markdown/README.md) |
@@ -70,6 +71,7 @@ npx skills add https://github.com/chaos-design/skills --skill image-generation
 npx skills add https://github.com/chaos-design/skills --skill html-brief
 npx skills add https://github.com/chaos-design/skills --skill live-panel
 npx skills add https://github.com/chaos-design/skills --skill plan-flow
+npx skills add https://github.com/chaos-design/skills --skill pr-review
 npx skills add https://github.com/chaos-design/skills --skill task-inject
 npx skills add https://github.com/chaos-design/skills --skill technology-selection
 npx skills add https://github.com/chaos-design/skills --skill web-markdown

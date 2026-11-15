@@ -381,5 +381,5 @@ python3 -m json.tool skills/bilingual-reader/assets/templates/templates.json > /
 
 ## 许可证
 
-本项目使用 Apache License 2.0，详见 [LICENSE](LICENSE)。
+本项目使用 Apache License 2.0，详见 [LICENSE](https://github.com/chaos-design/skills/blob/main/skills/bilingual-reader/LICENSE)。
 

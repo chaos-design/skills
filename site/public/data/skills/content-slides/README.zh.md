@@ -176,7 +176,7 @@ skills/content-slides/
     └── extract_content.py
 ```
 
-完整工作流与生成规则见 [SKILL.md](SKILL.md)。
+完整工作流与生成规则见 [SKILL.md](https://github.com/chaos-design/skills/blob/main/skills/content-slides/SKILL.md)。
 
 ## 更新截图
 

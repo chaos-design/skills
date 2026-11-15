@@ -381,5 +381,5 @@ This repository keeps skill runtime files under `skills/bilingual-reader` and lo
 
 ## License
 
-Apache License 2.0. See [LICENSE](LICENSE).
+Apache License 2.0. See [LICENSE](https://github.com/chaos-design/skills/blob/main/skills/bilingual-reader/LICENSE).
 
