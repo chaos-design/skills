@@ -1,15 +1,15 @@
 ---
 name: docs-site
 description: >
-  Quickly creates a responsive, multi-page static documentation site from
-  Markdown plus a small JSON config. Generates the documentation structure
-  automatically, wires a configurable navigation menu, integrates existing
-  Markdown / data formats, and adds a responsive layout, a light/dark theme
-  switch, an EN/中 toggle and a data "list" page type with client-side
-  sorting (commit count, last-updated), text filters and status badges.
-  Invoke when the user asks to build a docs site, documentation page,
-  multi-page help center, or to publish structured content as an offline,
-  self-contained static site.
+  Quickly creates a dark-first, responsive, multi-page static documentation
+  site from Markdown plus a small JSON config. Generates the documentation
+  structure automatically, wires a configurable navigation menu with a pinned
+  desktop sidebar and a mobile dropdown panel, integrates existing Markdown /
+  data formats, and adds a light/dark theme switch, a full EN/中 UI toggle and
+  a data "list" page type with client-side sorting (commit count,
+  last-updated), text filters and status badges. Invoke when the user asks to
+  build a docs site, documentation page, multi-page help center, or to publish
+  structured content as an offline, self-contained static site.
 ---
 
 # Docs Site
@@ -19,21 +19,29 @@ multi-page, self-contained static documentation site. The output is a set of
 offline HTML files that open as-is — no build step, no external runtime
 fetches.
 
-The layout is a responsive documentation design: an 860px mobile breakpoint
-with a mobile top bar and full-screen navigation panel, fluid content width,
-a diagram lightbox that zooms to the viewport, a theme switch, and an EN/中
-language toggle.
+The layout is a dark-first, viewport-locked documentation design: a pinned
+300px sidebar with a gradient brand mark, grouped navigation and a matched
+GitHub / language footer; a content column that owns the only scrollbar; and
+an 860px breakpoint where a fixed top bar (brand, GitHub, language pill,
+three-bar toggle) expands the sidebar into a full-width dropdown with a
+backdrop. Fluid content width, a diagram lightbox, a light/dark switch and a
+full EN/中 UI toggle complete the design.
 
 ## What the skill does
 
 - Generates the documentation structure from your config (one HTML per page).
-- Configures the navigation menu (flat or grouped) with active-state tracking.
+- Configures the navigation menu (flat or grouped) with active-state tracking
+  and real sibling-page links; the active item is scrolled into view when the
+  mobile panel opens.
 - Integrates existing formats: Markdown (with optional front-matter) for doc
   pages, JSON data for list pages.
-- Produces a responsive layout with multi-page support.
+- Produces a pinned, responsive layout: the shell never stretches, the brand
+  and footer stay put, and only the content scrolls.
 - Adds a list page type that renders a data table with client-side sorting
   (e.g. commit count, last-updated time), text search, status filters and
   color-coded status badges.
+- Re-labels the entire UI on EN/中 switch (nav, chrome, list controls,
+  lightbox) and persists both language and theme choices to localStorage.
 
 ## Inputs
 
@@ -72,13 +80,18 @@ language toggle.
   "tagline": "Short one-liner",
   "description": "Page hero copy",
   "repo": "github.com/owner/repo",
-  "theme": "auto",
-  "i18n": ["en", "zh"],
+  "theme": "dark",
+  "lang": "zh",
+  "i18n": ["zh", "en"],
+  "brand_mark": "M",
+  "brand_sub": "Documentation",
+  "brand_sub_zh": "文档中心",
   "nav": [
-    {"slug": "introduction", "label": "Introduction"},
-    {"slug": "pull-requests", "label": "Pull Requests"},
-    {"slug": "guides", "label": "Guides", "group": "Deep dive",
-     "items": [{"slug": "quick-start", "label": "Quick start"}]}
+    {"slug": "introduction", "label": "Introduction", "label_zh": "简介"},
+    {"slug": "pull-requests", "label": "Pull Requests", "label_zh": "拉取请求"},
+    {"slug": "guides", "label": "Guides", "label_zh": "指南", "group": "Deep dive",
+     "group_zh": "深入阅读",
+     "items": [{"slug": "quick-start", "label": "Quick start", "label_zh": "快速开始"}]}
   ],
   "pages": [
     {"slug": "introduction", "type": "doc", "source": "docs/introduction.md"},
@@ -99,7 +112,15 @@ language toggle.
 ```
 
 - `nav` entries with `group` render as a labeled section whose `items` are
-  nested links. Entries without `group` are top-level links.
+  nested links. Entries without `group` are top-level links. Every entry links
+  to `<slug>.html`, so the menu navigates between the generated pages.
+- `label_zh` / `group_zh` provide the Chinese label for nav items and group
+  headings; without them the English label is reused. `brand_mark` is the
+  logo glyph (defaults to the first letter of `title`), `brand_sub` /
+  `brand_sub_zh` are the two lines under the brand name, and `repo` feeds the
+  GitHub entries in the sidebar footer and mobile header.
+- `lang` is the initial language (`zh` by default) and `i18n` is the toggle
+  cycle order. `theme` accepts `dark` (default), `light` or `auto`.
 - A `list` page `columns` with `"link": "url"` turns that column's value into
   an outbound link. `sortable` lists the column keys the user may click to
   reorder; `status_field` is the column rendered as a badge; `filters` are
@@ -114,6 +135,28 @@ language toggle.
 - Status values render as color-coded badges (open, merged, closed, draft,
   in-review, changes-requested, …).
 - A live count shows how many rows match the current filters.
+
+## Layout, menu and mobile behavior
+
+- Desktop (> breakpoint): a `300px` sidebar and a fluid content column inside a
+  `100vh` grid. The brand head and the GitHub / language footer are pinned; the
+  nav scrolls independently; only the content column scrolls the page.
+- Mobile (≤ breakpoint, `860px` by default): a fixed `56px` top bar carries the
+  brand, a GitHub icon button, a square language pill and a three-bar toggle
+  that morphs into a close cross. The sidebar becomes a full-width panel below
+  the bar with its own scroll area and a tap-to-close backdrop. Esc closes it
+  and restores focus to the toggle; navigation and a switch back to desktop
+  width close it too.
+- The active nav link is scrolled into view when the mobile panel opens, and
+  `aria-expanded` / `aria-controls` stay in sync with the panel state.
+
+## Language and theme
+
+- The EN/中 button cycles through `i18n`, persists the choice under
+  `docs-site-lang`, and re-labels all `data-i18n` elements (nav, chrome, list
+  search/filter, count, lightbox) in place. `<html lang>` follows the choice.
+- The theme button cycles dark/light, persists under `docs-theme`, and `auto`
+  resolves via `prefers-color-scheme`.
 
 ## Diagrams
 

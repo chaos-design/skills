@@ -6,27 +6,35 @@ Generates a responsive, multi-page, self-contained static documentation site
 from Markdown content plus a small JSON config. No build step, no external
 runtime fetches — every page is an offline HTML file.
 
-The layout is a responsive, dependency-free documentation design: an 860px
-mobile breakpoint, a mobile top bar with a full-screen navigation panel,
-fluid content width, a diagram lightbox that zooms to the viewport, a
-light/dark theme switch, and an EN/中 toggle.
+The layout is a dark-first, responsive documentation design: a pinned 300px
+sidebar (brand header, scrollable grouped nav, and a matched GitHub / language
+footer pinned in place), a content column that owns its own scroll inside a
+viewport-locked shell, fluid content width, and a diagram lightbox. At 860px and
+below, a fixed top bar (brand, GitHub, language pill and a three-bar toggle)
+expands the sidebar into a full-width dropdown with its own scroll area and a
+dimming backdrop. A light/dark theme switch and a real EN/中 label toggle are
+included; both persist to localStorage.
 
 ## Features
 
 - **Automatic structure** — one self-contained HTML file per page, generated
   from your config.
 - **Configurable navigation** — flat or grouped menus with active-state
-  tracking, rendered as a desktop sidebar and a mobile full-screen panel.
+  tracking and real sibling-page links; rendered as a pinned desktop sidebar
+  and a full-width mobile dropdown that scrolls the active entry into view.
 - **Format integration** — Markdown (with optional front-matter) for doc
   pages, JSON data for list pages.
-- **Responsive + multi-page** — desktop two-column grid, mobile top-bar layout,
-  fluid content width that never overflows at narrow viewports.
+- **Responsive + multi-page** — a viewport-locked two-column shell where only
+  the content scrolls, a ≤860px mobile top bar with a morphing hamburger, a
+  tap-to-close backdrop, and fluid content width that never overflows.
 - **List page type** — a data table with client-side sorting (any column,
   including commit count and last-updated time), free-text search, status
   filters and color-coded status badges, plus a live match count.
 - **Diagram lightbox** — ` ```mermaid ` fences become figures that open in a
   full-viewport lightbox and zoom/pan to fit.
-- **Theme + i18n** — persisted light/dark switch and EN/中 label toggle.
+- **Theme + i18n** — a persisted light/dark switch (dark by default) and an
+  EN/中 toggle that re-labels every piece of UI chrome, nav entries, list
+  controls and lightbox buttons in place, keeping `<html lang>` in sync.
 
 ## Usage
 
@@ -42,12 +50,18 @@ python3 skills/docs-site/scripts/docs_site.py check --out ./out
 {
   "title": "My Docs",
   "tagline": "Short one-liner",
-  "theme": "auto",
-  "i18n": ["en", "zh"],
+  "repo": "github.com/owner/repo",
+  "theme": "dark",
+  "lang": "zh",
+  "i18n": ["zh", "en"],
+  "brand_mark": "M",
+  "brand_sub": "Documentation",
+  "brand_sub_zh": "文档中心",
   "nav": [
-    {"slug": "introduction", "label": "Introduction"},
-    {"slug": "guides", "label": "Guides", "group": "Deep dive",
-     "items": [{"slug": "quick-start", "label": "Quick start"}]}
+    {"slug": "introduction", "label": "Introduction", "label_zh": "简介"},
+    {"slug": "guides", "label": "Guides", "label_zh": "指南", "group": "Deep dive",
+     "group_zh": "深入阅读",
+     "items": [{"slug": "quick-start", "label": "Quick start", "label_zh": "快速开始"}]}
   ],
   "pages": [
     {"slug": "introduction", "type": "doc", "source": "docs/introduction.md"},
