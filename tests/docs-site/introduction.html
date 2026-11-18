@@ -230,7 +230,7 @@ blockquote{border-left:3px solid var(--accent);margin:12px 0;padding:6px 14px;
     <div class="sidebar-scroll">
       <div class="nav-group">
         <div class="nav-group-label" data-i18n="navigate">导航</div>
-        <a class="nav-link is-active" href="./introduction.html" data-i18n="home">首页</a>
+        <a class="nav-link" href="./introduction.html" data-i18n="home">首页</a>
       </div>
       <a class="nav-link is-active" href="introduction.html" data-i18n="nav.introduction">Introduction</a>
 <a class="nav-link" href="pull-requests.html" data-i18n="nav.pull-requests">Pull Requests</a>
@@ -325,7 +325,7 @@ blockquote{border-left:3px solid var(--accent);margin:12px 0;padding:6px 14px;
 <script>
 (function(){
   var root=document.documentElement;
-  var mode='dark';
+  var mode="dark";
   try{mode=localStorage.getItem('docs-theme')||mode;}catch(e){}
   function apply(m){root.setAttribute('data-theme',m);}
   if(mode==='auto')apply(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');

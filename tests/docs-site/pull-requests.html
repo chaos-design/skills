@@ -302,7 +302,7 @@ blockquote{border-left:3px solid var(--accent);margin:12px 0;padding:6px 14px;
 <script>
 (function(){
   var root=document.documentElement;
-  var mode='dark';
+  var mode="dark";
   try{mode=localStorage.getItem('docs-theme')||mode;}catch(e){}
   function apply(m){root.setAttribute('data-theme',m);}
   if(mode==='auto')apply(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');

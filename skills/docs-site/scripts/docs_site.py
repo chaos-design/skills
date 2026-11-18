@@ -102,6 +102,20 @@ def brand_mark(cfg):
     return str(cfg.get("title", "D"))[:1].upper()
 
 
+def js_literal(value):
+    """JSON literal safe to embed inside an inline <script> block.
+
+    json.dumps alone leaves `<`, `>` and `&` raw, so a config label containing
+    `</script>` could break out of the script element.
+    """
+    return (
+        json.dumps(value, ensure_ascii=False)
+        .replace("<", "\\u003c")
+        .replace(">", "\\u003e")
+        .replace("&", "\\u0026")
+    )
+
+
 def split_front_matter(text):
     """Return (meta_dict, body). Only supports a YAML-ish 'key: value' block."""
     meta = {}
@@ -743,7 +757,7 @@ I18N_JS = """
 THEME_JS = """
 (function(){
   var root=document.documentElement;
-  var mode='{theme}';
+  var mode={theme};
   try{mode=localStorage.getItem('docs-theme')||mode;}catch(e){}
   function apply(m){root.setAttribute('data-theme',m);}
   if(mode==='auto')apply(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
@@ -837,7 +851,10 @@ def move_figure_into_lightbox(page_body_html):
 
 
 def render_page(cfg, page, out_dir, slug):
-    bp = str(cfg.get("breakpoint", 860))
+    try:
+        bp = str(int(cfg.get("breakpoint", 860)))
+    except (TypeError, ValueError):
+        fail("'breakpoint' must be an integer")
     strings = build_i18n_map(cfg, page)
     initial = strings.get(cfg.get("lang", "zh"), strings["zh"])
     is_list = page.get("type") == "list"
@@ -862,15 +879,28 @@ def render_page(cfg, page, out_dir, slug):
 
     nav_html = build_nav_html(cfg, slug)
     home_file = cfg.get("_home_file", "index.html")
-    home_active = " is-active" if (slug_filename(slug) == home_file) else ""
+    # When the landing page is also a nav entry, that entry owns the active
+    # state — marking the synthetic Home link too would leave two active links.
+    nav_slugs = set()
+    for item in cfg.get("nav", []):
+        if item.get("slug"):
+            nav_slugs.add(item["slug"])
+        for child in item.get("items", []):
+            if child.get("slug"):
+                nav_slugs.add(child["slug"])
+    home_active = " is-active" if (slug_filename(slug) == home_file and slug not in nav_slugs) else ""
     css = CSS.replace("{bp}", bp)
-    theme_js = THEME_JS.replace("{theme}", cfg.get("theme", "dark"))
+    theme = cfg.get("theme", "dark")
+    theme_js = THEME_JS.replace("{theme}", js_literal(theme))
     nav_js = NAV_JS.replace("{bp}", bp)
     langs = [x for x in cfg.get("i18n", ["zh", "en"]) if x in strings] or ["zh", "en"]
+    initial_lang = cfg.get("lang", "zh")
+    if initial_lang not in strings:
+        initial_lang = langs[0]
     i18n_js = (
-        I18N_JS.replace("{i18n}", json.dumps(strings, ensure_ascii=False))
-        .replace("{langs}", json.dumps(langs))
-        .replace("{lang}", json.dumps(cfg.get("lang", "zh") if cfg.get("lang", "zh") in strings else langs[0]))
+        I18N_JS.replace("{i18n}", js_literal(strings))
+        .replace("{langs}", js_literal(langs))
+        .replace("{lang}", js_literal(initial_lang))
     )
 
     title = page.get("title", cfg.get("title", "Page"))
@@ -965,7 +995,7 @@ def render_page(cfg, page, out_dir, slug):
         home_label=html.escape(initial["home"]),
         home_active=home_active,
         nav=nav_html,
-        crumb=html.escape(brand + " / " + title),
+        crumb=html.escape(str(cfg.get("title", "Docs")) + " / " + title),
         desc=html.escape(desc),
         body=body_html,
         lightbox=lightbox,
