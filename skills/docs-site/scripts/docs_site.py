@@ -83,6 +83,14 @@ def read_config(path):
             seen.add(slug)
 
     check_unique(cfg["pages"], "page")
+    # Slugs may differ but normalize to the same output filename (e.g.
+    # "hello world" and "hello-world"), which would silently overwrite a page.
+    filenames = set()
+    for page in cfg["pages"]:
+        filename = slug_filename(page_slug(page))
+        if filename in filenames:
+            fail("duplicate output filename from page slugs: %s" % filename)
+        filenames.add(filename)
     nav_entries = []
     for nav in cfg.get("nav", []):
         if nav.get("slug"):
@@ -347,7 +355,8 @@ def build_nav_html(cfg, active_slug):
 
 
 def status_badge(status):
-    cls = "badge-" + status
+    # The class is interpolated into a quoted attribute, so escape quotes too.
+    cls = html.escape("badge-" + status)
     return "<span class='status-badge %s'>%s</span>" % (cls, html.escape(status))
 
 
@@ -459,10 +468,11 @@ def build_i18n_map(cfg, page):
         },
     }
     for idx, item in enumerate(cfg.get("nav", [])):
-        if item.get("group"):
+        if "group" in item:
             key = "group.%d" % idx
-            strings["zh"][key] = str(item.get("group_zh") or item.get("label_zh") or item.get("label") or item["group"])
-            strings["en"][key] = str(item.get("label") or item["group"])
+            group = str(item.get("group") or "")
+            strings["zh"][key] = str(item.get("group_zh") or item.get("label_zh") or item.get("label") or group)
+            strings["en"][key] = str(item.get("label") or group)
         else:
             slug = item.get("slug", "")
             key = "nav." + slug
