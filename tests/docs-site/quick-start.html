@@ -354,9 +354,12 @@ blockquote{border-left:3px solid var(--accent);margin:12px 0;padding:6px 14px;
   var sidebar=document.getElementById('site-nav');
   var backdrop=document.querySelector('.nav-backdrop');
   if(!shell||!toggle||!sidebar)return;
+  var content=document.querySelector('.content');
   function setOpen(open,restoreFocus){
     shell.setAttribute('data-nav-open',open?'true':'false');
     document.body.classList.toggle('nav-open',open);
+    // Keep Tab focus inside the visible chrome while the panel covers content.
+    if(content&&'inert' in content)content.inert=open;
     toggle.classList.toggle('is-open',open);
     toggle.setAttribute('aria-expanded',open?'true':'false');
     if(window.docsT)toggle.setAttribute('aria-label',window.docsT(open?'navClose':'navOpen'));

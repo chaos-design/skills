@@ -29,7 +29,7 @@ included; both persist to localStorage.
   including commit count and last-updated time), free-text search, status
   filters and color-coded status badges, plus a live match count.
 - **Diagram lightbox** — ` ```mermaid ` fences become figures that open in a
-  full-viewport lightbox and zoom/pan to fit.
+  full-viewport lightbox with zoom-to-fit and +/- controls.
 - **Theme + i18n** — a persisted light/dark switch (dark by default) and an
   EN/中 toggle that re-labels every piece of UI chrome, nav entries, list
   controls and lightbox buttons in place, keeping `<html lang>` in sync.

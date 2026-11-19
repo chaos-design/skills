@@ -166,7 +166,7 @@ full EN/中 UI toggle complete the design.
 ## Diagrams
 
 A ` ```mermaid ` fence inside a doc page is rendered as a figure with a
-click-to-enlarge lightbox that zooms/panns to fit the viewport.
+click-to-enlarge lightbox that zooms to fit the viewport with +/− controls.
 
 ## Output contract
 

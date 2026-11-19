@@ -56,6 +56,12 @@ def fail(msg):
     raise SystemExit(2)
 
 
+def cfg_text(cfg, key, default):
+    """Return a config string, treating an explicit JSON null as 'missing'."""
+    value = cfg.get(key)
+    return default if value is None else str(value)
+
+
 def read_config(path):
     if not os.path.isfile(path):
         fail("config not found: " + path)
@@ -65,6 +71,24 @@ def read_config(path):
     cfg.update(data)
     if not isinstance(cfg.get("pages"), list) or not cfg["pages"]:
         fail("config must define a non-empty 'pages' list")
+
+    def check_unique(items, kind):
+        seen = set()
+        for item in items:
+            slug = item.get("slug")
+            if not slug:
+                continue
+            if slug in seen:
+                fail("duplicate %s slug: %s" % (kind, slug))
+            seen.add(slug)
+
+    check_unique(cfg["pages"], "page")
+    nav_entries = []
+    for nav in cfg.get("nav", []):
+        if nav.get("slug"):
+            nav_entries.append(nav)
+        nav_entries.extend(nav.get("items", []))
+    check_unique(nav_entries, "nav")
     return cfg
 
 
@@ -297,25 +321,27 @@ def build_nav_html(cfg, active_slug):
     items = []
     for idx, nav in enumerate(cfg.get("nav", [])):
         if "group" in nav:
-            label = nav.get("label", nav["group"])
+            label = str(nav.get("label") or nav["group"])
             items.append(
                 '<div class="nav-group"><div class="nav-group-label" data-i18n="group.%d">%s</div>'
                 % (idx, html.escape(label))
             )
             for child in nav.get("items", []):
-                slug = child.get("slug", "")
+                slug = str(child.get("slug") or "")
                 act = " is-active" if slug == active_slug else ""
                 items.append(
                     '<a class="nav-link%s" href="%s" data-i18n="nav.%s">%s</a>'
-                    % (act, slug_filename(slug), html.escape(slug), html.escape(child.get("label", slug)))
+                    % (act, slug_filename(slug), html.escape(slug),
+                       html.escape(str(child.get("label") or slug)))
                 )
             items.append("</div>")
         else:
-            slug = nav.get("slug", "")
+            slug = str(nav.get("slug") or "")
             act = " is-active" if slug == active_slug else ""
             items.append(
                 '<a class="nav-link%s" href="%s" data-i18n="nav.%s">%s</a>'
-                % (act, slug_filename(slug), html.escape(slug), html.escape(nav.get("label", slug)))
+                % (act, slug_filename(slug), html.escape(slug),
+                   html.escape(str(nav.get("label") or slug)))
             )
     return "\n".join(items)
 
@@ -386,48 +412,48 @@ def build_i18n_map(cfg, page):
     """Build the flat zh/en string tables used by the client-side toggle."""
     strings = {
         "zh": {
-            "brandSub": cfg.get("brand_sub_zh", "文档中心"),
+            "brandSub": cfg_text(cfg, "brand_sub_zh", "文档中心"),
             "navigate": "导航",
             "home": "首页",
             "langShort": "EN",
-            "langLabel": cfg.get("lang_label_zh", "English"),
-            "langTitle": cfg.get("lang_title_zh", "切换到 English"),
+            "langLabel": cfg_text(cfg, "lang_label_zh", "English"),
+            "langTitle": cfg_text(cfg, "lang_title_zh", "切换到 English"),
             "navOpen": "打开导航菜单",
             "navClose": "关闭导航菜单",
             "github": "GitHub",
             "theme": "切换主题",
             "filter": "状态筛选",
             "search": "搜索",
-            "searchPh": cfg.get("search_placeholder_zh", "标题 / 作者"),
+            "searchPh": cfg_text(cfg, "search_placeholder_zh", "标题 / 作者"),
             "all": "全部",
             "results": "条结果",
-            "fit": cfg.get("fit_zh", "适应屏幕"),
+            "fit": cfg_text(cfg, "fit_zh", "适应屏幕"),
             "zoomIn": "放大",
             "zoomOut": "缩小",
-            "close": cfg.get("close_zh", "关闭"),
+            "close": cfg_text(cfg, "close_zh", "关闭"),
             "diagram": "图表",
             "diagramZoom": "图表 — 点击放大",
         },
         "en": {
-            "brandSub": cfg.get("brand_sub", "Documentation"),
+            "brandSub": cfg_text(cfg, "brand_sub", "Documentation"),
             "navigate": "Navigate",
             "home": "Home",
             "langShort": "中",
-            "langLabel": cfg.get("lang_label", "中文"),
-            "langTitle": cfg.get("lang_title", "Switch to 中文"),
+            "langLabel": cfg_text(cfg, "lang_label", "中文"),
+            "langTitle": cfg_text(cfg, "lang_title", "Switch to 中文"),
             "navOpen": "Open navigation menu",
             "navClose": "Close navigation menu",
             "github": "GitHub",
             "theme": "Toggle theme",
             "filter": "Filter status",
             "search": "Search",
-            "searchPh": cfg.get("search_placeholder", "title / author"),
+            "searchPh": cfg_text(cfg, "search_placeholder", "title / author"),
             "all": "All",
             "results": "results",
-            "fit": cfg.get("fit", "Fit to screen"),
+            "fit": cfg_text(cfg, "fit", "Fit to screen"),
             "zoomIn": "Zoom in",
             "zoomOut": "Zoom out",
-            "close": cfg.get("close", "Close"),
+            "close": cfg_text(cfg, "close", "Close"),
             "diagram": "Diagram",
             "diagramZoom": "Diagram — click to enlarge",
         },
@@ -435,18 +461,18 @@ def build_i18n_map(cfg, page):
     for idx, item in enumerate(cfg.get("nav", [])):
         if item.get("group"):
             key = "group.%d" % idx
-            strings["zh"][key] = item.get("group_zh", item.get("label_zh", item.get("label", item["group"])))
-            strings["en"][key] = item.get("label", item["group"])
+            strings["zh"][key] = str(item.get("group_zh") or item.get("label_zh") or item.get("label") or item["group"])
+            strings["en"][key] = str(item.get("label") or item["group"])
         else:
             slug = item.get("slug", "")
             key = "nav." + slug
-            strings["zh"][key] = item.get("label_zh", item.get("label", slug))
-            strings["en"][key] = item.get("label", slug)
+            strings["zh"][key] = str(item.get("label_zh") or item.get("label") or slug)
+            strings["en"][key] = str(item.get("label") or slug)
         for child in item.get("items", []):
             slug = child.get("slug", "")
             key = "nav." + slug
-            strings["zh"][key] = child.get("label_zh", child.get("label", slug))
-            strings["en"][key] = child.get("label", slug)
+            strings["zh"][key] = str(child.get("label_zh") or child.get("label") or slug)
+            strings["en"][key] = str(child.get("label") or slug)
     return strings
 
 
@@ -667,6 +693,7 @@ LIST_JS = """
   function rowVals(r){var tds=r.querySelectorAll('td');return Array.prototype.map.call(tds,function(td){
       return {td:td,i:td.cellIndex,raw:td.dataset.value!==undefined?td.dataset.value:td.textContent,
         value:td.dataset.value!==undefined?td.dataset.value:td.textContent};});}
+  var isNum=function(s){return /^-?\\d+(?:\\.\\d+)?$/.test(String(s).trim());};
   var sortKey=-1,sortDir='desc';
   headCells.forEach(function(th,idx){
     if(!th.hasAttribute('data-sortable'))return;
@@ -682,8 +709,11 @@ LIST_JS = """
     bodyRows.sort(function(a,b){
       var av=rowVals(a)[sortKey],bv=rowVals(b)[sortKey];
       if(!av||!bv)return 0;
-      var an=parseFloat(av.raw),bn=parseFloat(bv.raw);
-      var cmp=(!isNaN(an)&&!isNaN(bn))?an-bn:av.value.localeCompare(bv.value);
+      // Only full numeric strings are numeric; ISO timestamps and other text
+      // fall back to string compare (ISO date strings sort chronologically).
+      var cmp=(isNum(av.raw)&&isNum(bv.raw))
+        ?(parseFloat(av.raw)-parseFloat(bv.raw))
+        :av.value.localeCompare(bv.value);
       return cmp*(sortDir==='asc'?1:-1);
     });
     var tb=table.tBodies[0];bodyRows.forEach(function(r){tb.appendChild(r);});
@@ -779,9 +809,12 @@ NAV_JS = """
   var sidebar=document.getElementById('site-nav');
   var backdrop=document.querySelector('.nav-backdrop');
   if(!shell||!toggle||!sidebar)return;
+  var content=document.querySelector('.content');
   function setOpen(open,restoreFocus){
     shell.setAttribute('data-nav-open',open?'true':'false');
     document.body.classList.toggle('nav-open',open);
+    // Keep Tab focus inside the visible chrome while the panel covers content.
+    if(content&&'inert' in content)content.inert=open;
     toggle.classList.toggle('is-open',open);
     toggle.setAttribute('aria-expanded',open?'true':'false');
     if(window.docsT)toggle.setAttribute('aria-label',window.docsT(open?'navClose':'navOpen'));
@@ -890,11 +923,11 @@ def render_page(cfg, page, out_dir, slug):
                 nav_slugs.add(child["slug"])
     home_active = " is-active" if (slug_filename(slug) == home_file and slug not in nav_slugs) else ""
     css = CSS.replace("{bp}", bp)
-    theme = cfg.get("theme", "dark")
+    theme = cfg_text(cfg, "theme", "dark")
     theme_js = THEME_JS.replace("{theme}", js_literal(theme))
     nav_js = NAV_JS.replace("{bp}", bp)
-    langs = [x for x in cfg.get("i18n", ["zh", "en"]) if x in strings] or ["zh", "en"]
-    initial_lang = cfg.get("lang", "zh")
+    langs = [x for x in (cfg.get("i18n") or ["zh", "en"]) if x in strings] or ["zh", "en"]
+    initial_lang = cfg_text(cfg, "lang", "zh")
     if initial_lang not in strings:
         initial_lang = langs[0]
     i18n_js = (
@@ -903,10 +936,10 @@ def render_page(cfg, page, out_dir, slug):
         .replace("{lang}", js_literal(initial_lang))
     )
 
-    title = page.get("title", cfg.get("title", "Page"))
-    desc = page.get("description", page.get("tagline", cfg.get("description", "")))
-    brand = html.escape(cfg.get("title", "Docs"))
-    brand_sub = html.escape(initial["brandSub"])
+    title = str(page.get("title") or cfg.get("title") or "Page")
+    desc = str(page.get("description") or page.get("tagline") or cfg.get("description") or "")
+    brand = html.escape(str(cfg.get("title") or "Docs"))
+    brand_sub = html.escape(str(initial["brandSub"]))
     repo_link = html.escape(repo_url(cfg))
     mark = html.escape(brand_mark(cfg))
 
@@ -977,8 +1010,8 @@ def render_page(cfg, page, out_dir, slug):
 </body>
 </html>
 """.format(
-        lang=html.escape(cfg.get("lang", "zh")),
-        theme=html.escape(cfg.get("theme", "dark")),
+        lang=html.escape(initial_lang),
+        theme=html.escape(theme),
         meta_desc=html.escape(desc),
         title=html.escape(title),
         site=brand,
@@ -995,7 +1028,7 @@ def render_page(cfg, page, out_dir, slug):
         home_label=html.escape(initial["home"]),
         home_active=home_active,
         nav=nav_html,
-        crumb=html.escape(str(cfg.get("title", "Docs")) + " / " + title),
+        crumb=html.escape(str(cfg.get("title") or "Docs") + " / " + title),
         desc=html.escape(desc),
         body=body_html,
         lightbox=lightbox,

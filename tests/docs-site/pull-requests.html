@@ -323,9 +323,12 @@ blockquote{border-left:3px solid var(--accent);margin:12px 0;padding:6px 14px;
   var sidebar=document.getElementById('site-nav');
   var backdrop=document.querySelector('.nav-backdrop');
   if(!shell||!toggle||!sidebar)return;
+  var content=document.querySelector('.content');
   function setOpen(open,restoreFocus){
     shell.setAttribute('data-nav-open',open?'true':'false');
     document.body.classList.toggle('nav-open',open);
+    // Keep Tab focus inside the visible chrome while the panel covers content.
+    if(content&&'inert' in content)content.inert=open;
     toggle.classList.toggle('is-open',open);
     toggle.setAttribute('aria-expanded',open?'true':'false');
     if(window.docsT)toggle.setAttribute('aria-label',window.docsT(open?'navClose':'navOpen'));
@@ -378,6 +381,7 @@ blockquote{border-left:3px solid var(--accent);margin:12px 0;padding:6px 14px;
   function rowVals(r){var tds=r.querySelectorAll('td');return Array.prototype.map.call(tds,function(td){
       return {td:td,i:td.cellIndex,raw:td.dataset.value!==undefined?td.dataset.value:td.textContent,
         value:td.dataset.value!==undefined?td.dataset.value:td.textContent};});}
+  var isNum=function(s){return /^-?\d+(?:\.\d+)?$/.test(String(s).trim());};
   var sortKey=-1,sortDir='desc';
   headCells.forEach(function(th,idx){
     if(!th.hasAttribute('data-sortable'))return;
@@ -393,8 +397,11 @@ blockquote{border-left:3px solid var(--accent);margin:12px 0;padding:6px 14px;
     bodyRows.sort(function(a,b){
       var av=rowVals(a)[sortKey],bv=rowVals(b)[sortKey];
       if(!av||!bv)return 0;
-      var an=parseFloat(av.raw),bn=parseFloat(bv.raw);
-      var cmp=(!isNaN(an)&&!isNaN(bn))?an-bn:av.value.localeCompare(bv.value);
+      // Only full numeric strings are numeric; ISO timestamps and other text
+      // fall back to string compare (ISO date strings sort chronologically).
+      var cmp=(isNum(av.raw)&&isNum(bv.raw))
+        ?(parseFloat(av.raw)-parseFloat(bv.raw))
+        :av.value.localeCompare(bv.value);
       return cmp*(sortDir==='asc'?1:-1);
     });
     var tb=table.tBodies[0];bodyRows.forEach(function(r){tb.appendChild(r);});
