@@ -57,6 +57,7 @@ python3 skills/docs-site/scripts/docs_site.py check --out ./out
   "brand_mark": "M",
   "brand_sub": "Documentation",
   "brand_sub_zh": "文档中心",
+  "breakpoint": 860,
   "nav": [
     {"slug": "introduction", "label": "Introduction", "label_zh": "简介"},
     {"slug": "guides", "label": "Guides", "label_zh": "指南", "group": "Deep dive",
@@ -80,6 +81,11 @@ python3 skills/docs-site/scripts/docs_site.py check --out ./out
   ]
 }
 ```
+
+`breakpoint` is an integer pixel width; a non-numeric value fails generation
+with a clear error. Config-derived text is escaped once for its destination
+(HTML text, or JSON for inline scripts), and only one nav link is active even
+when the landing page is also listed in `nav`.
 
 See `templates/site-config.sample.json` and `references/design.md` for the full
 reference.

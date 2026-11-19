@@ -37,6 +37,7 @@ python3 skills/docs-site/scripts/docs_site.py check --out ./out
   "brand_mark": "M",
   "brand_sub": "Documentation",
   "brand_sub_zh": "文档中心",
+  "breakpoint": 860,
   "nav": [
     {"slug": "introduction", "label": "Introduction", "label_zh": "简介"},
     {"slug": "guides", "label": "Guides", "label_zh": "指南", "group": "Deep dive",
@@ -60,6 +61,8 @@ python3 skills/docs-site/scripts/docs_site.py check --out ./out
   ]
 }
 ```
+
+`breakpoint` 必须是整数像素宽度，非数字值会报错并中止生成。配置中的文案按其落点各转义一次（HTML 文本或内联脚本中的 JSON）；即使首页也列在 `nav` 中，导航里也只会有一个激活项。
 
 完整字段见 `templates/site-config.sample.json` 与 `references/design.md`。
 

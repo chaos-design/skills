@@ -19,7 +19,8 @@ language toggle.
 
 ## Breakpoints
 
-- Mobile: `max-width: 860px` (configurable via `breakpoint`).
+- Mobile: `max-width: 860px` (configurable via `breakpoint`, an integer number
+  of pixels; a non-numeric value fails generation with an explicit error).
 - Desktop: > 860px. Grid: `300px` sidebar + `minmax(0, 1fr)` content.
 
 ## Desktop shell and sidebar
@@ -31,7 +32,9 @@ language toggle.
     theme button.
   - `.sidebar-scroll` — the only scrolling part of the sidebar; grouped nav
     with uppercase `.nav-group-label` headings and `.nav-link` items. The
-    active item uses `.is-active` (raised surface + border).
+    active item uses `.is-active` (raised surface + border), and exactly one
+    link carries it: when the landing page is also a `nav` entry, that entry
+    owns the state and the synthetic Home link stays inactive.
   - `.sidebar-github` — pinned footer where the GitHub link and the language
     pill are equal-width `36px` controls with identical box metrics.
 - `.content` owns the page scrollbar with `overscroll-behavior: contain`.
@@ -64,6 +67,10 @@ At ≤ 860px:
   `docs-site-lang`. It emits a `docs:lang` event so the list count re-renders.
 - `THEME_JS` applies `data-theme` on `<html>`, resolving `auto` through
   `prefers-color-scheme`, and persists explicit choices to `docs-theme`.
+- Config-derived strings are embedded in inline scripts as JSON literals with
+  `<`, `>` and `&` escaped, so a label containing `</script>` cannot terminate
+  the script element. HTML text (including the breadcrumb, built from raw
+  config values) is escaped exactly once for its destination.
 
 ## Lightbox
 

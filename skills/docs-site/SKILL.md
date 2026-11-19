@@ -86,6 +86,7 @@ full EN/中 UI toggle complete the design.
   "brand_mark": "M",
   "brand_sub": "Documentation",
   "brand_sub_zh": "文档中心",
+  "breakpoint": 860,
   "nav": [
     {"slug": "introduction", "label": "Introduction", "label_zh": "简介"},
     {"slug": "pull-requests", "label": "Pull Requests", "label_zh": "拉取请求"},
@@ -121,6 +122,8 @@ full EN/中 UI toggle complete the design.
   GitHub entries in the sidebar footer and mobile header.
 - `lang` is the initial language (`zh` by default) and `i18n` is the toggle
   cycle order. `theme` accepts `dark` (default), `light` or `auto`.
+- `breakpoint` is the mobile width in pixels (`860` by default) and must be an
+  integer; generation fails with a clear error on a non-numeric value.
 - A `list` page `columns` with `"link": "url"` turns that column's value into
   an outbound link. `sortable` lists the column keys the user may click to
   reorder; `status_field` is the column rendered as a badge; `filters` are
@@ -147,8 +150,10 @@ full EN/中 UI toggle complete the design.
   the bar with its own scroll area and a tap-to-close backdrop. Esc closes it
   and restores focus to the toggle; navigation and a switch back to desktop
   width close it too.
-- The active nav link is scrolled into view when the mobile panel opens, and
-  `aria-expanded` / `aria-controls` stay in sync with the panel state.
+- There is exactly one active nav link: when the landing page also appears in
+  `nav`, that entry owns the active state and the synthetic Home link stays
+  inactive. The active link is scrolled into view when the mobile panel opens,
+  and `aria-expanded` / `aria-controls` stay in sync with the panel state.
 
 ## Language and theme
 
@@ -168,6 +173,12 @@ click-to-enlarge lightbox that zooms/panns to fit the viewport.
 Generated files live under the `--out` directory, one `<slug>.html` per page,
 self-contained (inline CSS/JS), offline-capable. Page titles come from the
 config or the Markdown front-matter `title`.
+
+Config-derived text is escaped exactly once for its destination: HTML text uses
+`html.escape`, while strings embedded in inline `<script>` blocks use a JSON
+literal with `<`, `>` and `&` escaped, so a label containing `</script>` cannot
+break out of the script element. Breadcrumbs are built from raw config values
+and escaped once.
 
 ## Boundaries
 
