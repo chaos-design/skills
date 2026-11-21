@@ -21,7 +21,11 @@ language toggle.
 
 - Mobile: `max-width: 860px` (configurable via `breakpoint`, an integer number
   of pixels; a non-numeric value fails generation with an explicit error).
-- Desktop: > 860px. Grid: `300px` sidebar + `minmax(0, 1fr)` content.
+- Intermediate desktop: below `1200px` the `--sidebar-w` token drops to
+  `250px`, so mid-size windows keep a usable content column. Harmless under
+  the breakpoint, where the mobile block overrides the shell.
+- Desktop: > 860px. Grid: `var(--sidebar-w)` (300px, or 250px intermediate) +
+  `minmax(0, 1fr)` content.
 
 ## Desktop shell and sidebar
 
@@ -40,7 +44,9 @@ language toggle.
 - `.content` owns the page scrollbar with `overscroll-behavior: contain`.
   `.content-inner` uses `padding-inline: clamp(20px, 3vw, 56px)` and the
   document body is `max-width: 72ch`, so wide tables and code scroll inside
-  themselves instead of widening the column.
+  themselves instead of widening the column. Markdown tables are wrapped in a
+  `.table-scroll` container (`overflow-x: auto`), which is what actually
+  absorbs wide tables on narrow viewports.
 
 ## Mobile top bar and dropdown
 
@@ -48,8 +54,9 @@ At ≤ 860px:
 
 - `.site-header` is `position: fixed` at the top (`--header-h: 56px`); the shell
   reserves that height with `padding-top`. It holds the brand, a GitHub icon
-  button, a square language pill and the `.nav-toggle` with three bars that
-  morph into an ✕ when open.
+  button, a theme button, a square language pill and the `.nav-toggle` with
+  three bars that morph into an ✕ when open — the theme switch stays reachable
+  on mobile because the sidebar head is hidden there.
 - `.sidebar` becomes `position: fixed` below the header, filling the rest of the
   viewport with its own scroll area. It is hidden until `body.nav-open` is set.
 - `.nav-backdrop` is only rendered (`display: block`) while the panel is open;
@@ -72,11 +79,33 @@ At ≤ 860px:
   the script element. HTML text (including the breadcrumb, built from raw
   config values) is escaped exactly once for its destination.
 
+## Diagrams
+
+- ` ```mermaid ` fences are emitted inline (at the fence's position) as a
+  `.doc-figure` holding an empty `.mermaid-view`, the raw source in a hidden
+  `.mermaid-src` block, an `.expand-mark` icon and a `data-i18n` caption.
+- `MERMAID_JS` runs in the page and draws each figure as inline SVG. The
+  flowchart subset covers `graph`/`flowchart` with TB/LR/RL/BT directions,
+  arrow/dotted/thick/open edges (labeled via `--text-->` or `-->|text|`),
+  chained statements and rect/rounded/diamond/circle/cylinder/hexagon/
+  subroutine nodes; `subgraph`, `classDef`, `class`, `style` and `click` lines
+  are ignored. The sequence subset covers participants, `->>`/`-->>`/`-)`/`--)`
+  messages, `+`/`-` activations, notes and loop/alt/opt/par frames.
+- Unparseable sources flip the figure to `data-rendered='source'`: the view is
+  removed and the source block is unhidden, so the page never breaks.
+- SVG styling uses the theme tokens (`.mm-node` fills use `var(--surface-3)`,
+  edges `var(--muted)`, …), so diagrams recolor when `[data-theme]` flips.
+  Marker ids are suffixed with a per-figure counter to stay unique per page.
+
 ## Lightbox
 
-- Any ` ```mermaid ` fence becomes a figure. Clicking it opens a full-viewport
-  lightbox; the figure's `<pre>` is re-staged there and scaled with
-  `transform: scale()` (fit, +/− and close). Esc closes it.
+- Clicking a `.doc-figure` (or pressing Enter on it) opens a full-viewport
+  lightbox. `LIGHTBOX_JS` stages a deep clone of the figure's rendered SVG at
+  its natural size and scales it with `transform: scale()` — the base scale is
+  computed from the stage size versus the SVG's `viewBox`, and +/− multiply a
+  user zoom on top (fit resets it). When the renderer fell back to source, the
+  source block is staged instead. Fit, +/− and close are SVG icon buttons;
+  Esc closes and the body scroll lock is released.
 
 ## Multi-page
 

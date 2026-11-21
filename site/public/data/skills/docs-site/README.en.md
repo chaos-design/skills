@@ -8,10 +8,10 @@ The layout is a dark-first, responsive documentation design: a pinned 300px
 sidebar (brand header, scrollable grouped nav, and a matched GitHub / language
 footer pinned in place), a content column that owns its own scroll inside a
 viewport-locked shell, fluid content width, and a diagram lightbox. At 860px and
-below, a fixed top bar (brand, GitHub, language pill and a three-bar toggle)
-expands the sidebar into a full-width dropdown with its own scroll area and a
-dimming backdrop. A light/dark theme switch and a real EN/中 label toggle are
-included; both persist to localStorage.
+below, a fixed top bar (brand, GitHub, theme, language pill and a three-bar
+toggle) expands the sidebar into a full-width dropdown with its own scroll area
+and a dimming backdrop. A light/dark theme switch and a real EN/中 label toggle
+are included; both persist to localStorage.
 
 ## Features
 
@@ -24,12 +24,16 @@ included; both persist to localStorage.
   pages, JSON data for list pages.
 - **Responsive + multi-page** — a viewport-locked two-column shell where only
   the content scrolls, a ≤860px mobile top bar with a morphing hamburger, a
-  tap-to-close backdrop, and fluid content width that never overflows.
+  tap-to-close backdrop, and fluid content width that never overflows; wide
+  Markdown tables scroll inside their own wrapper, and the sidebar narrows to
+  250px between 860px and 1200px.
 - **List page type** — a data table with client-side sorting (any column,
   including commit count and last-updated time), free-text search, status
   filters and color-coded status badges, plus a live match count.
-- **Diagram lightbox** — ` ```mermaid ` fences become figures that open in a
-  full-viewport lightbox with zoom-to-fit and +/- controls.
+- **Diagram rendering + lightbox** — ` ```mermaid ` fences are drawn as inline
+  SVG by a built-in, dependency-free renderer (flowcharts and sequence
+  diagrams; unsupported syntax falls back to the source block), and clicking a
+  diagram opens a full-viewport lightbox with zoom-to-fit and +/− controls.
 - **Theme + i18n** — a persisted light/dark switch (dark by default) and an
   EN/中 toggle that re-labels every piece of UI chrome, nav entries, list
   controls and lightbox buttons in place, keeping `<html lang>` in sync.

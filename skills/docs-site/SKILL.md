@@ -40,6 +40,10 @@ full EN/中 UI toggle complete the design.
 - Adds a list page type that renders a data table with client-side sorting
   (e.g. commit count, last-updated time), text search, status filters and
   color-coded status badges.
+- Renders ` ```mermaid ` fences as real diagrams: a built-in, dependency-free
+  client-side renderer draws flowcharts and sequence diagrams as inline SVG
+  (theme-aware, offline, with a graceful fallback to the source block), and
+  every diagram opens in a zoom lightbox.
 - Re-labels the entire UI on EN/中 switch (nav, chrome, list controls,
   lightbox) and persists both language and theme choices to localStorage.
 
@@ -143,13 +147,16 @@ full EN/中 UI toggle complete the design.
 
 - Desktop (> breakpoint): a `300px` sidebar and a fluid content column inside a
   `100vh` grid. The brand head and the GitHub / language footer are pinned; the
-  nav scrolls independently; only the content column scrolls the page.
+  nav scrolls independently; only the content column scrolls the page. Between
+  the breakpoint and `1200px` the sidebar narrows to `250px` so mid-size
+  windows keep a usable content column, and wide Markdown tables scroll inside
+  a `.table-scroll` wrapper instead of stretching the column.
 - Mobile (≤ breakpoint, `860px` by default): a fixed `56px` top bar carries the
-  brand, a GitHub icon button, a square language pill and a three-bar toggle
-  that morphs into a close cross. The sidebar becomes a full-width panel below
-  the bar with its own scroll area and a tap-to-close backdrop. Esc closes it
-  and restores focus to the toggle; navigation and a switch back to desktop
-  width close it too.
+  brand, a GitHub icon button, a theme button, a square language pill and a
+  three-bar toggle that morphs into a close cross. The sidebar becomes a
+  full-width panel below the bar with its own scroll area and a tap-to-close
+  backdrop. Esc closes it and restores focus to the toggle; navigation and a
+  switch back to desktop width close it too.
 - There is exactly one active nav link: when the landing page also appears in
   `nav`, that entry owns the active state and the synthetic Home link stays
   inactive. The active link is scrolled into view when the mobile panel opens,
@@ -165,8 +172,22 @@ full EN/中 UI toggle complete the design.
 
 ## Diagrams
 
-A ` ```mermaid ` fence inside a doc page is rendered as a figure with a
-click-to-enlarge lightbox that zooms to fit the viewport with +/− controls.
+A ` ```mermaid ` fence inside a doc page becomes a figure at the fence's
+original position (never a second source block):
+
+- A built-in, dependency-free renderer in the page draws the diagram as inline
+  SVG. Flowcharts (`graph`/`flowchart` with TB/LR/RL/BT, arrow/dotted/thick/
+  open edges, labeled edges via `--text-->` or `-->|text|`, and rect/rounded/
+  diamond/circle/cylinder/hexagon/subroutine nodes) and sequence diagrams
+  (participants, `->>`/`-->>`/`-)` messages, `+`/`-` activations, notes,
+  loop/alt/opt/par frames) are supported. `subgraph`, `classDef`, `class`,
+  `style` and `click` lines are ignored gracefully instead of failing.
+- The SVG is theme-aware: it is styled with CSS variables, so diagrams recolor
+  automatically when the light/dark switch flips.
+- If the source cannot be parsed, the figure falls back to showing the source
+  as a code block — the page never breaks on unsupported syntax.
+- Clicking a figure opens a full-viewport lightbox that stages the rendered
+  SVG scaled to fit, with fit/+−/close SVG-icon controls and Esc to close.
 
 ## Output contract
 
