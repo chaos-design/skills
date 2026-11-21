@@ -20,7 +20,15 @@
  *
  * Exports the pure helpers so they can be unit tested without hitting the API.
  */
-import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import {
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -28,6 +36,7 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(here, "..", "..");
 const skillsRoot = path.join(repoRoot, "skills");
 const dataDir = path.resolve(here, "..", "public", "data");
+const screenshotsDir = path.resolve(here, "..", "public", "screenshots");
 const outFile = path.join(dataDir, "skills.json");
 
 export const REPO = "chaos-design/skills";
@@ -329,10 +338,24 @@ function attrValue(attrs, name) {
 }
 
 /**
- * Rewrite a relative markdown image into raw.githubusercontent form.
+ * Rewrite a relative markdown image into a URL the site can actually load.
+ * Screenshot files that exist in the repository are copied into
+ * public/screenshots and referenced site-relative — raw.githubusercontent
+ * would 404 until the branch carrying them lands on main. Missing files
+ * keep the raw.githubusercontent form (same as before).
  */
 function rewriteImage(label, target, skillName) {
-  return `${label}(${RAW_BASE}/${resolveReadmePath(skillName, target)})`;
+  const resolved = resolveReadmePath(skillName, target);
+  if (resolved.startsWith("screenshots/")) {
+    const src = path.join(repoRoot, resolved);
+    if (existsSync(src)) {
+      const dest = path.join(screenshotsDir, resolved.slice("screenshots/".length));
+      mkdirSync(path.dirname(dest), { recursive: true });
+      copyFileSync(src, dest);
+      return `${label}(/${resolved})`;
+    }
+  }
+  return `${label}(${RAW_BASE}/${resolved})`;
 }
 
 /**
@@ -383,11 +406,11 @@ export function normalizeReadme(text, skillName) {
       const src = attrValue(attrs, "src");
       const alt = attrValue(attrs, "alt");
       // A repository-relative src is re-rooted; anything absolute stays.
-      const target = /^\.{1,2}\//.test(src)
-        ? `${RAW_BASE}/${resolveReadmePath(skillName, src)}`
-        : src;
+      if (/^\.{1,2}\//.test(src)) {
+        return rewriteImage(`![${alt}]`, src, skillName);
+      }
       // width/height are dropped on purpose: the site's own CSS sizes images.
-      return `![${alt}](${target})`;
+      return `![${alt}](${src})`;
     });
     // A link target is repository-relative when it carries no scheme, is not
     // protocol/root-relative ("/x", "//host") and is not an in-page anchor.
@@ -412,6 +435,9 @@ export function normalizeReadme(text, skillName) {
  */
 function publishReadmes(names) {
   rmSync(path.join(dataDir, "skills"), { recursive: true, force: true });
+  // Screenshots are copied during normalization; start from a clean slate so
+  // removed files never linger in public/.
+  rmSync(screenshotsDir, { recursive: true, force: true });
   let count = 0;
   for (const name of names) {
     for (const { source, target } of Object.values(READMES)) {

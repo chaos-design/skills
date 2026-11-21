@@ -4,7 +4,7 @@
 日志滚动，计数跳动，进度条过阈值翻状态，侧栏触发点依次点亮。产出 H.264 mp4（适合发 X 和
 小红书），或一个可直接打开的网页。
 
-![Live Panel，terminal-dark 主题，技能流水线示例 t=15s](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/live-panel/frame_2-t15.png)
+![Live Panel，terminal-dark 主题，技能流水线示例 t=15s](/screenshots/live-panel/frame_2-t15.png)
 
 ## 你说什么，拿到什么
 
@@ -113,7 +113,7 @@ python3 scripts/render.py --config examples/skills-pipeline/config.json --out pa
 - **没有真实数据就写"示意"。** 固定事实保持固定，并在屏幕上写明来源。凡是"因为动画在动所以
   才在动"的，都是动画自身的状态，必须标注。绝不编造一个测量值并让它看起来像真的。
 
-![同一块看板 t=25s：仪表条状态不同、点亮的触发点不同、日志也往前走了](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/live-panel/frame_3-t25.png)
+![同一块看板 t=25s：仪表条状态不同、点亮的触发点不同、日志也往前走了](/screenshots/live-panel/frame_3-t25.png)
 
 ## 校验
 

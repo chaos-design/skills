@@ -23,8 +23,8 @@ npx skills add https://github.com/chaos-design/skills --skill image-generation
 2026-10-11（UTC+8）的验证记录：能力门禁流程与其真实产出：
 
 <p>
-  ![能力门禁流程：工具发现、探针验证，两步全部通过才生效，否则拒绝使用](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/image-generation/gate-flow.svg)
-  ![门禁探针产出：白底红圆，无水印](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/image-generation/probe-red-circle.png)
+  ![能力门禁流程：工具发现、探针验证，两步全部通过才生效，否则拒绝使用](/screenshots/image-generation/gate-flow.svg)
+  ![门禁探针产出：白底红圆，无水印](/screenshots/image-generation/probe-red-circle.png)
 </p>
 
 | 图片 | 说明 |

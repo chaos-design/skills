@@ -78,7 +78,7 @@ skills/frontend-slides/
 
 ### `8-bit-orbit`
 
-![8-bit-orbit 模板截图](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/8-bit-orbit.webp)
+![8-bit-orbit 模板截图](/screenshots/frontend-slides/8-bit-orbit.webp)
 
 - 名称：8-Bit Orbit
 - 标语：Pixel-art neon arcade aesthetic on a deep navy void.
@@ -86,7 +86,7 @@ skills/frontend-slides/
 
 ### `biennale-yellow`
 
-![biennale-yellow 模板截图](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/biennale-yellow.webp)
+![biennale-yellow 模板截图](/screenshots/frontend-slides/biennale-yellow.webp)
 
 - 名称：Biennale Yellow
 - 标语：Solar yellow on warm parchment with deep indigo serif and atmospheric sun-glow gradients.
@@ -94,7 +94,7 @@ skills/frontend-slides/
 
 ### `block-frame`
 
-![block-frame 模板截图](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/block-frame.webp)
+![block-frame 模板截图](/screenshots/frontend-slides/block-frame.webp)
 
 - 名称：BlockFrame
 - 标语：Neobrutalist deck with pastel-neon color blocks and chunky black borders.
@@ -102,7 +102,7 @@ skills/frontend-slides/
 
 ### `blue-professional`
 
-![blue-professional 模板截图](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/blue-professional.webp)
+![blue-professional 模板截图](/screenshots/frontend-slides/blue-professional.webp)
 
 - 名称：Blue Professional
 - 标语：Cream paper background with electric cobalt blue accents; clean modern professional.
@@ -110,7 +110,7 @@ skills/frontend-slides/
 
 ### `bold-poster`
 
-![bold-poster 模板截图](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/bold-poster.webp)
+![bold-poster 模板截图](/screenshots/frontend-slides/bold-poster.webp)
 
 - 名称：Bold Poster
 - 标语：Editorial poster aesthetic with massive Shrikhand display and a single fire-engine red accent.
@@ -118,7 +118,7 @@ skills/frontend-slides/
 
 ### `broadside`
 
-![broadside 模板截图](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/broadside.webp)
+![broadside 模板截图](/screenshots/frontend-slides/broadside.webp)
 
 - 名称：Broadside
 - 标语：Dark editorial canvas with a single fire orange accent and bilingual Latin/Chinese type stack.
@@ -126,7 +126,7 @@ skills/frontend-slides/
 
 ### `capsule`
 
-![capsule 模板截图](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/capsule.webp)
+![capsule 模板截图](/screenshots/frontend-slides/capsule.webp)
 
 - 名称：Capsule
 - 标语：Modular pill-shaped cards on warm bone with a full pastel-pop palette.
@@ -134,7 +134,7 @@ skills/frontend-slides/
 
 ### `cartesian`
 
-![cartesian 模板截图](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/cartesian.webp)
+![cartesian 模板截图](/screenshots/frontend-slides/cartesian.webp)
 
 - 名称：Cartesian
 - 标语：Quiet warm-neutral palette with classical Playfair serifs; tasteful and unhurried.
@@ -142,7 +142,7 @@ skills/frontend-slides/
 
 ### `cobalt-grid`
 
-![cobalt-grid 模板截图](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/cobalt-grid.webp)
+![cobalt-grid 模板截图](/screenshots/frontend-slides/cobalt-grid.webp)
 
 - 名称：Cobalt Grid
 - 标语：Electric cobalt serifs on a graph-paper canvas, anchored by stair-stepped pixel-glitch decorations and slim hairline rules.
@@ -150,7 +150,7 @@ skills/frontend-slides/
 
 ### `coral`
 
-![coral 模板截图](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/coral.webp)
+![coral 模板截图](/screenshots/frontend-slides/coral.webp)
 
 - 名称：Coral
 - 标语：Cream and coral on near-black, set in oversized Bebas Neue.
@@ -158,7 +158,7 @@ skills/frontend-slides/
 
 ### `creative-mode`
 
-![creative-mode 模板截图](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/creative-mode.webp)
+![creative-mode 模板截图](/screenshots/frontend-slides/creative-mode.webp)
 
 - 名称：Creative Mode
 - 标语：Cream paper canvas with confident multi-color (green, pink, orange, yellow) accents and Archivo Black display.
@@ -166,7 +166,7 @@ skills/frontend-slides/
 
 ### `daisy-days`
 
-![daisy-days 模板截图](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/daisy-days.webp)
+![daisy-days 模板截图](/screenshots/frontend-slides/daisy-days.webp)
 
 - 名称：Daisy Days
 - 标语：Cheerful pastel deck with hand-drawn daisies, stars, and rainbows. Friendly, soft, and warm.
@@ -174,7 +174,7 @@ skills/frontend-slides/
 
 ### `editorial-forest`
 
-![editorial-forest 模板截图](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/editorial-forest.webp)
+![editorial-forest 模板截图](/screenshots/frontend-slides/editorial-forest.webp)
 
 - 名称：Editorial Forest
 - 标语：Forest green, dusty pink, and warm cream meet Source Serif 4 in a quiet, intentional quarterly-review deck.
@@ -182,7 +182,7 @@ skills/frontend-slides/
 
 ### `editorial-tri-tone`
 
-![editorial-tri-tone 模板截图](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/editorial-tri-tone.webp)
+![editorial-tri-tone 模板截图](/screenshots/frontend-slides/editorial-tri-tone.webp)
 
 - 名称：Editorial Tri-Tone
 - 标语：Three-color editorial system: dusty pink, mustard cream, and deep burgundy, set in Bricolage + Instrument Serif.
@@ -190,7 +190,7 @@ skills/frontend-slides/
 
 ### `emerald-editorial`
 
-![emerald-editorial 模板截图](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/emerald-editorial.webp)
+![emerald-editorial 模板截图](/screenshots/frontend-slides/emerald-editorial.webp)
 
 - 名称：Emerald Editorial
 - 标语：A magazine-cover business deck: emerald + navy + paper, double-rule masthead ornaments, and a bold Bodoni-style display serif.
@@ -198,7 +198,7 @@ skills/frontend-slides/
 
 ### `grove`
 
-![grove 模板截图](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/grove.webp)
+![grove 模板截图](/screenshots/frontend-slides/grove.webp)
 
 - 名称：Grove
 - 标语：Forest-green canvas with cream type, classical Playfair serifs, and a single rust accent.
@@ -206,7 +206,7 @@ skills/frontend-slides/
 
 ### `long-table`
 
-![long-table 模板截图](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/long-table.webp)
+![long-table 模板截图](/screenshots/frontend-slides/long-table.webp)
 
 - 名称：Long Table
 - 标语：Warm cream and rust-red supper-club aesthetic with bold uppercase grotesk headlines, Fraunces serifs, and pill-shaped outlined buttons.
@@ -214,7 +214,7 @@ skills/frontend-slides/
 
 ### `mat`
 
-![mat 模板截图](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/mat.webp)
+![mat 模板截图](/screenshots/frontend-slides/mat.webp)
 
 - 名称：Mat
 - 标语：Dark sage canvas with bone paper and burnt-orange accent; mid-century modern with wood undertones.
@@ -222,7 +222,7 @@ skills/frontend-slides/
 
 ### `monochrome`
 
-![monochrome 模板截图](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/monochrome.webp)
+![monochrome 模板截图](/screenshots/frontend-slides/monochrome.webp)
 
 - 名称：Monochrome
 - 标语：Ivory ledger paper with all-black type; Lora serif headlines, Jost body, no color at all.
@@ -230,7 +230,7 @@ skills/frontend-slides/
 
 ### `neo-grid-bold`
 
-![neo-grid-bold 模板截图](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/neo-grid-bold.webp)
+![neo-grid-bold 模板截图](/screenshots/frontend-slides/neo-grid-bold.webp)
 
 - 名称：Neo-Grid Bold
 - 标语：Editorial neo-brutalism with a single neon yellow accent on off-white paper.
@@ -238,7 +238,7 @@ skills/frontend-slides/
 
 ### `peoples-platform`
 
-![peoples-platform 模板截图](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/peoples-platform.webp)
+![peoples-platform 模板截图](/screenshots/frontend-slides/peoples-platform.webp)
 
 - 名称：People's Platform (Block & Bold)
 - 标语：Activist poster energy: blue, orange, red on cream, with Alfa Slab + Caveat Brush.
@@ -246,7 +246,7 @@ skills/frontend-slides/
 
 ### `pin-and-paper`
 
-![pin-and-paper 模板截图](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/pin-and-paper.webp)
+![pin-and-paper 模板截图](/screenshots/frontend-slides/pin-and-paper.webp)
 
 - 名称：Pin & Paper
 - 标语：Yellow paper with safety-pin illustrations, ink-blue handwritten Caveat, paper-grain texture.
@@ -254,7 +254,7 @@ skills/frontend-slides/
 
 ### `pink-script`
 
-![pink-script 模板截图](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/pink-script.webp)
+![pink-script 模板截图](/screenshots/frontend-slides/pink-script.webp)
 
 - 名称：Pink Script — After Hours
 - 标语：Black canvas, hot pink accent, pearl-cream paper, Instrument Serif headlines: late-night editorial luxury.
@@ -262,7 +262,7 @@ skills/frontend-slides/
 
 ### `playful`
 
-![playful 模板截图](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/playful.webp)
+![playful 模板截图](/screenshots/frontend-slides/playful.webp)
 
 - 名称：Playful
 - 标语：Sun-warm peach background with Syne display: a friendly indie launch deck.
@@ -270,7 +270,7 @@ skills/frontend-slides/
 
 ### `raw-grid`
 
-![raw-grid 模板截图](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/raw-grid.webp)
+![raw-grid 模板截图](/screenshots/frontend-slides/raw-grid.webp)
 
 - 名称：Raw Grid
 - 标语：Neo-brutalist deck with thick borders, offset shadows, and a pink/sage/ink palette.
@@ -278,7 +278,7 @@ skills/frontend-slides/
 
 ### `retro-windows`
 
-![retro-windows 模板截图](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/retro-windows.webp)
+![retro-windows 模板截图](/screenshots/frontend-slides/retro-windows.webp)
 
 - 名称：Retro Windows
 - 标语：Windows 95 chrome: gray title bars, MS Sans Serif, pixel typography, full nostalgia.
@@ -286,7 +286,7 @@ skills/frontend-slides/
 
 ### `retro-zine`
 
-![retro-zine 模板截图](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/retro-zine.webp)
+![retro-zine 模板截图](/screenshots/frontend-slides/retro-zine.webp)
 
 - 名称：Retro Zine
 - 标语：Beige paper with green accent and Bebas Neue + Caveat: a riso-printed zine in HTML form.
@@ -294,7 +294,7 @@ skills/frontend-slides/
 
 ### `sakura-chroma`
 
-![sakura-chroma 模板截图](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/sakura-chroma.webp)
+![sakura-chroma 模板截图](/screenshots/frontend-slides/sakura-chroma.webp)
 
 - 名称：Sakura Chroma
 - 标语：Vintage Japanese cassette-package aesthetic: cream paper, diagonal rainbow ribbons, condensed bold type, JIS-style spec checkboxes.
@@ -302,7 +302,7 @@ skills/frontend-slides/
 
 ### `scatterbrain`
 
-![scatterbrain 模板截图](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/scatterbrain.webp)
+![scatterbrain 模板截图](/screenshots/frontend-slides/scatterbrain.webp)
 
 - 名称：Scatterbrain
 - 标语：Post-it inspired: pastel sticky notes, Caveat handwriting, Shrikhand and Zilla Slab type stack.
@@ -310,7 +310,7 @@ skills/frontend-slides/
 
 ### `signal`
 
-![signal 模板截图](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/signal.webp)
+![signal 模板截图](/screenshots/frontend-slides/signal.webp)
 
 - 名称：Signal
 - 标语：Deep navy canvas with bone paper and a single muted-gold accent; institutional with quiet weight.
@@ -318,7 +318,7 @@ skills/frontend-slides/
 
 ### `soft-editorial`
 
-![soft-editorial 模板截图](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/soft-editorial.webp)
+![soft-editorial 模板截图](/screenshots/frontend-slides/soft-editorial.webp)
 
 - 名称：Soft Editorial
 - 标语：Cormorant Garamond serif on warm paper with sage, blush, and lemon accents.
@@ -326,7 +326,7 @@ skills/frontend-slides/
 
 ### `stencil-tablet`
 
-![stencil-tablet 模板截图](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/stencil-tablet.webp)
+![stencil-tablet 模板截图](/screenshots/frontend-slides/stencil-tablet.webp)
 
 - 名称：Stencil & Tablet
 - 标语：Bone paper with stencil-cut headlines and a six-color earth palette: archaeology meets brand.
@@ -334,7 +334,7 @@ skills/frontend-slides/
 
 ### `studio`
 
-![studio 模板截图](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/studio.webp)
+![studio 模板截图](/screenshots/frontend-slides/studio.webp)
 
 - 名称：Studio
 - 标语：Black canvas with electric-yellow type; high-voltage design studio aesthetic.
@@ -342,7 +342,7 @@ skills/frontend-slides/
 
 ### `vellum`
 
-![vellum 模板截图](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/vellum.webp)
+![vellum 模板截图](/screenshots/frontend-slides/vellum.webp)
 
 - 名称：Vellum
 - 标语：Deep navy canvas with warm-yellow Cormorant serifs and a single dusty teal accent. A quiet, scholarly aesthetic.

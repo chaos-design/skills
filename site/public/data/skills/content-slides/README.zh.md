@@ -29,7 +29,7 @@ npx skills add https://github.com/chaos-design/skills --skill content-slides
 
 ## 截图
 
-![Content Slides 示例 deck 截图](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/content-slides/a-practical-guide-to-building-ai-agents.webp)
+![Content Slides 示例 deck 截图](/screenshots/content-slides/a-practical-guide-to-building-ai-agents.webp)
 
 截图从 `tests/content-slides/a-practical-guide-to-building-ai-agents/a-practical-guide-to-building-ai-agents.html` 生成。
 

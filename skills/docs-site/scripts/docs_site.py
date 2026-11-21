@@ -5,14 +5,25 @@ Zero-dependency. The agent supplies content (Markdown) plus a small JSON
 config; this script computes the HTML, navigation, themes, i18n and a
 responsive, dependency-free layout:
 
-- 860px mobile breakpoint with a full-screen navigation panel.
-- Fluid content width that follows the viewport.
+- Pinned 300px sidebar + a content column that owns its own scroll, locked to
+  one viewport so long docs never stretch the menu.
+- Brand header at the top of the sidebar, scrollable nav in the middle, and a
+  matched pair of GitHub / language controls pinned at the bottom.
+- 860px mobile breakpoint: a fixed top bar (brand, GitHub, language pill and a
+  three-bar toggle that morphs into a close cross) expands the sidebar into a
+  full-width dropdown with its own scroll area and a dimming backdrop.
+- EN/中 toggle switches every piece of UI chrome, persists to localStorage and
+  keeps <html lang> in sync.
+- ```mermaid fences render as real diagrams: a built-in, dependency-free
+  client-side renderer draws flowcharts and sequence diagrams as inline SVG
+  (unsupported syntax falls back to the source block). Clicking a diagram
+  opens a zoom lightbox.
 - Multi-page static output: one self-contained HTML file per page.
 - Markdown integration with optional YAML front-matter.
 - A "list" page type that renders a data table (e.g. pull requests) with
   client-side sorting (by any column, incl. commit count and last-updated),
   text filters and status badges.
-- A light/dark theme switch and an EN/中 language toggle.
+- A light/dark theme switch; dark is the default palette.
 
 Usage:
   python3 docs_site.py generate --config site.json --content ./docs --out ./out
@@ -32,18 +43,27 @@ DEFAULTS = {
     "description": "",
     "repo": "",
     "base_url": "",
-    "theme": "auto",
-    "lang": "en",
-    "i18n": ["en", "zh"],
+    "theme": "dark",
+    "lang": "zh",
+    "i18n": ["zh", "en"],
     "nav": [],
     "pages": [],
     "breakpoint": 860,
+    "brand_mark": "",
+    "brand_sub": "Documentation",
+    "brand_sub_zh": "文档中心",
 }
 
 
 def fail(msg):
     print("docs_site: error: " + msg, file=sys.stderr)
     raise SystemExit(2)
+
+
+def cfg_text(cfg, key, default):
+    """Return a config string, treating an explicit JSON null as 'missing'."""
+    value = cfg.get(key)
+    return default if value is None else str(value)
 
 
 def read_config(path):
@@ -55,6 +75,32 @@ def read_config(path):
     cfg.update(data)
     if not isinstance(cfg.get("pages"), list) or not cfg["pages"]:
         fail("config must define a non-empty 'pages' list")
+
+    def check_unique(items, kind):
+        seen = set()
+        for item in items:
+            slug = item.get("slug")
+            if not slug:
+                continue
+            if slug in seen:
+                fail("duplicate %s slug: %s" % (kind, slug))
+            seen.add(slug)
+
+    check_unique(cfg["pages"], "page")
+    # Slugs may differ but normalize to the same output filename (e.g.
+    # "hello world" and "hello-world"), which would silently overwrite a page.
+    filenames = set()
+    for page in cfg["pages"]:
+        filename = slug_filename(page_slug(page))
+        if filename in filenames:
+            fail("duplicate output filename from page slugs: %s" % filename)
+        filenames.add(filename)
+    nav_entries = []
+    for nav in cfg.get("nav", []):
+        if nav.get("slug"):
+            nav_entries.append(nav)
+        nav_entries.extend(nav.get("items", []))
+    check_unique(nav_entries, "nav")
     return cfg
 
 
@@ -63,6 +109,47 @@ def read_file(path):
         fail("missing file: " + path)
     with open(path, "r", encoding="utf-8") as f:
         return f.read()
+
+
+def slug_filename(slug):
+    """The on-disk filename for a page slug (kept in sync with render_page)."""
+    return re.sub(r"[^a-z0-9-]", "-", slug.lower()) + ".html"
+
+
+def page_slug(page):
+    return page.get("slug") or re.sub(
+        r"[^a-z0-9]+", "-", page.get("title", "page").lower()
+    ).strip("-")
+
+
+def repo_url(cfg):
+    repo = str(cfg.get("repo", "")).strip()
+    if not repo:
+        return "#"
+    if repo.startswith("http://") or repo.startswith("https://"):
+        return repo
+    return "https://" + repo
+
+
+def brand_mark(cfg):
+    mark = str(cfg.get("brand_mark", "")).strip()
+    if mark:
+        return mark[:2]
+    return str(cfg.get("title", "D"))[:1].upper()
+
+
+def js_literal(value):
+    """JSON literal safe to embed inside an inline <script> block.
+
+    json.dumps alone leaves `<`, `>` and `&` raw, so a config label containing
+    `</script>` could break out of the script element.
+    """
+    return (
+        json.dumps(value, ensure_ascii=False)
+        .replace("<", "\\u003c")
+        .replace(">", "\\u003e")
+        .replace("&", "\\u0026")
+    )
 
 
 def split_front_matter(text):
@@ -87,6 +174,7 @@ def md_to_html(md):
     """Minimal, deterministic Markdown -> HTML. No external libs."""
     lines = md.splitlines()
     out = []
+    used_ids = set()
     in_code = False
     code_lang = ""
     code_buf = []
@@ -100,7 +188,6 @@ def md_to_html(md):
             in_table = False
             return
         head, rows = table_rows[0], table_rows[1:]
-        sep = table_rows and len(table_rows) > 1
         html_out = ["<table class='doc-table'>"]
         html_out.append("<thead><tr>")
         for cell in head:
@@ -109,7 +196,10 @@ def md_to_html(md):
         if len(table_rows) > 2:
             html_out.append("<tbody>")
             for r in rows:
-                if r and all(c.strip() in ("", "-") for c in r):
+                # The markdown separator row (`| --- | :---: |`) is not data.
+                if r and all(
+                    not c.strip() or re.match(r"^:?-+:?$", c.strip()) for c in r
+                ):
                     continue
                 html_out.append("<tr>")
                 for cell in r:
@@ -117,7 +207,9 @@ def md_to_html(md):
                 html_out.append("</tr>")
             html_out.append("</tbody>")
         html_out.append("</table>")
-        out.append("\n".join(html_out))
+        # Wide tables must scroll inside a wrapper instead of stretching the
+        # 72ch document column (or the viewport on mobile).
+        out.append("<div class='table-scroll'>" + "\n".join(html_out) + "</div>")
         table_rows = []
         in_table = False
 
@@ -144,11 +236,16 @@ def md_to_html(md):
                 code_lang = stripped[3:].strip()
                 code_buf = []
             else:
-                block = "<pre><code"
-                if code_lang:
-                    block += " class='language-" + html.escape(code_lang) + "'"
-                block += ">" + html.escape("\n".join(code_buf)) + "</code></pre>"
-                out.append(block)
+                if code_lang.lower() == "mermaid":
+                    # The fence is displayed as a rendered figure at its
+                    # original position — never as a second source block.
+                    out.append(build_mermaid_figure("\n".join(code_buf)))
+                else:
+                    block = "<pre><code"
+                    if code_lang:
+                        block += " class='language-" + html.escape(code_lang) + "'"
+                    block += ">" + html.escape("\n".join(code_buf)) + "</code></pre>"
+                    out.append(block)
                 in_code = False
                 code_lang = ""
             i += 1
@@ -158,7 +255,6 @@ def md_to_html(md):
             i += 1
             continue
 
-        # table detection
         if "|" in stripped and stripped.startswith("|"):
             cells = [c for c in stripped.strip("|").split("|")]
             table_rows.append([c.strip() for c in cells])
@@ -172,7 +268,13 @@ def md_to_html(md):
             lvl = len(stripped) - len(stripped.lstrip("#"))
             lvl = min(lvl, 6)
             text = stripped.lstrip("#").strip()
+            # Anchors must stay unique: dedupe repeated heading slugs.
             slug = re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")
+            base, n = slug, 2
+            while slug in used_ids:
+                slug = "%s-%d" % (base, n)
+                n += 1
+            used_ids.add(slug)
             out.append("<h%d id='%s' class='doc-h%d'>%s</h%d>" % (lvl, slug, lvl, inline(text), lvl))
             i += 1
             continue
@@ -229,42 +331,131 @@ def md_to_html(md):
     return "\n".join(out)
 
 
-def build_figure_block(md):
-    """If markdown contains fenced mermaid or an svg placeholder, wrap for lightbox."""
-    m = re.search(r"```mermaid\n(.*?)```", md, re.DOTALL)
-    if m:
-        diagram = html.escape(m.group(1))
-        return (
-            "<figure class='doc-figure' data-lightbox='true' tabindex='0'>"
-            "<pre class='mermaid-src'><code class='language-mermaid'>" + diagram + "</code></pre>"
-            "<figcaption>Diagram — click to enlarge</figcaption></figure>"
-        )
-    return ""
+def build_mermaid_figure(src):
+    """A mermaid fence becomes a figure that MERMAID_JS draws as inline SVG.
+
+    The raw source travels in a hidden block so the renderer can read it and
+    so unsupported syntax can fall back to showing it as a code block.
+    """
+    return (
+        "<figure class='doc-figure' data-lightbox='true' tabindex='0'>"
+        "<div class='mermaid-view'></div>"
+        "<pre class='mermaid-src' hidden><code class='language-mermaid'>"
+        + html.escape(src) + "</code></pre>"
+        "<span class='expand-mark' aria-hidden='true'>" + ICON_EXPAND + "</span>"
+        "<figcaption data-i18n='diagramZoom'>Diagram — click to enlarge</figcaption></figure>"
+    )
 
 
-def build_nav_html(cfg, active_slug, i18n):
+def build_nav_html(cfg, active_slug):
+    """Render the grouped navigation. Links point at real sibling pages and
+    carry data-i18n keys so the language toggle can re-label them in place."""
     items = []
-    for nav in cfg.get("nav", []):
+    for idx, nav in enumerate(cfg.get("nav", [])):
         if "group" in nav:
-            items.append('<div class="nav-group"><div class="nav-group-label">%s</div>' % html.escape(nav.get("label", nav["group"])))
+            label = str(nav.get("label") or nav["group"])
+            items.append(
+                '<div class="nav-group"><div class="nav-group-label" data-i18n="group.%d">%s</div>'
+                % (idx, html.escape(label))
+            )
             for child in nav.get("items", []):
-                act = " is-active" if child.get("slug") == active_slug else ""
-                items.append('<a class="nav-link%s" href="#%s">%s</a>' % (act, child.get("slug", ""), html.escape(child.get("label", ""))))
+                slug = str(child.get("slug") or "")
+                act = " is-active" if slug == active_slug else ""
+                items.append(
+                    '<a class="nav-link%s" href="%s" data-i18n="nav.%s">%s</a>'
+                    % (act, slug_filename(slug), html.escape(slug),
+                       html.escape(str(child.get("label") or slug)))
+                )
             items.append("</div>")
         else:
-            act = " is-active" if nav.get("slug") == active_slug else ""
-            label = nav.get("label", nav.get("slug", ""))
-            t = i18n.get("nav." + nav.get("slug", ""), label)
-            items.append('<a class="nav-link%s" href="#%s">%s</a>' % (act, nav.get("slug", ""), html.escape(t)))
+            slug = str(nav.get("slug") or "")
+            act = " is-active" if slug == active_slug else ""
+            items.append(
+                '<a class="nav-link%s" href="%s" data-i18n="nav.%s">%s</a>'
+                % (act, slug_filename(slug), html.escape(slug),
+                   html.escape(str(nav.get("label") or slug)))
+            )
     return "\n".join(items)
 
 
+def build_toc_html(body_html, toc_label):
+    """Right-rail mini TOC built from the page's h2/h3/h4 anchors.
+
+    Rendered only when the page has at least two headings; list pages have
+    none and simply omit the rail. The entries nest into a tree (h3 under
+    the preceding h2, h4 under the preceding h3) so the CSS can draw elbow
+    connectors per level. Heading markup is already escaped once, so the
+    extracted text keeps its entities.
+    """
+    items = []
+    for m in re.finditer(r"<h([234]) id='([^']+)'[^>]*>(.*?)</h\1>", body_html):
+        text = re.sub(r"<[^>]+>", "", m.group(3)).strip()
+        if text:
+            items.append((int(m.group(1)), m.group(2), text))
+    if len(items) < 2:
+        return ""
+
+    def render(start, end, level):
+        lis = []
+        i = start
+        while i < end:
+            lvl, hid, text = items[i]
+            j = i + 1
+            while j < end and items[j][0] > level:
+                j += 1
+            entry = "<a href='#%s' data-toc-link='%s'>%s</a>" % (hid, hid, text)
+            if j > i + 1:
+                entry += "<ul class='toc-sub'>%s</ul>" % render(i + 1, j, level + 1)
+            lis.append("<li>%s</li>" % entry)
+            i = j
+        return "".join(lis)
+
+    lis = render(0, len(items), items[0][0])
+    return (
+        "<aside class='toc'><div class='toc-title' data-i18n='toc'>"
+        + html.escape(toc_label)
+        + "</div><ul class='toc-list'>" + lis + "</ul></aside>"
+    )
+
+
+def pager_slot(page, kind, initial):
+    if not page:
+        return "<span class='pager-link pager-empty' aria-hidden='true'></span>"
+    ps = str(page.get("slug") or page_slug(page))
+    label = str(page.get("title") or ps)
+    dir_key = "prevPage" if kind == "prev" else "nextPage"
+    return (
+        "<a class='pager-link pager-%s' href='./%s'>"
+        "<span class='pager-dir' data-i18n='%s'>%s</span>"
+        "<span class='pager-label' data-i18n='nav.%s'>%s</span></a>"
+        % (kind, html.escape(slug_filename(ps)), dir_key,
+           html.escape(str(initial[dir_key])), html.escape(ps), html.escape(label))
+    )
+
+
+def build_page_pager(cfg, slug, initial):
+    """Bottom prev/next chapter navigation following the config page order."""
+    pages = cfg.get("pages", [])
+    idx = next((i for i, p in enumerate(pages) if page_slug(p) == slug), None)
+    if idx is None:
+        return ""
+    prev_p = pages[idx - 1] if idx > 0 else None
+    next_p = pages[idx + 1] if idx < len(pages) - 1 else None
+    return (
+        "<nav class='page-pager' aria-label='Chapters'>"
+        + pager_slot(prev_p, "prev", initial)
+        + pager_slot(next_p, "next", initial)
+        + "</nav>"
+    )
+
+
 def status_badge(status):
-    cls = "badge-" + status
+    # The class is interpolated into a quoted attribute, so escape quotes too.
+    cls = html.escape("badge-" + status)
     return "<span class='status-badge %s'>%s</span>" % (cls, html.escape(status))
 
 
-def build_list_page(cfg_page, i18n):
+def build_list_page(cfg_page):
     data = cfg_page.get("data", [])
     columns = cfg_page.get("columns", [])
     sortables = cfg_page.get("sortable", ["last_updated", "commits"])
@@ -301,14 +492,15 @@ def build_list_page(cfg_page, i18n):
     if filters:
         opts = "".join("<option value='%s'>%s</option>" % (html.escape(str(f)), html.escape(str(f))) for f in filters)
         filter_ui.append(
-            "<label class='list-filter'>Filter status: "
-            "<select id='f-status' data-filter='status'><option value=''>All</option>%s</select></label>" % opts
+            "<label class='list-filter'><span data-i18n='filter'>Filter status</span> "
+            "<select id='f-status' data-filter='status'><option value='' data-i18n='all'>All</option>%s</select></label>" % opts
         )
     search_ui = (
-        "<label class='list-filter'>Search "
-        "<input id='f-search' type='search' placeholder='title / author' /></label>"
+        "<label class='list-filter'><span data-i18n='search'>Search</span> "
+        "<input id='f-search' type='search' data-i18n-ph='searchPh' placeholder='title / author' /></label>"
     )
-    toolbar = ("<div class='list-toolbar'>" + search_ui + "".join(filter_ui) + "</div>")
+    toolbar = ("<div class='list-toolbar'>" + search_ui + "".join(filter_ui)
+               + "<div class='list-count'></div></div>")
 
     table = "<div class='list-scroll'><table class='doc-table list-table'><thead>%s</thead><tbody>%s</tbody></table></div>" % (head, "\n".join(rows))
     return toolbar + table
@@ -320,87 +512,299 @@ def prep_record(rec, sortables):
     return rec
 
 
-def language_strings(cfg, page):
-    i18n = {}
-    for item in cfg.get("nav", []):
-        if item.get("slug") and item.get("label"):
-            i18n["nav." + item["slug"]] = item.get("label_zh", item["label"])
-    i18n["filter"] = page.get("filter_zh", "Filter status")
-    i18n["search"] = page.get("search_zh", "Search")
-    i18n["en"] = "EN"
-    i18n["zh"] = "中"
-    i18n["fit"] = page.get("fit_zh", "Fit to screen")
-    i18n["close"] = page.get("close_zh", "Close")
-    return i18n
+def build_i18n_map(cfg, page):
+    """Build the flat zh/en string tables used by the client-side toggle."""
+    strings = {
+        "zh": {
+            "brandSub": cfg_text(cfg, "brand_sub_zh", "文档中心"),
+            "navigate": "导航",
+            "home": "首页",
+            "langShort": "EN",
+            "langLabel": cfg_text(cfg, "lang_label_zh", "English"),
+            "langTitle": cfg_text(cfg, "lang_title_zh", "切换到 English"),
+            "navOpen": "打开导航菜单",
+            "navClose": "关闭导航菜单",
+            "github": "GitHub",
+            "theme": "切换主题",
+            "filter": "状态筛选",
+            "search": "搜索",
+            "searchPh": cfg_text(cfg, "search_placeholder_zh", "标题 / 作者"),
+            "all": "全部",
+            "results": "条结果",
+            "fit": cfg_text(cfg, "fit_zh", "适应屏幕"),
+            "zoomIn": "放大",
+            "zoomOut": "缩小",
+            "close": cfg_text(cfg, "close_zh", "关闭"),
+            "diagram": "图表",
+            "diagramZoom": "图表 — 点击放大",
+            "toc": "目录",
+            "prevPage": "← 上一章",
+            "nextPage": "下一章 →",
+        },
+        "en": {
+            "brandSub": cfg_text(cfg, "brand_sub", "Documentation"),
+            "navigate": "Navigate",
+            "home": "Home",
+            "langShort": "中",
+            "langLabel": cfg_text(cfg, "lang_label", "中文"),
+            "langTitle": cfg_text(cfg, "lang_title", "Switch to 中文"),
+            "navOpen": "Open navigation menu",
+            "navClose": "Close navigation menu",
+            "github": "GitHub",
+            "theme": "Toggle theme",
+            "filter": "Filter status",
+            "search": "Search",
+            "searchPh": cfg_text(cfg, "search_placeholder", "title / author"),
+            "all": "All",
+            "results": "results",
+            "fit": cfg_text(cfg, "fit", "Fit to screen"),
+            "zoomIn": "Zoom in",
+            "zoomOut": "Zoom out",
+            "close": cfg_text(cfg, "close", "Close"),
+            "diagram": "Diagram",
+            "diagramZoom": "Diagram — click to enlarge",
+            "toc": "On this page",
+            "prevPage": "← Previous",
+            "nextPage": "Next →",
+        },
+    }
+    for idx, item in enumerate(cfg.get("nav", [])):
+        if "group" in item:
+            key = "group.%d" % idx
+            group = str(item.get("group") or "")
+            strings["zh"][key] = str(item.get("group_zh") or item.get("label_zh") or item.get("label") or group)
+            strings["en"][key] = str(item.get("label") or group)
+        else:
+            slug = item.get("slug", "")
+            key = "nav." + slug
+            strings["zh"][key] = str(item.get("label_zh") or item.get("label") or slug)
+            strings["en"][key] = str(item.get("label") or slug)
+        for child in item.get("items", []):
+            slug = child.get("slug", "")
+            key = "nav." + slug
+            strings["zh"][key] = str(child.get("label_zh") or child.get("label") or slug)
+            strings["en"][key] = str(child.get("label") or slug)
+    # Pages outside the nav still need labels for the bottom pager; the nav
+    # entry's translated label wins when one exists.
+    for page in cfg.get("pages", []):
+        slug = str(page.get("slug") or "")
+        if not slug:
+            continue
+        key = "nav." + slug
+        if key not in strings["zh"]:
+            title = str(page.get("title") or slug)
+            strings["zh"][key] = title
+            strings["en"][key] = title
+    return strings
 
+
+GITHUB_ICON = (
+    '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">'
+    '<path d="M12 .5C5.73.5.5 5.73.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56'
+    ' 0-.28-.01-1.02-.02-2-3.2.7-3.88-1.54-3.88-1.54-.53-1.34-1.29-1.7-1.29-1.7'
+    ' -1.05-.72.08-.71.08-.71 1.16.08 1.77 1.2 1.77 1.2 1.03 1.77 2.7 1.26 3.36.96'
+    ' .1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.09'
+    ' -.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18.92-.26 1.91-.39 2.89-.4'
+    ' .98.02 1.97.15 2.89.4 2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05'
+    ' .74.8 1.19 1.83 1.19 3.09 0 4.42-2.7 5.4-5.27 5.68.41.35.78 1.05.78 2.12'
+    ' 0 1.53-.01 2.77-.01 3.15 0 .31.2.67.8.56A11.51 11.51 0 0 0 23.5 12'
+    'C23.5 5.73 18.27.5 12 .5Z"/></svg>'
+)
+
+# Stroke icon set (24x24 grid, currentColor) so every control renders as a
+# real icon instead of a text glyph. The theme pair is swapped by CSS via
+# [data-theme] on <html>; both stay in the DOM so no JS icon swap is needed.
+ICON_SUN = (
+    "<svg class='theme-icon-sun' viewBox='0 0 24 24' fill='none' stroke='currentColor'"
+    " stroke-width='2' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'>"
+    "<circle cx='12' cy='12' r='4'/>"
+    "<path d='M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.3 11.3 1.4 1.4M2 12h2m16 0h2"
+    "M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4'/></svg>"
+)
+ICON_MOON = (
+    "<svg class='theme-icon-moon' viewBox='0 0 24 24' fill='none' stroke='currentColor'"
+    " stroke-width='2' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'>"
+    "<path d='M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z'/></svg>"
+)
+ICON_EXPAND = (
+    "<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'"
+    " stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'>"
+    "<path d='M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5'/></svg>"
+)
+ICON_PLUS = (
+    "<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'"
+    " stroke-linecap='round' aria-hidden='true'><path d='M12 5v14M5 12h14'/></svg>"
+)
+ICON_MINUS = (
+    "<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'"
+    " stroke-linecap='round' aria-hidden='true'><path d='M5 12h14'/></svg>"
+)
+ICON_CLOSE = (
+    "<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'"
+    " stroke-linecap='round' aria-hidden='true'><path d='M6 6l12 12M18 6 6 18'/></svg>"
+)
 
 CSS = """
 :root{
-  --bg:#f6f7f9;--card:#fff;--ink:#141414;--muted:#667085;--line:#d0d5dd;
-  --accent:#0b5fff;--accent-2:#7a3cff;--radius:12px;
-  --header-h:56px;--top-break:{bp}px;
+  --bg:#0c0d0e;--surface:#141618;--surface-2:#1b1e21;--surface-3:#24282c;
+  --ink:#f3f0e9;--muted:#9da3a7;--faint:#696f73;--line:#34393d;
+  --accent:#6f9dff;--cyan:#53d6e7;--green:#72d29b;--yellow:#f2c14e;
+  --red:#ff4f40;--purple:#b893ff;
+  --radius:8px;--sidebar-w:300px;--header-h:56px;--top-break:{bp}px;
+  --display:"Avenir Next Condensed","DIN Condensed","Avenir Next",sans-serif;
+  --body:"Avenir Next","Helvetica Neue","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+  --mono:"SFMono-Regular",Menlo,Monaco,Consolas,monospace;
+}
+[data-theme='light']{
+  --bg:#f6f7f9;--surface:#fff;--surface-2:#f2f4f7;--surface-3:#e8ebef;
+  --ink:#141414;--muted:#667085;--faint:#98a2b3;--line:#d0d5dd;
+  --accent:#0b5fff;--cyan:#0891b2;
 }
 *{box-sizing:border-box}
 html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);
-  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;
-  -webkit-font-smoothing:antialiased}
+  font-family:var(--body);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 a{color:var(--accent);text-decoration:none}
 a:hover{text-decoration:underline}
-/* shell: two-col desktop */
-.shell{display:grid;grid-template-columns:280px minmax(0,1fr);min-height:100dvh}
-/* sidebar / header */
-.sidebar{position:sticky;top:0;height:100dvh;border-right:1px solid var(--line);
-  background:var(--card);display:flex;flex-direction:column;overflow:hidden}
-.brand{position:relative}
-.brand-row{display:flex;align-items:center;justify-content:space-between;gap:8px;
-  min-height:var(--header-h);padding:12px 16px;border-bottom:1px solid var(--line)}
-.brand a{font-weight:700;font-size:16px;color:var(--ink)}
-.brand a:hover{text-decoration:none;color:var(--accent)}
-.tagline{font-size:12px;color:var(--muted);padding:6px 16px}
-.sidebar-scroll{flex:1;overflow-y:auto;padding:12px}
+::selection{background:rgba(111,157,255,.3)}
+*{scrollbar-width:thin;scrollbar-color:var(--line) transparent}
+*::-webkit-scrollbar{width:10px;height:10px}
+*::-webkit-scrollbar-thumb{background:var(--line);border-radius:8px;border:2px solid var(--bg)}
+/* shell: one viewport, sidebar fixed, only the content column scrolls */
+.shell{display:grid;grid-template-columns:var(--sidebar-w) minmax(0,1fr);
+  grid-template-rows:minmax(0,1fr);height:100vh;min-height:0;overflow:hidden}
+/* sidebar: pinned head, scrolling nav, pinned footer */
+.sidebar{position:relative;height:100%;max-height:100vh;min-height:0;overflow:hidden;
+  display:flex;flex-direction:column;border-right:1px solid var(--line);background:var(--surface)}
+.sidebar-head{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;gap:8px;
+  padding:20px 16px 14px;border-bottom:1px solid var(--line);background:var(--surface)}
+.brand{display:flex;align-items:center;gap:10px;min-width:0;color:var(--ink);text-decoration:none}
+.brand:hover{text-decoration:none}
+.brand-mark{width:30px;height:30px;border-radius:7px;flex:0 0 auto;
+  background:linear-gradient(135deg,var(--accent),var(--cyan));
+  display:grid;place-items:center;color:#0c0d0e;font-family:var(--display);
+  font-weight:800;font-size:16px;line-height:1}
+.brand-text,.site-header-text{display:flex;flex-direction:column;min-width:0}
+.brand-name{font-family:var(--display);font-weight:700;font-size:17px;letter-spacing:.3px;line-height:1.2}
+.brand-sub{font-size:11px;color:var(--faint);margin-top:1px;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis}
+.sidebar-scroll{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:16px}
+.sidebar-github{flex:0 0 auto;display:flex;align-items:center;gap:8px;
+  padding:12px 16px;border-top:1px solid var(--line);background:var(--surface-2)}
+/* matched-pair controls pinned at the sidebar bottom */
+.sidebar-github a,.sidebar-github .lang-toggle{flex:1 1 0;min-width:0;display:flex;
+  align-items:center;justify-content:center;gap:8px;height:36px;padding:0 12px;
+  border:1px solid var(--line);border-radius:var(--radius);background:var(--surface-3);
+  color:var(--ink);font-family:inherit;font-size:13px;font-weight:500;line-height:1;
+  text-decoration:none;white-space:nowrap;cursor:pointer;
+  transition:color .15s ease,border-color .15s ease}
+.sidebar-github a:hover,.sidebar-github .lang-toggle:hover{border-color:var(--accent);
+  color:var(--ink);text-decoration:none}
+.sidebar-github svg{width:16px;height:16px;flex:0 0 auto}
+.lang-toggle{border:1px solid var(--line);background:var(--surface-2);color:var(--muted);
+  font-size:11.5px;font-weight:600;padding:4px 9px;border-radius:999px;cursor:pointer;
+  flex:0 0 auto;transition:color .15s ease,border-color .15s ease}
+.lang-toggle:hover{color:var(--ink);border-color:var(--accent)}
 /* nav */
-.nav-group{margin-bottom:14px}
-.nav-group-label{font-size:11px;text-transform:uppercase;letter-spacing:.05em;
-  color:var(--muted);padding:4px 8px}
-.nav-link{display:block;padding:8px 10px;border-radius:8px;color:var(--ink);font-size:14px}
-.nav-link:hover{background:rgba(11,95,255,.08);text-decoration:none}
-.nav-link.is-active{background:rgba(11,95,255,.12);color:var(--accent);font-weight:600}
-/* top bar (mobile only, hidden desktop) */
-.topbar{display:none}
-.topbar-row{display:flex;align-items:center;justify-content:space-between;gap:8px;
-  min-height:var(--header-h);padding:0 12px;background:var(--card);
-  position:sticky;top:0;z-index:50;border-bottom:1px solid var(--line)}
-.icon-btn{width:36px;height:36px;border-radius:9px;border:1px solid var(--line);
-  background:var(--card);display:inline-flex;align-items:center;justify-content:center;
-  cursor:pointer;color:var(--ink);font-size:15px}
-.icon-btn:hover{border-color:var(--accent)}
-.icon-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.nav-toggle{position:relative}
-.nav-toggle span,.nav-toggle span::before,.nav-toggle span::after{content:'';
-  display:block;width:18px;height:2px;background:currentColor;border-radius:2px;position:relative}
-.nav-toggle span::before{position:absolute;top:-6px}
-.nav-toggle span::after{position:absolute;top:6px}
-/* content */
-.content{min-width:0;padding:0}
-.content-inner{padding:clamp(20px,3vw,56px)}
+.nav-group{margin-top:14px}
+.nav-group:first-child{margin-top:0}
+.nav-group-label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;
+  color:var(--faint);padding:0 8px 6px}
+.nav-link{display:block;padding:7px 10px;border-radius:7px;color:var(--muted);
+  font-size:13.5px;line-height:1.35;border:1px solid transparent}
+.nav-link:hover{background:var(--surface-2);color:var(--ink);text-decoration:none}
+.nav-link.is-active{background:var(--surface-3);color:var(--ink);border-color:var(--line);font-weight:600}
+/* mobile header + backdrop are hidden on desktop */
+.site-header{display:none}
+.nav-backdrop{display:none}
+.icon-btn{width:36px;height:36px;border-radius:var(--radius);border:1px solid var(--line);
+  background:var(--surface-3);display:inline-flex;align-items:center;justify-content:center;
+  cursor:pointer;color:var(--muted);font-size:15px;flex:0 0 auto;
+  transition:color .15s ease,border-color .15s ease}
+.icon-btn:hover{color:var(--ink);border-color:var(--accent)}
+.icon-btn svg,.header-theme svg{width:18px;height:18px;display:block}
+/* theme pair: exactly one of sun/moon is visible, driven by [data-theme].
+   svg-qualified selectors tie with `.icon-btn svg` and come later, so the
+   hide rule wins in dark theme. */
+svg.theme-icon-sun{display:none}
+[data-theme='light'] svg.theme-icon-sun{display:block}
+[data-theme='light'] svg.theme-icon-moon{display:none}
+.icon-btn:focus-visible,.lang-toggle:focus-visible,.nav-toggle:focus-visible,
+.header-github:focus-visible,.nav-link:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+/* content: owns its scrollbar, spans the available column */
+.content{height:100%;min-height:0;overflow-y:auto;overscroll-behavior:contain;
+  padding:0 0 48px}
+.content-inner{padding:clamp(20px,3vw,56px);padding-top:32px}
+.crumb{font-family:var(--mono);font-size:12px;color:var(--faint);margin-bottom:10px}
 .page-title{font-size:clamp(26px,4vw,40px);line-height:1.1;margin:4px 0 10px;font-weight:750}
-.page-desc{color:var(--muted);line-height:1.7;max-width:64ch}
-/* doc body */
+.page-desc{color:var(--muted);line-height:1.7;max-width:72ch}
+/* right-rail mini toc: sticky anchors menu next to the article */
+.content-inner.has-toc{display:grid;grid-template-columns:minmax(0,1fr) 200px;
+  gap:16px 40px;align-items:start}
+.content-inner .article{min-width:0}
+.toc{position:sticky;top:32px;font-size:12.5px;min-width:0}
+.toc-title{font-family:var(--mono);font-size:11px;color:var(--faint);
+  text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px}
+.toc-list{list-style:none;margin:0;padding:0;
+  max-height:calc(100vh - 170px);overflow-y:auto}
+.toc-list li{position:relative}
+.toc-list a{display:block;padding:4px 8px 4px 10px;color:var(--muted);
+  border-radius:6px;line-height:1.4;overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap}
+.toc-list a:hover{color:var(--ink);background:var(--surface-2);text-decoration:none}
+.toc-list a.is-active{color:var(--accent);background:rgba(111,157,255,.12)}
+/* nested levels: a vertical guide drops from the parent entry and turns
+   into a short elbow connector for every child (折线, not plain indent) */
+.toc-sub{list-style:none;margin:0;padding-left:18px;position:relative}
+.toc-sub::before{content:'';position:absolute;left:4px;top:2px;bottom:8px;
+  width:1px;background:var(--line)}
+.toc-sub>li::before{content:'';position:absolute;left:-14px;top:14px;
+  width:14px;height:1px;background:var(--line)}
+.toc-sub>li:has(>a.is-active)::before{background:var(--accent)}
+/* bottom prev/next chapter pager: a fixed bar under the content column.
+   Fixed (not sticky) so it sits on its own compositor layer and never
+   jitters with content scrolling; frosted blur + a single top hairline
+   keeps it blended with the page instead of a floating box. The band is
+   inset by the content column's inline padding so its hairline lines up
+   exactly with the article above and the toc rail to the right. */
+.page-pager{position:fixed;
+  left:calc(var(--sidebar-w) + clamp(20px,3vw,56px));
+  right:clamp(20px,3vw,56px);bottom:0;z-index:40;
+  display:flex;gap:10px;padding:10px 0;
+  background:var(--surface);border-top:1px solid var(--line)}
+@supports ((backdrop-filter:blur(10px)) or (-webkit-backdrop-filter:blur(10px))){
+  .page-pager{background:color-mix(in srgb,var(--surface) 72%,transparent);
+    -webkit-backdrop-filter:blur(10px) saturate(1.3);
+    backdrop-filter:blur(10px) saturate(1.3)}
+}
+.pager-link{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0;
+  padding:8px 12px;border:1px solid var(--line);border-radius:10px;
+  background:var(--surface-2);color:var(--ink);text-decoration:none;
+  transition:border-color .15s ease}
+.pager-link:hover{border-color:var(--accent);text-decoration:none}
+.pager-next{text-align:right;align-items:flex-end}
+.pager-dir{font-size:10.5px;color:var(--faint)}
+.pager-label{font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap}
+.pager-empty{visibility:hidden}
+/* document body */
 .doc-body{max-width:72ch;line-height:1.75;overflow-wrap:break-word;min-width:0}
-.doc-body :not(pre)>code{overflow-wrap:anywhere;background:rgba(100,116,139,.12);
-  padding:2px 5px;border-radius:5px;font-size:.9em}
-pre{background:#0f172a;color:#e2e8f0;padding:14px 16px;border-radius:10px;overflow-x:auto;font-size:13.5px}
+.doc-body :not(pre)>code{overflow-wrap:anywhere;background:rgba(100,116,139,.15);
+  padding:2px 5px;border-radius:5px;font-size:.9em;font-family:var(--mono)}
+pre{background:#0f172a;color:#e2e8f0;padding:14px 16px;border-radius:10px;
+  overflow-x:auto;font-size:13.5px;font-family:var(--mono)}
+.doc-body pre{margin:14px 0}
 pre code{background:none;padding:0;color:inherit}
-.doc-h1,.doc-h2,.doc-h3{line-height:1.25;margin:24px 0 8px}
-.doc-h1{font-size:28px}.doc-h2{font-size:22px}.doc-h3{font-size:18px}
+.doc-h1,.doc-h2,.doc-h3,.doc-h4{line-height:1.25;margin:24px 0 8px}
+.doc-h1{font-size:28px}.doc-h2{font-size:22px}.doc-h3{font-size:18px}.doc-h4{font-size:16px}
 .doc-list{line-height:1.7;padding-left:22px}
 blockquote{border-left:3px solid var(--accent);margin:12px 0;padding:6px 14px;
-  background:rgba(11,95,255,.06);border-radius:0 8px 8px 0}
+  background:rgba(111,157,255,.08);border-radius:0 8px 8px 0;color:var(--muted)}
 /* tables */
 .doc-table{border-collapse:collapse;width:100%;font-size:14px;margin:14px 0}
 .doc-table th,.doc-table td{border:1px solid var(--line);padding:9px 12px;text-align:left}
-.doc-table th{background:rgba(100,116,139,.08);font-weight:600}
+.doc-table th{background:var(--surface-2);font-weight:600}
 .list-scroll{overflow-x:auto}
+.table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
 .list-table th{cursor:pointer;user-select:none;white-space:nowrap}
 .list-table th[data-sortable]::after{content:' ⇅';opacity:.4;font-size:11px}
 .list-table th.sort-asc::after{content:' ↑';opacity:1;color:var(--accent)}
@@ -409,61 +813,135 @@ blockquote{border-left:3px solid var(--accent);margin:12px 0;padding:6px 14px;
 .list-toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:14px 0}
 .list-filter{font-size:13px;color:var(--muted);display:flex;gap:6px;align-items:center}
 .list-filter input,.list-filter select{padding:7px 10px;border:1px solid var(--line);
-  border-radius:8px;background:var(--card);font-size:13px}
+  border-radius:8px;background:var(--surface-2);color:var(--ink);font-size:13px;
+  font-family:inherit}
 .list-filter input{width:220px}
 .list-count{font-size:13px;color:var(--muted);margin-left:auto}
 /* status badges */
 .status-badge{display:inline-block;padding:3px 9px;border-radius:999px;font-size:12px;
   font-weight:600;line-height:1.4}
-.badge-open{background:rgba(22,163,74,.15);color:#15803d}
-.badge-merged{background:rgba(109,40,217,.15);color:#6d28d9}
-.badge-closed{background:rgba(100,116,139,.15);color:#475569}
-.badge-draft{background:rgba(217,119,6,.15);color:#b45309}
-.badge-in-review,.badge-changes-requested{background:rgba(234,179,8,.18);color:#854d0e}
-.badge-merged,.badge-approve,.badge-approved{background:rgba(109,40,217,.15);color:#6d28d9}
-.badge-default{background:rgba(100,116,139,.15);color:#475569}
+.badge-open{background:rgba(114,210,155,.15);color:var(--green)}
+.badge-merged,.badge-approve,.badge-approved{background:rgba(184,147,255,.15);color:var(--purple)}
+.badge-closed{background:rgba(100,116,139,.15);color:var(--muted)}
+.badge-draft{background:rgba(242,193,78,.15);color:var(--yellow)}
+.badge-in-review,.badge-changes-requested{background:rgba(83,214,231,.15);color:var(--cyan)}
+.badge-default{background:rgba(100,116,139,.15);color:var(--muted)}
 /* figure / lightbox */
-.doc-figure{margin:16px 0;background:var(--card);border:1px solid var(--line);
-  border-radius:12px;padding:14px;cursor:zoom-in;position:relative}
+.doc-figure{margin:16px 0;background:var(--surface);border:1px solid var(--line);
+  border-radius:12px;padding:14px;cursor:zoom-in;position:relative;max-width:72ch}
 .doc-figure .expand-mark{position:absolute;top:10px;right:10px;width:32px;height:32px;
-  display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--muted);
+  display:flex;align-items:center;justify-content:center;color:var(--muted);
   border:1px solid var(--line);border-radius:8px}
+.doc-figure .expand-mark svg{width:15px;height:15px;display:block}
 .doc-figure figcaption{color:var(--muted);font-size:12px;margin-top:8px}
-.lightbox{display:none;position:fixed;inset:0;z-index:100;background:rgba(15,23,42,.86);
-  padding:clamp(12px,3vw,40px)}
+/* mermaid rendering: inline SVG, theme-aware via CSS variables */
+.mermaid-view{display:flex;justify-content:center;min-width:0}
+.mermaid-view svg{max-width:100%;height:auto}
+.mermaid-svg text{font-family:var(--body);font-size:13px;fill:var(--ink)}
+.mermaid-svg .mm-node{fill:var(--surface-3);stroke:var(--line)}
+.mermaid-svg .mm-inner{stroke:var(--line);fill:none}
+.mermaid-svg .mm-nlabel{font-size:13px}
+.mermaid-svg .mm-edge{stroke:var(--muted);stroke-width:1.5;fill:none}
+.mermaid-svg .mm-edge.mm-dotted{stroke-dasharray:4 3}
+.mermaid-svg .mm-edge.mm-thick{stroke-width:2.5}
+.mermaid-svg .mm-mfill{fill:var(--muted)}
+.mermaid-svg .mm-mline{stroke:var(--muted);fill:none;stroke-width:1.5}
+.mermaid-svg .mm-elabel,.mermaid-svg .mm-slabel{font-size:12px;fill:var(--ink);
+  stroke:var(--surface);stroke-width:5px;paint-order:stroke;stroke-linejoin:round}
+.mermaid-svg .mm-lifeline{stroke:var(--line);stroke-dasharray:4 4}
+.mermaid-svg .mm-actor{fill:var(--surface-3);stroke:var(--line)}
+.mermaid-svg .mm-act{fill:var(--accent);opacity:.16}
+.mermaid-svg .mm-frame{fill:rgba(157,163,167,.06);stroke:var(--line)}
+.mermaid-svg .mm-frame-label{font-size:11px;fill:var(--faint);font-weight:600}
+.mermaid-svg .mm-divider{stroke:var(--line);stroke-dasharray:3 3}
+.mermaid-svg .mm-note{fill:rgba(242,193,78,.08);stroke:var(--yellow)}
+.doc-figure .mermaid-src{margin:0;background:var(--surface-2);color:var(--ink)}
+.lightbox{display:none;position:fixed;inset:0;z-index:100;background:rgba(6,7,8,.92);padding:clamp(12px,3vw,40px)}
 .lightbox.is-open{display:flex;flex-direction:column}
 .lightbox-head{display:flex;align-items:center;gap:10px;color:#e2e8f0;margin-bottom:10px}
 .lightbox-head .lb-title{flex:1;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.lightbox-stage{flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;
-  transform-origin:center}
-.lightbox pre{max-width:100%;max-height:100%;margin:0;transform-origin:center}
+/* The stage scrolls when the scaled diagram outgrows the viewport: the
+   .lb-box holds the scaled layout size and centers via margin:auto, so
+   overflow pans naturally (wheel, touch, scrollbar, mouse drag). */
+.lightbox-stage{flex:1;display:flex;overflow:auto;min-height:0}
+.lightbox-stage.can-pan{cursor:grab}
+.lightbox-stage.is-panning{cursor:grabbing;user-select:none}
+.lb-box{flex:0 0 auto;margin:auto}
+.lightbox pre{margin:0;transform-origin:0 0}
+.lightbox .lb-diagram{transform-origin:0 0}
+.lightbox .lb-diagram svg{display:block}
 .lightbox .lb-btn{width:40px;height:40px;border-radius:9px;border:1px solid rgba(255,255,255,.25);
-  background:rgba(255,255,255,.08);color:#fff;cursor:pointer;font-size:15px}
-/* footer */
-.footer{border-top:1px solid var(--line);padding:18px 0;color:var(--muted);font-size:13px}
-/* theme controls */
-.theme-ctl,.lang-ctl{display:flex;gap:6px}
-.theme-ctl button,.lang-ctl button{width:36px;height:30px;border-radius:8px;border:1px solid var(--line);
-  background:var(--card);color:var(--ink);cursor:pointer;font-size:12px}
+  background:rgba(255,255,255,.08);color:#fff;cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center}
+.lightbox .lb-btn svg{width:18px;height:18px;display:block}
+/* Intermediate desktop widths: the fixed 300px sidebar eats too much of the
+   content column, so narrow it between the 300px comfort zone and the mobile
+   breakpoint. Harmless below the breakpoint (mobile overrides the shell). */
+@media (max-width:1200px){
+  :root{--sidebar-w:250px}
+}
 /* ===== MOBILE (≤ breakpoint) ===== */
 @media (max-width:{bp}px){
-  .shell{display:block}
-  .sidebar{position:fixed;inset:0;top:var(--header-h);width:100%;height:calc(100dvh - var(--header-h));
-    z-index:40;transform:translateY(-120%);transition:transform .18s ease;box-shadow:0 12px 30px rgba(0,0,0,.25)}
-  body.nav-open .sidebar{transform:translateY(0)}
-  .sidebar::after{content:'';position:fixed;inset:0;top:var(--header-h);background:rgba(15,23,42,.4);z-index:-1}
-  .topbar{display:block}
-  .topbar-row{position:sticky}
-  .nav-toggle.is-open span{background:transparent}
-  .nav-toggle.is-open span::before{top:0;transform:rotate(45deg)}
-  .nav-toggle.is-open span::after{top:0;transform:rotate(-45deg)}
-  .content-inner{padding:20px 16px calc(20px + env(safe-area-inset-bottom))}
+  .shell{display:block;height:100vh;height:100dvh;min-height:0;overflow:hidden;padding-top:var(--header-h)}
+  .content{height:100%;min-height:0;overflow-y:auto;overscroll-behavior:contain}
+  body.nav-open .content{overflow:hidden}
+  .site-header{position:fixed;top:0;left:0;right:0;z-index:60;display:flex;align-items:center;
+    gap:10px;height:var(--header-h);padding:0 16px;background:var(--surface);
+    border-bottom:1px solid var(--line)}
+  .site-header-brand{display:flex;align-items:center;gap:10px;min-width:0;color:var(--ink);text-decoration:none}
+  .site-header-brand:hover{text-decoration:none}
+  .site-header-text .brand-name,.site-header-text .brand-sub{line-height:1.2}
+  .site-header-actions{display:flex;align-items:center;gap:8px;margin-left:auto}
+  /* square, equal-sized controls in the top bar */
+  .site-header .lang-toggle,.header-github,.header-theme,.nav-toggle{width:36px;height:36px;padding:0;
+    border:1px solid var(--line);border-radius:var(--radius);background:var(--surface-3);
+    color:var(--ink);font-size:13px;font-weight:700;display:grid;place-items:center;
+    cursor:pointer;transition:border-color .15s ease}
+  .site-header .lang-toggle:hover,.header-github:hover,.header-theme:hover,.nav-toggle:hover{border-color:var(--accent)}
+  .header-github{color:var(--cyan);text-decoration:none}
+  .header-github:hover{text-decoration:none}
+  .header-github svg{width:18px;height:18px}
+  .nav-toggle-bars{display:grid;gap:4px;width:16px}
+  .nav-toggle-bars i{display:block;height:2px;border-radius:2px;background:currentColor;
+    transition:transform .15s ease,opacity .15s ease}
+  .nav-toggle.is-open .nav-toggle-bars i:nth-child(1){transform:translateY(6px) rotate(45deg)}
+  .nav-toggle.is-open .nav-toggle-bars i:nth-child(2){opacity:0}
+  .nav-toggle.is-open .nav-toggle-bars i:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+  /* Only rendered while the panel is open — never dim a closed page. */
+  body.nav-open .nav-backdrop{display:block;position:fixed;inset:var(--header-h) 0 0 0;
+    z-index:54;background:rgba(0,0,0,.45)}
+  body.nav-open{overflow:hidden}
+  .sidebar{position:fixed;top:var(--header-h);left:0;right:0;bottom:0;height:auto;z-index:55;
+    display:none;flex-direction:column;overflow:hidden;border-right:none;border-bottom:none;
+    background:var(--surface)}
+  body.nav-open .sidebar{display:flex;box-shadow:0 -12px 40px rgba(0,0,0,.45);
+    animation:nav-slide .18s ease}
+  .sidebar:focus{outline:none}
+  .sidebar:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  @keyframes nav-slide{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:translateY(0)}}
+  .sidebar-scroll{padding:12px}
+  .sidebar-head,.sidebar-github{display:none}
+  .content-inner{padding:24px 20px calc(24px + env(safe-area-inset-bottom))}
+  .doc-body{max-width:none}
+  /* 72ch would overflow a narrow phone; figures follow the viewport instead */
+  .doc-figure{max-width:100%}
+  /* the toc rail is a desktop affordance; the pager bar spans full width */
+  .content-inner.has-toc{display:block}
+  .toc{display:none}
+  .page-pager{left:0;right:0;padding:8px 20px calc(8px + env(safe-area-inset-bottom))}
+  .pager-empty{display:none}
+  .content{padding-bottom:64px}
 }
-/* dark theme */
-[data-theme='dark']{--bg:#0b0d12;--card:#14171f;--ink:#e6e8ee;--muted:#9aa3b2;--line:#2a2f3a}
-[data-theme='dark'] .list-table th{background:rgba(148,163,184,.1)}
+@media (max-width:600px){
+  .list-filter input{width:100%}
+  .list-toolbar{align-items:stretch}
+  .list-filter{flex:1 1 100%}
+  .list-count{margin-left:0}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms!important;transition-duration:.01ms!important}
+}
 """
-
 
 LIST_JS = """
 (function(){
@@ -471,36 +949,43 @@ LIST_JS = """
   if(!table)return;
   var headCells=table.querySelectorAll('th');
   var bodyRows=Array.prototype.slice.call(table.querySelectorAll('tbody tr'));
-  function rowVals(r){var tds=r.querySelectorAll('td');return Array.prototype.map.call(tds,function(td,i){
-      return {td:td,i:i,raw:td.dataset.value!==undefined?td.dataset.value:td.textContent,value:td.dataset.value!==undefined?td.dataset.value:td.textContent};});}
+  function rowVals(r){var tds=r.querySelectorAll('td');return Array.prototype.map.call(tds,function(td){
+      return {td:td,i:td.cellIndex,raw:td.dataset.value!==undefined?td.dataset.value:td.textContent,
+        value:td.dataset.value!==undefined?td.dataset.value:td.textContent};});}
+  var isNum=function(s){return /^-?\\d+(?:\\.\\d+)?$/.test(String(s).trim());};
   var sortKey=-1,sortDir='desc';
   headCells.forEach(function(th,idx){
     if(!th.hasAttribute('data-sortable'))return;
     th.addEventListener('click',function(){
-      var dir = (sortKey===idx)? (sortDir==='asc'?'desc':'asc') : 'desc';
+      var dir=(sortKey===idx)?(sortDir==='asc'?'desc':'asc'):'desc';
       sortKey=idx;sortDir=dir;applySort();
     });
   });
   function applySort(){
-    bodyRows.forEach(function(r){var tds=r.querySelectorAll('td');tds[sortKey].dataset.value=tds[sortKey].dataset.value||tds[sortKey].textContent;});
-    var cols=rowCols();
+    if(sortKey<0)return;
+    bodyRows.forEach(function(r){var tds=r.querySelectorAll('td');
+      if(tds[sortKey]&&tds[sortKey].dataset.value===undefined)tds[sortKey].dataset.value=tds[sortKey].textContent;});
     bodyRows.sort(function(a,b){
       var av=rowVals(a)[sortKey],bv=rowVals(b)[sortKey];
-      var an=parseFloat(av.raw),bn=parseFloat(bv.raw);
-      var cmp=(!isNaN(an)&&!isNaN(bn))?an-bn:(av.value.localeCompare(bv.value));
+      if(!av||!bv)return 0;
+      // Only full numeric strings are numeric; ISO timestamps and other text
+      // fall back to string compare (ISO date strings sort chronologically).
+      var cmp=(isNum(av.raw)&&isNum(bv.raw))
+        ?(parseFloat(av.raw)-parseFloat(bv.raw))
+        :av.value.localeCompare(bv.value);
       return cmp*(sortDir==='asc'?1:-1);
     });
     var tb=table.tBodies[0];bodyRows.forEach(function(r){tb.appendChild(r);});
-    headCells.forEach(function(th,i){th.classList.remove('sort-asc','sort-desc');});
-    if(sortKey>=0)headCells[sortKey].classList.add(sortDir==='asc'?'sort-asc':'sort-desc');
+    headCells.forEach(function(th){th.classList.remove('sort-asc','sort-desc');});
+    headCells[sortKey].classList.add(sortDir==='asc'?'sort-asc':'sort-desc');
     updateCount();
   }
-  function rowCols(){return headCells.length;}
   var search=document.getElementById('f-search');
   var statusF=document.getElementById('f-status');
   function updateCount(){
     var n=0;bodyRows.forEach(function(r){if(!r.hidden)n++;});
-    var c=document.querySelector('.list-count');if(c)c.textContent=n+' of '+bodyRows.length+' pull requests';
+    var c=document.querySelector('.list-count');
+    if(c&&window.docsT)c.textContent=n+' / '+bodyRows.length+' '+window.docsT('results');
   }
   function applyFilters(){
     var q=(search?search.value:'').toLowerCase();
@@ -508,50 +993,153 @@ LIST_JS = """
     bodyRows.forEach(function(r){
       var ok=true;
       if(st&&r.getAttribute('data-status')!==st)ok=false;
-      if(q){var hay=r.textContent.toLowerCase();if(hay.indexOf(q)===-1)ok=false;}
+      if(q&&r.textContent.toLowerCase().indexOf(q)===-1)ok=false;
       r.hidden=!ok;
     });
     updateCount();
   }
   if(search)search.addEventListener('input',applyFilters);
   if(statusF)statusF.addEventListener('change',applyFilters);
+  document.addEventListener('docs:lang',updateCount);
   applySort();
   updateCount();
 })();
 """
 
+TOC_JS = """
+(function(){
+  var toc=document.querySelector('.toc');
+  if(!toc)return;
+  var links=[].slice.call(toc.querySelectorAll('[data-toc-link]'));
+  var heads=links.map(function(a){return document.getElementById(a.getAttribute('data-toc-link'));}).filter(Boolean);
+  if(!heads.length)return;
+  var content=document.querySelector('.content');
+  var list=toc.querySelector('.toc-list');
+  var last='';
+  function sync(){
+    var ctop=content.getBoundingClientRect().top;
+    var cur=heads[0];
+    heads.forEach(function(h){
+      if(h.getBoundingClientRect().top-ctop<=96)cur=h;
+    });
+    if(content.scrollTop+content.clientHeight>=content.scrollHeight-4)cur=heads[heads.length-1];
+    links.forEach(function(a){
+      a.classList.toggle('is-active',!!cur&&a.getAttribute('data-toc-link')===cur.id);
+    });
+    // Long toc lists follow the active entry so quick locating always works.
+    var act=toc.querySelector('a.is-active');
+    if(act&&list){
+      var id=act.getAttribute('data-toc-link');
+      if(id!==last){
+        last=id;
+        var lr=act.getBoundingClientRect(),tr=list.getBoundingClientRect();
+        if(lr.top<tr.top+4||lr.bottom>tr.bottom-4){
+          list.scrollTop+=lr.top-tr.top-list.clientHeight/2+act.offsetHeight/2;
+        }
+      }
+    }
+  }
+  content.addEventListener('scroll',sync,{passive:true});
+  window.addEventListener('resize',sync);
+  // Fragment jumps are instant and some embedders fire the click's default
+  // scroll late (or without a scroll event), so re-sync on hashchange and
+  // twice after every toc click.
+  window.addEventListener('hashchange',function(){setTimeout(sync,30);});
+  links.forEach(function(a){a.addEventListener('click',function(){
+    setTimeout(sync,30);setTimeout(sync,180);
+  });});
+  sync();
+})();
+"""
+
+I18N_JS = """
+(function(){
+  var I={i18n};
+  var langs={langs};
+  var lang={lang};
+  var KEY='docs-site-lang';
+  try{var saved=localStorage.getItem(KEY);if(saved&&I[saved])lang=saved;}catch(e){}
+  function t(k){return (I[lang]&&I[lang][k]!==undefined)?I[lang][k]:k;}
+  function apply(){
+    document.documentElement.lang=(lang==='zh')?'zh-CN':'en';
+    document.querySelectorAll('[data-i18n]').forEach(function(el){
+      var v=t(el.getAttribute('data-i18n'));if(v!==undefined)el.textContent=v;});
+    document.querySelectorAll('[data-i18n-title]').forEach(function(el){
+      var v=t(el.getAttribute('data-i18n-title'));
+      if(v!==undefined){el.setAttribute('title',v);el.setAttribute('aria-label',v);}});
+    document.querySelectorAll('[data-i18n-ph]').forEach(function(el){
+      var v=t(el.getAttribute('data-i18n-ph'));if(v!==undefined)el.setAttribute('placeholder',v);});
+    document.querySelectorAll('[data-lang-toggle]').forEach(function(b){
+      b.setAttribute('title',t('langTitle'));b.setAttribute('aria-label',t('langTitle'));});
+    var tgl=document.querySelector('.nav-toggle');
+    if(tgl)tgl.setAttribute('aria-label',t(document.body.classList.contains('nav-open')?'navClose':'navOpen'));
+    if(typeof CustomEvent==='function')document.dispatchEvent(new CustomEvent('docs:lang'));
+  }
+  function setLang(next){
+    if(!I[next])return;
+    lang=next;
+    try{localStorage.setItem(KEY,next);}catch(e){}
+    apply();
+  }
+  document.querySelectorAll('[data-lang-toggle]').forEach(function(b){
+    b.addEventListener('click',function(){var i=langs.indexOf(lang);setLang(langs[(i+1)%langs.length]);});
+  });
+  window.docsT=t;window.docsLang=function(){return lang;};
+  apply();
+})();
+"""
 
 THEME_JS = """
 (function(){
   var root=document.documentElement;
-  var mode=localStorage.getItem('docs-theme')||'{theme}';
+  var mode={theme};
+  try{mode=localStorage.getItem('docs-theme')||mode;}catch(e){}
   function apply(m){root.setAttribute('data-theme',m);}
-  if(mode==='auto'){apply(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');}
-  else{apply(mode);}
-  var btns=document.querySelectorAll('[data-theme-toggle]');
-  btns.forEach(function(b){b.addEventListener('click',function(){
-    var cur=root.getAttribute('data-theme');
-    var next=(cur==='dark')?'light':'dark';
-    apply(next);localStorage.setItem('docs-theme',next);
-  });});
+  if(mode==='auto')apply(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
+  else apply(mode==='light'?'light':'dark');
+  document.querySelectorAll('[data-theme-toggle]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var next=root.getAttribute('data-theme')==='dark'?'light':'dark';
+      apply(next);
+      try{localStorage.setItem('docs-theme',next);}catch(e){}
+    });
+  });
 })();
 """
 
 NAV_JS = """
 (function(){
+  var shell=document.querySelector('.shell');
   var toggle=document.querySelector('.nav-toggle');
-  var body=document.body;
-  if(!toggle)return;
-  function close(){body.classList.remove('nav-open');toggle.classList.remove('is-open');toggle.setAttribute('aria-expanded','false');}
-  function open(){body.classList.add('nav-open');toggle.classList.add('is-open');toggle.setAttribute('aria-expanded','true');}
-  toggle.addEventListener('click',function(){body.classList.contains('nav-open')?close():open();});
-  document.querySelectorAll('.nav-link').forEach(function(a){
-    a.addEventListener('click',function(){close();});
-  });
-  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&body.classList.contains('nav-open')){close();toggle.focus();}});
-  var mq=window.matchMedia('screen and (max-width:{bp}px)');
-  function sync(){if(!mq.matches)close();}
-  if(mq.addEventListener)mq.addEventListener('change',sync);else mq.addListener(sync);
+  var sidebar=document.getElementById('site-nav');
+  var backdrop=document.querySelector('.nav-backdrop');
+  if(!shell||!toggle||!sidebar)return;
+  var content=document.querySelector('.content');
+  function setOpen(open,restoreFocus){
+    shell.setAttribute('data-nav-open',open?'true':'false');
+    document.body.classList.toggle('nav-open',open);
+    // Keep Tab focus inside the visible chrome while the panel covers content.
+    if(content&&'inert' in content)content.inert=open;
+    toggle.classList.toggle('is-open',open);
+    toggle.setAttribute('aria-expanded',open?'true':'false');
+    if(window.docsT)toggle.setAttribute('aria-label',window.docsT(open?'navClose':'navOpen'));
+    if(open){
+      sidebar.focus();
+      var active=sidebar.querySelector('.nav-link.is-active');
+      if(active&&active.scrollIntoView)active.scrollIntoView({block:'nearest',behavior:'smooth'});
+    }else if(restoreFocus){toggle.focus();}
+  }
+  toggle.addEventListener('click',function(){setOpen(!document.body.classList.contains('nav-open'));});
+  if(backdrop)backdrop.addEventListener('click',function(){setOpen(false,true);});
+  sidebar.querySelectorAll('a').forEach(function(a){
+    a.addEventListener('click',function(){setOpen(false);});});
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Escape'&&document.body.classList.contains('nav-open')){
+      e.preventDefault();setOpen(false,true);}});
+  var mq=window.matchMedia('(max-width:{bp}px)');
+  function sync(){if(!mq.matches)setOpen(false);}
+  if(mq.addEventListener)mq.addEventListener('change',sync);
+  else if(mq.addListener)mq.addListener(sync);
 })();
 """
 
@@ -560,141 +1148,765 @@ LIGHTBOX_JS = """
   var lb=document.querySelector('.lightbox');
   if(!lb)return;
   var stage=lb.querySelector('.lightbox-stage');
-  var cur=1;
-  function fit(){var pre=stage.querySelector('pre');if(!pre)return;pre.style.transform='scale('+cur+')';}
-  function open(fig){lb.classList.add('is-open');cur=1;fit();document.body.style.overflow='hidden';}
+  var box=null,wrap=null,natW=0,natH=0,base=1,cur=1;
+  // The box takes the scaled layout size so the stage scrolls; the wrap
+  // carries the visual transform from its top-left corner.
+  function apply(anchor){
+    if(!box||!wrap)return;
+    var s=base*cur;
+    // floor keeps the fitted size from rounding 1px past the stage edge
+    box.style.width=Math.max(1,Math.floor(natW*s))+'px';
+    box.style.height=Math.max(1,Math.floor(natH*s))+'px';
+    wrap.style.transform='scale('+s+')';
+    if(anchor){
+      stage.scrollLeft=anchor.x*s-stage.clientWidth/2;
+      stage.scrollTop=anchor.y*s-stage.clientHeight/2;
+    }
+    stage.classList.toggle('can-pan',
+      box.offsetWidth>stage.clientWidth||box.offsetHeight>stage.clientHeight);
+  }
+  // The natural-space point currently centered in the stage; kept stable
+  // across zoom steps so +/− does not jump the view.
+  function anchorPoint(){
+    var s=base*cur;
+    return {x:(stage.scrollLeft+stage.clientWidth/2)/s,
+            y:(stage.scrollTop+stage.clientHeight/2)/s};
+  }
+  function fitBase(){
+    if(!box)return;
+    // Only shrink oversized diagrams to fit; never enlarge small ones, so
+    // the scroll region always holds real content at a sane scale.
+    base=Math.min(1,stage.clientWidth/natW,stage.clientHeight/natH)||1;
+  }
+  function centerScroll(){
+    stage.scrollLeft=Math.max(0,(box.offsetWidth-stage.clientWidth)/2);
+    stage.scrollTop=Math.max(0,(box.offsetHeight-stage.clientHeight)/2);
+  }
+  function fitZoom(){cur=1;fitBase();apply();centerScroll();}
+  function open(fig){
+    stage.innerHTML='';box=null;wrap=null;
+    var svg=fig.querySelector('.mermaid-view svg');
+    if(svg){
+      box=document.createElement('div');box.className='lb-box';
+      wrap=document.createElement('div');wrap.className='lb-diagram';
+      var c=svg.cloneNode(true);
+      var vb=c.viewBox&&c.viewBox.baseVal;
+      if(vb&&vb.width){c.setAttribute('width',vb.width);c.setAttribute('height',vb.height);}
+      c.style.maxWidth='none';
+      wrap.appendChild(c);box.appendChild(wrap);stage.appendChild(box);
+      var r=c.getBoundingClientRect();
+      natW=vb&&vb.width?vb.width:r.width;
+      natH=vb&&vb.height?vb.height:r.height;
+      // A block-level wrap would stretch to the box; pin it to the natural
+      // size so scale() transforms the diagram exactly once.
+      wrap.style.width=natW+'px';
+      wrap.style.height=natH+'px';
+    }else{
+      var src=fig.querySelector('.mermaid-src');
+      if(src){
+        box=document.createElement('div');box.className='lb-box';
+        wrap=document.createElement('pre');wrap.className='lb-diagram';
+        wrap.textContent=src.textContent;
+        wrap.style.width='max-content';wrap.style.maxWidth='none';
+        box.appendChild(wrap);stage.appendChild(box);
+        natW=wrap.scrollWidth||1;natH=wrap.scrollHeight||1;
+      }
+    }
+    if(!box)return;
+    lb.classList.add('is-open');cur=1;fitBase();apply();centerScroll();
+    document.body.style.overflow='hidden';
+  }
   function closeLb(){lb.classList.remove('is-open');document.body.style.overflow='';}
   document.querySelectorAll('.doc-figure[data-lightbox]').forEach(function(f){
     f.addEventListener('click',function(){open(f);});
     f.addEventListener('keydown',function(e){if(e.key==='Enter')open(f);});
   });
   lb.querySelectorAll('[data-lb-close]').forEach(function(b){b.addEventListener('click',closeLb);});
-  lb.querySelectorAll('[data-lb-fit]').forEach(function(b){b.addEventListener('click',function(){cur=1;fit();});});
-  lb.querySelectorAll('[data-lb-plus]').forEach(function(b){b.addEventListener('click',function(){cur=Math.min(4,cur+0.25);fit();});});
-  lb.querySelectorAll('[data-lb-minus]').forEach(function(b){b.addEventListener('click',function(){cur=Math.max(0.4,cur-0.25);fit();});});
+  lb.querySelectorAll('[data-lb-fit]').forEach(function(b){b.addEventListener('click',fitZoom);});
+  lb.querySelectorAll('[data-lb-plus]').forEach(function(b){b.addEventListener('click',function(){
+    var a=anchorPoint();cur=Math.min(4,cur+0.25);apply(a);});});
+  lb.querySelectorAll('[data-lb-minus]').forEach(function(b){b.addEventListener('click',function(){
+    var a=anchorPoint();cur=Math.max(0.4,cur-0.25);apply(a);});});
   document.addEventListener('keydown',function(e){if(e.key==='Escape'&&lb.classList.contains('is-open'))closeLb();});
-  window.addEventListener('resize',fit);
+  window.addEventListener('resize',function(){fitBase();apply();centerScroll();});
+  // Mouse drag pans the stage; touch pans natively through the scroller.
+  var drag=null;
+  stage.addEventListener('pointerdown',function(e){
+    if(e.pointerType!=='mouse'||!box)return;
+    if(box.offsetWidth<=stage.clientWidth&&box.offsetHeight<=stage.clientHeight)return;
+    drag={x:e.clientX,y:e.clientY,l:stage.scrollLeft,t:stage.scrollTop};
+    stage.classList.add('is-panning');
+  });
+  window.addEventListener('pointermove',function(e){
+    if(!drag)return;
+    stage.scrollLeft=drag.l-(e.clientX-drag.x);
+    stage.scrollTop=drag.t-(e.clientY-drag.y);
+  });
+  window.addEventListener('pointerup',function(){
+    if(drag){drag=null;stage.classList.remove('is-panning');}
+  });
+})();
+"""
+
+# Dependency-free mermaid subset renderer. Runs in the browser, reads the
+# hidden .mermaid-src block of each .doc-figure and draws an inline SVG:
+# - flowchart/graph: TB/LR/RL/BT, arrow/dotted/thick/open edges (labeled via
+#   `--text-->` or `-->|text|`), rect/rounded/diamond/circle/cylinder/hexagon/
+#   subroutine nodes; subgraph/classDef/style lines are ignored gracefully.
+# - sequenceDiagram: participants, ->>/-->>/-)/--> messages, +/- activations,
+#   notes and loop/alt/opt/par frames.
+# Anything unparseable falls back to the source block (figure keeps working).
+MERMAID_JS = r"""
+(function(){
+  var NS='http://www.w3.org/2000/svg';
+  var uidC=0;
+  function el(n,a,kids){
+    var e=document.createElementNS(NS,n);
+    if(a)for(var k in a){if(a[k]!==undefined&&a[k]!==null)e.setAttribute(k,String(a[k]));}
+    (kids||[]).forEach(function(c){e.appendChild(c);});
+    return e;
+  }
+  function textW(s,fs){var w=0;for(var i=0;i<s.length;i++){w+=(s.charCodeAt(i)>0x2E80)?fs:fs*0.6;}return w;}
+  function clean(s){
+    s=String(s);
+    if(/<br\s*\/?>/i.test(s)){
+      s=s.replace(/<br\s*\/?>/gi,'\n');
+      if(/<[a-z!][^>]*>/i.test(s))s=s.replace(/<[^>]+>/g,'');
+    }
+    return s.replace(/^"|"$/g,'').trim();
+  }
+  function lines(s){return clean(s).split('\n');}
+  function centerText(cx,cy,ls,cls){
+    var t=el('text',{x:cx,y:cy-(ls.length-1)*8+4.5,class:cls,'text-anchor':'middle'});
+    ls.forEach(function(L,i){var sp=el('tspan',{x:cx,dy:i===0?0:16});sp.textContent=L;t.appendChild(sp);});
+    return t;
+  }
+
+  /* ---------- flowchart ---------- */
+  var SHAPES=[['[(',']]','cylinder'],['[[',']]','subroutine'],['{{','}}','hexagon'],
+              ['((','))','circle'],['[',']','rect'],['(',')','round'],['{','}','diamond']];
+  function parseNode(tok){
+    tok=tok.trim();
+    var m=tok.match(/^([\w-]+)\s*([\s\S]*)$/);
+    if(!m)return null;
+    var id=m[1],rest=m[2].trim(),shape='rect',label=id;
+    if(rest){
+      var hit=null;
+      for(var i=0;i<SHAPES.length;i++){
+        var o=SHAPES[i][0],c=SHAPES[i][1];
+        if(rest.length>o.length+c.length&&rest.slice(0,o.length)===o&&rest.slice(-c.length)===c){
+          hit=[SHAPES[i][2],rest.slice(o.length,rest.length-c.length)];break;
+        }
+      }
+      if(!hit)return null;
+      shape=hit[0];label=clean(hit[1]);
+      if(!label)label=id;
+    }
+    return {id:id,shape:shape,label:label};
+  }
+  var EDGE_RE=/(?:-\.\s*([^-]*?)\s*\.->)|(-\.\->)|(?:--\s*([^-|]*?)\s*-{2}>)|(-{2,3}>)|(?:==\s*([^=]*?)\s*={2,3}>)|(={2,3}>)|(-{2,3})/g;
+  function addNode(g,n){
+    var ex=g.nodes[n.id];
+    if(!ex){g.nodes[n.id]=n;g.order.push(n.id);}
+    else if(n.label!==n.id){ex.label=n.label;ex.shape=n.shape;}
+  }
+  function flowLine(line,g){
+    EDGE_RE.lastIndex=0;
+    var parts=[],labels=[],styles=[],m,last=0,found=false;
+    while((m=EDGE_RE.exec(line))){
+      found=true;
+      parts.push(line.slice(last,m.index).trim());
+      var lab=null,style;
+      if(m[1]!==undefined){lab=m[1].trim();style='dotted';}
+      else if(m[2]!==undefined){style='dotted';}
+      else if(m[3]!==undefined){lab=m[3].trim();style='arrow';}
+      else if(m[4]!==undefined){style='arrow';}
+      else if(m[5]!==undefined){lab=m[5].trim();style='thick';}
+      else if(m[6]!==undefined){style='thick';}
+      else{style='open';}
+      var pm=line.slice(EDGE_RE.lastIndex).match(/^\s*\|([^|]*)\|/);
+      if(pm){lab=(pm[1]||'').trim();EDGE_RE.lastIndex+=pm[0].length;}
+      labels.push(lab);styles.push(style);
+      last=EDGE_RE.lastIndex;
+    }
+    if(!found){
+      var n0=parseNode(line);
+      if(!n0)return false;
+      addNode(g,n0);return true;
+    }
+    parts.push(line.slice(last).trim());
+    var prev=null;
+    for(var k=0;k<parts.length;k++){
+      if(!parts[k])return false;
+      var node=parseNode(parts[k]);
+      if(!node)return false;
+      addNode(g,node);
+      if(prev!==null)g.edges.push({from:prev,to:node.id,label:labels[k-1],style:styles[k-1]});
+      prev=node.id;
+    }
+    return true;
+  }
+  function parseFlow(src){
+    var g={dir:'TB',nodes:{},order:[],edges:[]};
+    var ls=src.split('\n');
+    for(var i=0;i<ls.length;i++){
+      var stmts=ls[i].split(';');
+      for(var j=0;j<stmts.length;j++){
+        var line=stmts[j].trim();
+        if(!line||/^%%/.test(line))continue;
+        var dm=line.match(/^(?:graph|flowchart)\s+(TB|TD|BT|RL|LR)\s*;?$/i);
+        if(dm){g.dir=dm[1].toUpperCase();if(g.dir==='TD')g.dir='TB';continue;}
+        if(/^(subgraph|end|classDef|class|style|click|linkStyle)\b/i.test(line))continue;
+        if(!flowLine(line,g))return null;
+      }
+    }
+    return g.order.length?g:null;
+  }
+  function nodeSize(n){
+    var ls=lines(n.label),fs=13,lw=0;
+    ls.forEach(function(L){lw=Math.max(lw,textW(L,fs));});
+    var w=Math.max(64,lw+30),h=Math.max(38,ls.length*16+18);
+    if(n.shape==='diamond'){w=Math.max(90,lw+64);h=Math.max(56,ls.length*16+34);}
+    else if(n.shape==='circle'){var d=Math.max(64,lw+30,ls.length*16+20);w=d;h=d;}
+    return {w:w,h:h,ls:ls};
+  }
+  function clipPoint(shape,r,from,to){
+    var cx=r.x+r.w/2,cy=r.y+r.h/2;
+    var dx=to.x-from.x,dy=to.y-from.y;
+    if(!dx&&!dy)return {x:cx,y:cy};
+    if(shape==='circle'){
+      var L=Math.sqrt(dx*dx+dy*dy)||1;
+      return {x:cx+dx/L*r.w/2,y:cy+dy/L*r.w/2};
+    }
+    var hw=r.w/2,hh=r.h/2,t;
+    if(shape==='diamond'){
+      var s=Math.abs(dx)/hw+Math.abs(dy)/hh;
+      t=s?1/s:0;
+    }else{
+      t=Math.min(dx?Math.abs(hw/dx):Infinity,dy?Math.abs(hh/dy):Infinity);
+    }
+    return {x:cx+dx*t,y:cy+dy*t};
+  }
+  function shapeEl(shape,s){
+    var cx=s.x+s.w/2,cy=s.y+s.h/2;
+    switch(shape){
+      case 'round':
+        return el('rect',{x:s.x,y:s.y,width:s.w,height:s.h,rx:s.h/2,class:'mm-node'});
+      case 'circle':
+        return el('circle',{cx:cx,cy:cy,r:s.w/2,class:'mm-node'});
+      case 'diamond':
+        return el('polygon',{points:cx+','+s.y+' '+(s.x+s.w)+','+cy+' '+cx+','+(s.y+s.h)+' '+s.x+','+cy,class:'mm-node'});
+      case 'hexagon':
+        return el('polygon',{points:(s.x+9)+','+s.y+' '+(s.x+s.w-9)+','+s.y+' '+(s.x+s.w)+','+cy+' '+(s.x+s.w-9)+','+(s.y+s.h)+' '+(s.x+9)+','+(s.y+s.h)+' '+s.x+','+cy,class:'mm-node'});
+      case 'cylinder':
+        var ry=Math.min(10,s.h/4);
+        return el('path',{d:'M'+s.x+','+(s.y+ry)+' a'+(s.w/2)+','+ry+' 0 0 1 '+s.w+',0 V'+(s.y+s.h-ry)+' a'+(s.w/2)+','+ry+' 0 0 1 -'+s.w+',0 Z',class:'mm-node'});
+      case 'subroutine':
+        return el('g',null,[
+          el('rect',{x:s.x,y:s.y,width:s.w,height:s.h,rx:6,class:'mm-node'}),
+          el('path',{d:'M'+(s.x+14)+','+s.y+' V'+(s.y+s.h)+' M'+(s.x+s.w-14)+','+s.y+' V'+(s.y+s.h),class:'mm-inner'})
+        ]);
+      default:
+        return el('rect',{x:s.x,y:s.y,width:s.w,height:s.h,rx:8,class:'mm-node'});
+    }
+  }
+  function renderFlow(src){
+    var g=parseFlow(src);
+    if(!g)return null;
+    var horiz=(g.dir==='LR'||g.dir==='RL');
+    var sizes={},GAP=64,VGAP=44,PAD=26;
+    g.order.forEach(function(id){sizes[id]=nodeSize(g.nodes[id]);});
+    var rank={};g.order.forEach(function(id){rank[id]=0;});
+    for(var it=0;it<g.order.length;it++){
+      var ch=false;
+      g.edges.forEach(function(e){if(rank[e.to]<rank[e.from]+1){rank[e.to]=rank[e.from]+1;ch=true;}});
+      if(!ch)break;
+    }
+    var layers=[];
+    g.order.forEach(function(id){var r=Math.min(rank[id],g.order.length-1);(layers[r]=layers[r]||[]).push(id);});
+    var alongCur=0;
+    layers.forEach(function(ids,r){
+      var mx=0;ids.forEach(function(id){mx=Math.max(mx,horiz?sizes[id].w:sizes[id].h);});
+      if(r>0)alongCur+=GAP;
+      ids.forEach(function(id){sizes[id].ac=alongCur+mx/2;});
+      alongCur+=mx;
+    });
+    var alongTotal=Math.max(alongCur,80);
+    var maxCross=0;
+    layers.forEach(function(ids){
+      var tot=0;ids.forEach(function(id){tot+=horiz?sizes[id].h:sizes[id].w;});
+      tot+=(ids.length-1)*VGAP;maxCross=Math.max(maxCross,tot);
+    });
+    layers.forEach(function(ids){
+      var tot=0;ids.forEach(function(id){tot+=horiz?sizes[id].h:sizes[id].w;});
+      tot+=(ids.length-1)*VGAP;
+      var cur=(maxCross-tot)/2;
+      ids.forEach(function(id){var s=sizes[id],aw=horiz?s.h:s.w;cur+=aw/2;s.cr=cur;cur+=aw/2+VGAP;});
+    });
+    if(g.dir==='RL'||g.dir==='BT')g.order.forEach(function(id){sizes[id].ac=alongTotal-sizes[id].ac;});
+    g.order.forEach(function(id){
+      var s=sizes[id];
+      if(horiz){s.x=s.ac-s.w/2;s.y=s.cr-s.h/2;}
+      else{s.x=s.cr-s.w/2;s.y=s.ac-s.h/2;}
+    });
+    var W=Math.ceil((horiz?alongTotal:maxCross)+PAD*2),H=Math.ceil((horiz?maxCross:alongTotal)+PAD*2);
+    var svg=el('svg',{viewBox:'0 0 '+W+' '+H,width:W,height:H,role:'img','aria-label':'diagram'});
+    var uid='mm'+(uidC++)+'-';
+    var defs=el('defs');
+    [['a',7],['t',8.5]].forEach(function(p){
+      var mk=el('marker',{id:uid+p[0],viewBox:'0 0 10 10',refX:9,refY:5,markerWidth:p[1],markerHeight:p[1],orient:'auto'});
+      mk.appendChild(el('path',{d:'M0 0L10 5L0 10z',class:'mm-mfill'}));
+      defs.appendChild(mk);
+    });
+    svg.appendChild(defs);
+    var root=el('g',{transform:'translate('+PAD+','+PAD+')'});
+    svg.appendChild(root);
+    var seen={};
+    g.edges.forEach(function(e){
+      if(e.from===e.to)return;
+      var key=e.from+'>'+e.to+'>'+(e.label||'');
+      if(seen[key])return;seen[key]=1;
+      var a=sizes[e.from],b=sizes[e.to];
+      var ac={x:a.x+a.w/2,y:a.y+a.h/2},bc={x:b.x+b.w/2,y:b.y+b.h/2};
+      var p1=clipPoint(g.nodes[e.from].shape,a,ac,bc),p2=clipPoint(g.nodes[e.to].shape,b,bc,ac);
+      var ln=el('line',{x1:p1.x,y1:p1.y,x2:p2.x,y2:p2.y,
+        class:'mm-edge'+(e.style==='dotted'?' mm-dotted':'')+(e.style==='thick'?' mm-thick':'')});
+      if(e.style!=='open')ln.setAttribute('marker-end','url(#'+uid+(e.style==='thick'?'t':'a')+')');
+      root.appendChild(ln);
+      if(e.label){
+        var ls=lines(e.label),mx=(p1.x+p2.x)/2,my=(p1.y+p2.y)/2;
+        var t=el('text',{x:mx,y:my-(ls.length-1)*7.5+4,class:'mm-elabel','text-anchor':'middle'});
+        ls.forEach(function(L,i){var sp=el('tspan',{x:mx,dy:i===0?0:15});sp.textContent=L;t.appendChild(sp);});
+        root.appendChild(t);
+      }
+    });
+    g.order.forEach(function(id){
+      var s=sizes[id];
+      root.appendChild(shapeEl(g.nodes[id].shape,s));
+      root.appendChild(centerText(s.x+s.w/2,s.y+s.h/2,s.ls,'mm-nlabel'));
+    });
+    return svg;
+  }
+
+  /* ---------- sequence diagram ---------- */
+  // Actor names may contain inner hyphens but never a trailing one — the
+  // hyphen belongs to the arrow (`G-->>U` must parse sender "G", not "G-").
+  var MSG_RE=/^([\w]+(?:-[\w]+)*)\s*(->>|-->>|-\)|--\)|->|--)\s*([+\-]?)([\w]+(?:-[\w]+)*)\s*:\s*([\s\S]*)$/;
+  function parseSeq(src){
+    var st={actors:[],aidx:{},items:[],frames:[],stack:[]};
+    function actor(name){
+      name=name.trim();
+      if(!(name in st.aidx)){st.aidx[name]=st.actors.length;st.actors.push({id:name,label:name});}
+      return st.aidx[name];
+    }
+    var ls=src.split('\n');
+    for(var i=0;i<ls.length;i++){
+      var line=ls[i].trim(),m;
+      if(!line||/^%%/.test(line))continue;
+      if(/^(sequenceDiagram|sequence)\b/i.test(line))continue;
+      if((m=line.match(/^(?:participant|actor)\s+([\w-]+)(?:\s+as\s+([\s\S]+))?$/i))){
+        var a=actor(m[1]);if(m[2])st.actors[a].label=clean(m[2]);continue;
+      }
+      if(/^(autonumber|title|box|rect|circle|activate|deactivate|destroy|create)\b/i.test(line))continue;
+      if((m=line.match(/^note\s+(left\s+of|right\s+of|over)\s+([^:]+):([\s\S]*)$/i))){
+        var names=m[2].split(',').map(function(s){return s.trim();}).filter(Boolean);
+        if(!names.length||!m[3].trim())return null;
+        var note={kind:'note',pos:m[1].toLowerCase(),actors:names.map(actor),text:m[3].trim()};
+        note.frame=st.stack.length?st.stack[st.stack.length-1]:null;
+        st.items.push(note);if(note.frame)note.frame.items.push(note);
+        continue;
+      }
+      if((m=line.match(/^(loop|alt|opt|par|critical|break)\b\s*([\s\S]*)$/i))){
+        var fr={type:m[1].toLowerCase(),label:m[2].trim(),items:[],dividers:[]};
+        fr.frame=st.stack.length?st.stack[st.stack.length-1]:null;
+        st.stack.push(fr);continue;
+      }
+      if((m=line.match(/^(else|and|option)\b\s*([\s\S]*)$/i))){
+        if(!st.stack.length)return null;
+        st.stack[st.stack.length-1].dividers.push({idx:st.items.length,label:m[2].trim()});continue;
+      }
+      if(/^end\b/i.test(line)){
+        if(!st.stack.length)return null;
+        st.frames.push(st.stack.pop());continue;
+      }
+      var mm=line.match(MSG_RE);
+      if(!mm)return null;
+      var from=actor(mm[1]),to=actor(mm[4]);
+      var arrow={solid:true,fill:true};
+      if(mm[2]==='-->>')arrow={solid:false,fill:true};
+      else if(mm[2]==='-)')arrow={solid:true,fill:false};
+      else if(mm[2]==='--)')arrow={solid:false,fill:false};
+      else if(mm[2]==='--')arrow={solid:false,fill:true};
+      // +/- written against the receiver activates/deactivates it; if the
+      // receiver has no open bar the sender's is closed instead (matches the
+      // canonical mermaid activation example).
+      var item={kind:'msg',from:from,to:to,text:mm[5].trim(),arrow:arrow,acts:[]};
+      if(mm[3])item.acts.push({actor:to,on:mm[3]==='+'});
+      item.frame=st.stack.length?st.stack[st.stack.length-1]:null;
+      st.items.push(item);if(item.frame)item.frame.items.push(item);
+    }
+    while(st.stack.length)st.frames.push(st.stack.pop());
+    if(!st.items.some(function(it){return it.kind==='msg';}))return null;
+    return st;
+  }
+  function renderSeq(src){
+    var st=parseSeq(src);
+    if(!st||!st.actors.length)return null;
+    var uid='ms'+(uidC++)+'-';
+    var PAD=24,fs=13,AH=34;
+    st.actors.forEach(function(a,i){a.w=Math.max(64,textW(a.label,fs)+26);});
+    var cx=[];
+    st.actors.forEach(function(a,i){
+      cx.push(i===0?PAD+a.w/2:cx[i-1]+(st.actors[i-1].w+a.w)/2+64);
+    });
+    var W=Math.ceil(cx[cx.length-1]+st.actors[st.actors.length-1].w/2+PAD);
+    var y=AH+22,acts={},actRects=[];
+    st.actors.forEach(function(a,i){acts[i]=[];});
+    st.items.forEach(function(it){
+      if(it.kind==='msg'){
+        y+=38;it.y=y;
+        it.acts.forEach(function(ev){
+          if(ev.on)acts[ev.actor].push(y);
+          else{
+            var s=acts[ev.actor].pop();
+            if(s===undefined&&ev.actor!==it.from&&acts[it.from]&&acts[it.from].length)s=acts[it.from].pop();
+            if(s!==undefined)actRects.push({actor:ev.actor,y0:s,y1:y});
+          }
+        });
+      }else{
+        it.ls=lines(it.text);
+        it.w=0;it.ls.forEach(function(L){it.w=Math.max(it.w,textW(L,fs)+30);});
+        it.h=it.ls.length*16+14;
+        y+=12;it.top=y;y+=it.h+8;
+        if(it.pos==='right')W=Math.max(W,cx[it.actors[0]]+st.actors[it.actors[0]].w/2+12+it.w+4);
+      }
+    });
+    // Widen the canvas for labels that would overflow past the last lifeline.
+    st.items.forEach(function(it){
+      if(it.kind!=='msg')return;
+      var ls=lines(it.text);
+      if(!ls[0])return;
+      if(it.from===it.to)W=Math.max(W,cx[it.from]+22+textW(ls[0],fs)+14);
+      else W=Math.max(W,(cx[it.from]+cx[it.to])/2+textW(ls[0],fs)/2+10);
+    });
+    W=Math.ceil(W);
+    var H=Math.ceil(y+26);
+    Object.keys(acts).forEach(function(k){
+      if(acts[k].length)actRects.push({actor:Number(k),y0:acts[k][0],y1:H-18});
+    });
+    st.frames.forEach(function(fr){
+      var xs=[],ys=[];
+      fr.items.forEach(function(itm){
+        if(itm.kind==='msg'){xs.push(cx[itm.from],cx[itm.to]);ys.push(itm.y);}
+        else{
+          var as=itm.actors.map(function(i){return cx[i];});
+          xs.push(Math.min.apply(null,as),Math.max.apply(null,as));
+          ys.push(itm.top,itm.top+itm.h);
+        }
+      });
+      if(!xs.length){fr.skip=true;return;}
+      fr.x=Math.max(2,Math.min.apply(null,xs)-46);
+      fr.w=Math.max(Math.max.apply(null,xs)+46-fr.x,120);
+      fr.y=Math.min.apply(null,ys)-22;
+      fr.h=Math.max(Math.max.apply(null,ys)+16-fr.y,56);
+      fr.divs=fr.dividers.map(function(d){
+        var next=st.items[d.idx],prev=null;
+        for(var q=d.idx-1;q>=0;q--){if(st.items[q].y!==undefined){prev=st.items[q];break;}}
+        if(!prev||!next||next.y===undefined)return null;
+        return {y:(prev.y+(prev.h||0)+next.y)/2,label:d.label||(fr.type==='par'?'and':fr.type==='critical'?'option':'else')};
+      }).filter(Boolean);
+    });
+    var svg=el('svg',{viewBox:'0 0 '+W+' '+H,width:W,height:H,role:'img','aria-label':'sequence diagram'});
+    var defs=el('defs');
+    var mf=el('marker',{id:uid+'f',viewBox:'0 0 10 10',refX:9,refY:5,markerWidth:6.5,markerHeight:6.5,orient:'auto'});
+    mf.appendChild(el('path',{d:'M0 0L10 5L0 10z',class:'mm-mfill'}));
+    var mo=el('marker',{id:uid+'o',viewBox:'0 0 10 10',refX:9,refY:5,markerWidth:7.5,markerHeight:7.5,orient:'auto'});
+    mo.appendChild(el('path',{d:'M0 0L10 5L0 10',class:'mm-mline'}));
+    defs.appendChild(mf);defs.appendChild(mo);
+    svg.appendChild(defs);
+    var root=el('g');
+    svg.appendChild(root);
+    st.actors.forEach(function(a,i){
+      root.appendChild(el('line',{x1:cx[i],y1:AH,x2:cx[i],y2:H-12,class:'mm-lifeline'}));
+    });
+    actRects.forEach(function(r){
+      root.appendChild(el('rect',{x:cx[r.actor]-5,y:r.y0-2,width:10,height:r.y1-r.y0+4,rx:2,class:'mm-act'}));
+    });
+    st.frames.forEach(function(fr){
+      if(fr.skip)return;
+      root.appendChild(el('rect',{x:fr.x,y:fr.y,width:fr.w,height:fr.h,rx:8,class:'mm-frame'}));
+      var t=el('text',{x:fr.x+10,y:fr.y+16,class:'mm-frame-label'});
+      t.textContent=fr.type+(fr.label?': '+fr.label:'');
+      root.appendChild(t);
+      fr.divs.forEach(function(d){
+        root.appendChild(el('line',{x1:fr.x,y1:d.y,x2:fr.x+fr.w,y2:d.y,class:'mm-divider'}));
+        var e=el('text',{x:fr.x+22,y:d.y+14,class:'mm-frame-label'});
+        e.textContent=d.label;root.appendChild(e);
+      });
+    });
+    st.items.forEach(function(it){
+      if(it.kind==='note'){
+        var w=it.w;
+        var x0,x1;
+        if(it.pos==='over'&&it.actors.length>1){
+          x0=Math.min.apply(null,it.actors.map(function(i){return cx[i];}))-14;
+          x1=Math.max.apply(null,it.actors.map(function(i){return cx[i];}))+14;
+        }else if(it.pos==='left'){
+          x1=cx[it.actors[0]]-st.actors[it.actors[0]].w/2-12;x0=x1-w;
+        }else if(it.pos==='right'){
+          x0=cx[it.actors[0]]+st.actors[it.actors[0]].w/2+12;x1=x0+w;
+        }else{
+          x0=cx[it.actors[0]]-w/2;x1=cx[it.actors[0]]+w/2;
+        }
+        x0=Math.max(2,x0);x1=Math.min(W-2,Math.max(x1,x0+60));
+        root.appendChild(el('rect',{x:x0,y:it.top,width:x1-x0,height:it.h,rx:6,class:'mm-note'}));
+        root.appendChild(centerText((x0+x1)/2,it.top+it.h/2+2,it.ls,'mm-slabel'));
+      }else{
+        var x1m=cx[it.from],x2m=cx[it.to],ls=lines(it.text);
+        var cls='mm-msg'+(it.arrow.solid?'':' mm-dotted');
+        if(it.from===it.to){
+          var p=el('path',{d:'M'+(x1m+14)+','+(it.y-8)+' h46 v16 h-46',class:cls,fill:'none'});
+          p.setAttribute('marker-end','url(#'+uid+(it.arrow.fill?'f':'o')+')');
+          root.appendChild(p);
+          var t2=el('text',{x:x1m+22,y:it.y-14,class:'mm-slabel'});
+          t2.textContent=ls[0]||'';root.appendChild(t2);
+        }else{
+          var ln=el('line',{x1:x1m,y1:it.y,x2:x2m,y2:it.y,class:cls});
+          ln.setAttribute('marker-end','url(#'+uid+(it.arrow.fill?'f':'o')+')');
+          root.appendChild(ln);
+          if(ls.length&&ls[0]){
+            var mx=(x1m+x2m)/2;
+            var t3=el('text',{x:mx,y:it.y-7-(ls.length-1)*15,class:'mm-slabel','text-anchor':'middle'});
+            ls.forEach(function(L,i){var sp=el('tspan',{x:mx,dy:i===0?0:15});sp.textContent=L;t3.appendChild(sp);});
+            root.appendChild(t3);
+          }
+        }
+      }
+    });
+    st.actors.forEach(function(a,i){
+      root.appendChild(el('rect',{x:cx[i]-a.w/2,y:0,width:a.w,height:AH,rx:8,class:'mm-actor'}));
+      root.appendChild(centerText(cx[i],AH/2,[a.label],'mm-nlabel'));
+    });
+    return svg;
+  }
+
+  function renderOne(fig){
+    var code=fig.querySelector('.mermaid-src code');
+    var view=fig.querySelector('.mermaid-view');
+    var srcEl=fig.querySelector('.mermaid-src');
+    if(!code||!view)return;
+    var src=code.textContent,svg=null;
+    try{
+      if(/^\s*(?:graph|flowchart)\b/i.test(src))svg=renderFlow(src);
+      else if(/^\s*sequenceDiagram\b/i.test(src))svg=renderSeq(src);
+    }catch(e){svg=null;}
+    if(svg){
+      svg.classList.add('mermaid-svg');
+      view.appendChild(svg);
+      fig.setAttribute('data-rendered','svg');
+      if(srcEl)srcEl.remove();
+    }else{
+      view.remove();
+      if(srcEl)srcEl.hidden=false;
+      fig.setAttribute('data-rendered','source');
+    }
+  }
+  function init(){document.querySelectorAll('.doc-figure').forEach(renderOne);}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);
+  else init();
 })();
 """
 
 
-def lightbox_html(page):
-    if "data-lightbox" in page.get("body_html", ""):
+def lightbox_html(body_html):
+    """The zoom lightbox for diagram figures.
+
+    The stage is filled at open time by LIGHTBOX_JS (it clones the rendered
+    SVG, or the source block when the renderer fell back), so it ships empty.
+    """
+    if "doc-figure" in body_html:
         return (
-            "<div class='lightbox' role='dialog' aria-modal='true' aria-label='Diagram enlarged'>"
-            "<div class='lightbox-head'><div class='lb-title'>Diagram</div>"
-            "<button class='lb-btn' data-lb-fit title='Fit'>⛶</button>"
-            "<button class='lb-btn' data-lb-plus title='Zoom in'>+</button>"
-            "<button class='lb-btn' data-lb-minus title='Zoom out'>−</button>"
-            "<button class='lb-btn' data-lb-close aria-label='Close'>✕</button></div>"
+            "<div class='lightbox' role='dialog' aria-modal='true'>"
+            "<div class='lightbox-head'><div class='lb-title' data-i18n='diagram'>Diagram</div>"
+            "<button class='lb-btn' data-lb-fit data-i18n-title='fit' aria-label='Fit'>" + ICON_EXPAND + "</button>"
+            "<button class='lb-btn' data-lb-plus data-i18n-title='zoomIn' aria-label='Zoom in'>" + ICON_PLUS + "</button>"
+            "<button class='lb-btn' data-lb-minus data-i18n-title='zoomOut' aria-label='Zoom out'>" + ICON_MINUS + "</button>"
+            "<button class='lb-btn' data-lb-close data-i18n-title='close' aria-label='Close'>" + ICON_CLOSE + "</button></div>"
             "<div class='lightbox-stage'></div></div>"
         )
     return ""
 
 
-def move_figure_into_lightbox(page_body_html):
-    """Re-stage the figure's pre into the lightbox so zooming shows it fullscreen."""
-    m = re.search(r"<pre class='mermaid-src'>.*?</pre>", page_body_html, re.DOTALL)
-    if m:
-        return m.group(0)
-    return ""
-
-
 def render_page(cfg, page, out_dir, slug):
-    bp = str(cfg.get("breakpoint", 860))
-    i18n = language_strings(cfg, page)
+    try:
+        bp = str(int(cfg.get("breakpoint", 860)))
+    except (TypeError, ValueError):
+        fail("'breakpoint' must be an integer")
+    strings = build_i18n_map(cfg, page)
     is_list = page.get("type") == "list"
     body_html = page.get("body_html", "")
 
     if is_list:
         for rec in page.get("data", []):
             prep_record(rec, page.get("sortable", ["last_updated", "commits"]))
-        list_html = build_list_page(page, i18n)
-        lb_stage_content = ""
-        body_html = list_html
-    else:
-        fig = build_figure_block(page.get("source_md", ""))
-        if fig:
-            body_html = fig + body_html
+        body_html = build_list_page(page)
 
-    # inject figure into lightbox stage
-    lightbox = lightbox_html({"body_html": body_html, "type": page.get("type")})
-    if lightbox:
-        stage_content = move_figure_into_lightbox(body_html)
-        lightbox = lightbox.replace(
-            "<div class='lightbox-stage'></div>",
-            "<div class='lightbox-stage'>" + stage_content + "</div>",
-        )
+    # Resolve the initial language before rendering the static markup so
+    # chrome strings, figure captions and aria labels all match it.
+    langs = [x for x in (cfg.get("i18n") or ["zh", "en"]) if x in strings] or ["zh", "en"]
+    initial_lang = cfg_text(cfg, "lang", "zh")
+    if initial_lang not in strings:
+        initial_lang = langs[0]
+    initial = strings[initial_lang]
+    # Static figure captions carry the initial language too; the i18n script
+    # keeps re-labeling them on toggle.
+    body_html = body_html.replace(
+        "data-i18n='diagramZoom'>Diagram — click to enlarge<",
+        "data-i18n='diagramZoom'>" + html.escape(str(initial["diagramZoom"])) + "<",
+    )
 
-    nav_html = build_nav_html(cfg, slug, i18n)
+    toc = build_toc_html(body_html, str(initial["toc"]))
+    pager = build_page_pager(cfg, slug, initial)
+    lightbox = lightbox_html(body_html)
+
+    nav_html = build_nav_html(cfg, slug)
+    home_file = cfg.get("_home_file", "index.html")
+    # When the landing page is also a nav entry, that entry owns the active
+    # state — marking the synthetic Home link too would leave two active links.
+    nav_slugs = set()
+    for item in cfg.get("nav", []):
+        if item.get("slug"):
+            nav_slugs.add(item["slug"])
+        for child in item.get("items", []):
+            if child.get("slug"):
+                nav_slugs.add(child["slug"])
+    home_active = " is-active" if (slug_filename(slug) == home_file and slug not in nav_slugs) else ""
     css = CSS.replace("{bp}", bp)
-    theme_js = THEME_JS.replace("{theme}", cfg.get("theme", "auto"))
+    theme = cfg_text(cfg, "theme", "dark")
+    theme_js = THEME_JS.replace("{theme}", js_literal(theme))
     nav_js = NAV_JS.replace("{bp}", bp)
-    lb_js = LIGHTBOX_JS
+    i18n_js = (
+        I18N_JS.replace("{i18n}", js_literal(strings))
+        .replace("{langs}", js_literal(langs))
+        .replace("{lang}", js_literal(initial_lang))
+    )
 
-    title = page.get("title", cfg.get("title", "Page"))
-    desc = page.get("description", page.get("tagline", cfg.get("description", "")))
+    title = str(page.get("title") or cfg.get("title") or "Page")
+    desc = str(page.get("description") or page.get("tagline") or cfg.get("description") or "")
+    brand = html.escape(str(cfg.get("title") or "Docs"))
+    brand_sub = html.escape(str(initial["brandSub"]))
+    repo_link = html.escape(repo_url(cfg))
+    mark = html.escape(brand_mark(cfg))
 
     html_doc = """<!doctype html>
-<html lang="{lang}" data-theme="{theme}">
+<html lang="{lang_attr}" data-theme="{theme}">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<meta name="description" content="{meta_desc}"/>
 <title>{title} · {site}</title>
 <style>{css}</style>
 </head>
 <body>
-<header class="topbar">
-  <div class="topbar-row">
-    <a class="brand-link" href="./{home}">{brand}</a>
-    <div class="brand-meta">
-      <div class="lang-ctl"><button data-i18n="lang">EN / 中</button></div>
-      <button class="icon-btn nav-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Toggle navigation menu"><span></span></button>
-    </div>
+<header class="site-header">
+  <a class="site-header-brand" href="./{home}">
+    <span class="brand-mark">{mark}</span>
+    <span class="site-header-text">
+      <span class="brand-name">{brand}</span>
+      <span class="brand-sub" data-i18n="brandSub">{brand_sub}</span>
+    </span>
+  </a>
+  <div class="site-header-actions">
+    <a class="header-github" href="{repo_url}" target="_blank" rel="noreferrer" data-i18n-title="github" aria-label="GitHub">{github_icon}</a>
+    <button type="button" class="header-theme" data-theme-toggle data-i18n-title="theme" title="{theme_title}" aria-label="{theme_title}">{icon_sun}{icon_moon}</button>
+    <button type="button" class="lang-toggle" data-lang-toggle data-i18n="langShort">{lang_short}</button>
+    <button type="button" class="nav-toggle" aria-expanded="false" aria-controls="site-nav" data-i18n-title="navOpen"><span class="nav-toggle-bars" aria-hidden="true"><i></i><i></i><i></i></span></button>
   </div>
 </header>
-<div class="shell">
-  <aside class="sidebar" id="site-nav">
-    <div class="brand"><div class="brand-row"><a href="./{home}">{brand}</a>
-      <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">◐</button></div></div>
-    <div class="tagline">{tagline}</div>
-    <div class="sidebar-scroll">{nav}</div>
-    <div class="footer">{repo}</div>
+<div class="shell" data-nav-open="false">
+  <aside class="sidebar" id="site-nav" tabindex="-1">
+    <div class="sidebar-head">
+      <a class="brand" href="./{home}">
+        <span class="brand-mark">{mark}</span>
+        <span class="brand-text">
+          <span class="brand-name">{brand}</span>
+          <span class="brand-sub" data-i18n="brandSub">{brand_sub}</span>
+        </span>
+      </a>
+      <button type="button" class="icon-btn" data-theme-toggle data-i18n-title="theme" title="{theme_title}" aria-label="{theme_title}">{icon_sun}{icon_moon}</button>
+    </div>
+    <div class="sidebar-scroll">
+      <div class="nav-group">
+        <div class="nav-group-label" data-i18n="navigate">{nav_label}</div>
+        <a class="nav-link{home_active}" href="./{home}" data-i18n="home">{home_label}</a>
+      </div>
+      {nav}
+    </div>
+    <div class="sidebar-github">
+      <a href="{repo_url}" target="_blank" rel="noreferrer">{github_icon}<span data-i18n="github">GitHub</span></a>
+      <button type="button" class="lang-toggle" data-lang-toggle data-i18n="langLabel">{lang_label}</button>
+    </div>
   </aside>
+  <div class="nav-backdrop" aria-hidden="true"></div>
   <main class="content">
-    <div class="content-inner">
-      <h1 class="page-title">{title}</h1>
-      <p class="page-desc">{desc}</p>
-      {count_html}{body}
-      {lightbox}
+    <div class="content-inner{has_toc}">
+      <div class="article">
+        <div class="crumb">{crumb}</div>
+        <h1 class="page-title">{title}</h1>
+        <p class="page-desc">{desc}</p>
+        {body}
+        {lightbox}
+      </div>
+      {toc}
     </div>
   </main>
 </div>
+{pager}
+<script>{i18n_js}</script>
 <script>{theme_js}</script>
 <script>{nav_js}</script>
 <script>{lb_js}</script>
-{list_js}
+<script>{list_js}</script>
+<script>{toc_js}</script>
+<script>{mermaid_js}</script>
 </body>
 </html>
 """.format(
-        lang=cfg.get("lang", "en"),
-        theme=cfg.get("theme", "auto"),
+        lang_attr=html.escape("zh-CN" if initial_lang == "zh" else initial_lang),
+        theme=html.escape(theme),
+        meta_desc=html.escape(desc),
         title=html.escape(title),
-        site=html.escape(cfg.get("title", "Docs")),
+        site=brand,
         css=css,
-        home="index.html",
-        brand=html.escape(cfg.get("title", "Docs")),
-        tagline=html.escape(cfg.get("tagline", "")),
+        home=html.escape(home_file),
+        mark=mark,
+        brand=brand,
+        brand_sub=brand_sub,
+        repo_url=repo_link,
+        github_icon=GITHUB_ICON,
+        icon_sun=ICON_SUN,
+        icon_moon=ICON_MOON,
+        theme_title=html.escape(str(initial["theme"])),
+        lang_short=html.escape(initial["langShort"]),
+        lang_label=html.escape(initial["langLabel"]),
+        nav_label=html.escape(initial["navigate"]),
+        home_label=html.escape(initial["home"]),
+        home_active=home_active,
         nav=nav_html,
-        repo=html.escape(cfg.get("repo", "")),
+        crumb=html.escape(str(cfg.get("title") or "Docs") + " / " + title),
         desc=html.escape(desc),
-        count_html=('<div class="list-count"></div>') if is_list else "",
         body=body_html,
         lightbox=lightbox,
+        pager=pager,
+        has_toc=(" has-toc" if toc else ""),
+        toc=toc,
+        i18n_js=i18n_js,
         theme_js=theme_js,
         nav_js=nav_js,
-        lb_js=lb_js,
+        lb_js=LIGHTBOX_JS,
         list_js=(LIST_JS if is_list else ""),
+        toc_js=TOC_JS,
+        mermaid_js=MERMAID_JS,
     )
 
     safe_slug = re.sub(r"[^a-z0-9-]", "-", slug.lower())
@@ -709,10 +1921,11 @@ def cmd_generate(args):
     content_dir = args.content or "."
     out_dir = args.out or "docs-site-out"
     os.makedirs(out_dir, exist_ok=True)
+    cfg["_home_file"] = slug_filename(page_slug(cfg["pages"][0]))
 
     written = []
     for page in cfg["pages"]:
-        slug = page.get("slug", page.get("title", "page").lower().replace(" ", "-"))
+        slug = page_slug(page)
         page["slug"] = slug
         if page.get("type") == "list":
             page["body_html"] = ""
@@ -725,7 +1938,6 @@ def cmd_generate(args):
                 fail("page '" + slug + "' has no 'source' markdown file")
             raw = read_file(os.path.join(content_dir, md_path))
             meta, body_md = split_front_matter(raw)
-            page_meta = dict(page)
             if meta.get("title"):
                 page["title"] = meta["title"]
             if meta.get("description"):
@@ -751,11 +1963,25 @@ def cmd_check(args):
         text = read_file(os.path.join(out_dir, f))
         checks = {
             "doctype": text.startswith("<!doctype html>"),
-            "responsive-breakpoint": "max-width:860px" in text or "max-width:" in text,
-            "mobile-topbar": "topbar" in text,
-            "nav-panel": "nav-toggle" in text,
+            "responsive-breakpoint": "max-width:" in text,
+            "mobile-header": "site-header" in text and "nav-toggle-bars" in text,
+            "mobile-theme-toggle": "header-theme" in text,
+            "nav-panel": "nav-backdrop" in text and 'id="site-nav"' in text,
+            "lang-toggle": "data-lang-toggle" in text and "data-i18n" in text,
             "theme-switch": "data-theme-toggle" in text,
+            "pinned-layout": "grid-template-columns:var(--sidebar-w)" in text,
+            "page-pager": "page-pager" in text and "pager-label" in text,
         }
+        if "class='toc'" in text:
+            checks["toc-anchors"] = "data-toc-link" in text
+        if "class='doc-figure'" in text:
+            checks["mermaid-figure"] = (
+                "mermaid-view" in text
+                and "mermaid-src" in text
+                and "mm-node" in text  # renderer CSS/JS is embedded
+            )
+        if "class='doc-table'>" in text:
+            checks["table-scroll"] = "table-scroll" in text
         if "list-table'" in text and "<table class='doc-table list-table'>" in text:
             checks["list-sortable"] = "data-sortable" in text
             checks["status-badge"] = "status-badge" in text

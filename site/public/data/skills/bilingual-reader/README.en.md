@@ -25,98 +25,98 @@ Templates are selected from `assets/templates/templates.json`. If the user does 
 
 ### `aurora-dashboard`
 
-![aurora-dashboard template screenshot](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/bilingual-reader/aurora-dashboard.webp)
+![aurora-dashboard template screenshot](/screenshots/bilingual-reader/aurora-dashboard.webp)
 
 - Best for: AI explainers, research digests, market analysis, and metric-heavy technical reading.
 - Avoid for: Quiet literary essays or classical content where dashboard energy distracts.
 
 ### `blueprint-grid`
 
-![blueprint-grid template screenshot](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/bilingual-reader/blueprint-grid.webp)
+![blueprint-grid template screenshot](/screenshots/bilingual-reader/blueprint-grid.webp)
 
 - Best for: Systems design, engineering notes, API concepts, product specs, and procedural articles.
 - Avoid for: Personal essays or playful education that needs warmth.
 
 ### `broadsheet`
 
-![broadsheet template screenshot](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/bilingual-reader/broadsheet.webp)
+![broadsheet template screenshot](/screenshots/bilingual-reader/broadsheet.webp)
 
 - Best for: News analysis, policy commentary, historical writing, and serious public-interest essays.
 - Avoid for: Highly interactive study sessions or modern SaaS/product storytelling.
 
 ### `card-atlas`
 
-![card-atlas template screenshot](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/bilingual-reader/card-atlas.webp)
+![card-atlas template screenshot](/screenshots/bilingual-reader/card-atlas.webp)
 
 - Best for: Longform articles, source walkthroughs, concept maps, and guided reading workshops.
 - Avoid for: Very short texts or poster-like pages where persistent navigation is unnecessary.
 
 ### `command-center`
 
-![command-center template screenshot](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/bilingual-reader/command-center.webp)
+![command-center template screenshot](/screenshots/bilingual-reader/command-center.webp)
 
 - Best for: Strategic briefings, launch narratives, operations, security, and decisive explainers.
 - Avoid for: Calm reflective prose or exam prep sheets.
 
 ### `compact-study`
 
-![compact-study template screenshot](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/bilingual-reader/compact-study.webp)
+![compact-study template screenshot](/screenshots/bilingual-reader/compact-study.webp)
 
 - Best for: Exam review, intensive reading, vocabulary-heavy material, and technical summaries.
 - Avoid for: Presentation-style pages or writing that needs atmosphere and breathing room.
 
 ### `editorial-split`
 
-![editorial-split template screenshot](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/bilingual-reader/editorial-split.webp)
+![editorial-split template screenshot](/screenshots/bilingual-reader/editorial-split.webp)
 
 - Best for: Essays, interviews, cultural commentary, design writing, and typography-led reading.
 - Avoid for: Dense technical references or flashcard-like study material.
 
 ### `gradient-magazine`
 
-![gradient-magazine template screenshot](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/bilingual-reader/gradient-magazine.webp)
+![gradient-magazine template screenshot](/screenshots/bilingual-reader/gradient-magazine.webp)
 
 - Best for: Creative industry articles, trend reports, product storytelling, and accessible education.
 - Avoid for: Regulated disclosures or quiet academic reading.
 
 ### `ink-scroll`
 
-![ink-scroll template screenshot](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/bilingual-reader/ink-scroll.webp)
+![ink-scroll template screenshot](/screenshots/bilingual-reader/ink-scroll.webp)
 
 - Best for: Chinese culture, history, philosophy, literary essays, and refined traditional reading.
 - Avoid for: SaaS dashboards, operational briefings, or casual youth content.
 
 ### `kanban-flow`
 
-![kanban-flow template screenshot](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/bilingual-reader/kanban-flow.webp)
+![kanban-flow template screenshot](/screenshots/bilingual-reader/kanban-flow.webp)
 
 - Best for: Product management, startup articles, workflow explainers, learning plans, and checklists.
 - Avoid for: Classical literary reading or emotional narratives.
 
 ### `midnight-lab`
 
-![midnight-lab template screenshot](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/bilingual-reader/midnight-lab.webp)
+![midnight-lab template screenshot](/screenshots/bilingual-reader/midnight-lab.webp)
 
 - Best for: Developer education, debugging stories, research notes, security analysis, and lab-style reading.
 - Avoid for: Warm consumer-facing content or traditional print essays.
 
 ### `mono-focus`
 
-![mono-focus template screenshot](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/bilingual-reader/mono-focus.webp)
+![mono-focus template screenshot](/screenshots/bilingual-reader/mono-focus.webp)
 
 - Best for: Code-adjacent articles, investigative summaries, concise briefs, and low-distraction study.
 - Avoid for: Design-forward editorials or visual narratives.
 
 ### `paper-notes`
 
-![paper-notes template screenshot](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/bilingual-reader/paper-notes.webp)
+![paper-notes template screenshot](/screenshots/bilingual-reader/paper-notes.webp)
 
 - Best for: Beginner-friendly reading, classroom handouts, guided learning, and reflective articles.
 - Avoid for: Hard technical specs or urgent briefings needing stronger authority.
 
 ### `synthwave-arcade`
 
-![synthwave-arcade template screenshot](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/bilingual-reader/synthwave-arcade.webp)
+![synthwave-arcade template screenshot](/screenshots/bilingual-reader/synthwave-arcade.webp)
 
 - Best for: Gaming, internet culture, youth technology, creative coding, and hackathon recaps.
 - Avoid for: Healthcare, finance, legal, or trust-sensitive contexts.

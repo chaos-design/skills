@@ -216,7 +216,9 @@
       }
       iframe {
         width: 100%;
+        max-width: 100%;
         height: 100%;
+        justify-self: center;
         border: 0;
         background: #fff;
         outline: none;
@@ -731,6 +733,10 @@
               <div class="name">quick-start</div>
               <div class="desc">快速开始：配置字段、列表页行为与输出约定。</div>
             </a>
+            <a class="card" href="docs-site/introduction.html#mobile" data-preview-width="390">
+              <div class="name">introduction · mobile</div>
+              <div class="desc">同一文档页以 390px 预览：固定顶栏、汉堡键与全宽抽屉导航。</div>
+            </a>
           </div>
         </section>
       </div>
@@ -773,6 +779,7 @@
         if (!card) return;
         cards.forEach(item => item.classList.toggle('active', item === card));
         if (frame.getAttribute('src') !== selected) frame.src = selected;
+        frame.style.width = card.dataset.previewWidth ? card.dataset.previewWidth + 'px' : '';
         currentName.textContent = cardLabel(card);
         openStandalone.href = selected;
         if (push) history.replaceState(null, '', '#' + encodeURIComponent(selected));

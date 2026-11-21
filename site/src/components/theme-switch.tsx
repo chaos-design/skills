@@ -52,13 +52,15 @@ const OPTIONS: {
  */
 export function ThemeSwitch({ className }: { className?: string }) {
   const { t } = useI18n();
-  const [theme, setTheme] = useState<Theme>("system");
+  // First-time visitors default to dark; an explicit "system" choice keeps
+  // following the OS (the no-flash script owns the same default).
+  const [theme, setTheme] = useState<Theme>("dark");
   const [mounted, setMounted] = useState(false);
 
   // Layout effect, not a passive one: the stored choice has to be reflected in
   // this control before the first paint, not one frame later.
   useIsomorphicLayoutEffect(() => {
-    setTheme(readStored() ?? "system");
+    setTheme(readStored() ?? "dark");
     setMounted(true);
   }, []);
 

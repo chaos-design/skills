@@ -27,8 +27,8 @@ The capability gate and its real output from the validation run on 2026-10-11
 (UTC+8):
 
 <p>
-  ![capability gate flow: tool discovery, then probe generation; both must pass or the skill refuses to run](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/image-generation/gate-flow.svg)
-  ![gate probe output: a red circle on a white background, watermark-free](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/image-generation/probe-red-circle.png)
+  ![capability gate flow: tool discovery, then probe generation; both must pass or the skill refuses to run](/screenshots/image-generation/gate-flow.svg)
+  ![gate probe output: a red circle on a white background, watermark-free](/screenshots/image-generation/probe-red-circle.png)
 </p>
 
 | Image | What it shows |

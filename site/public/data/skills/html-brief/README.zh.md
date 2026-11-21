@@ -2,7 +2,7 @@
 
 把复杂答案变成一页人能读懂的 HTML。Agent 只写一份很短的 Markdown 草稿，渲染器负责版面、图形坐标、标签换行、主题和明暗切换。
 
-![HTML Brief，blueprint 主题，TCP 握手示例](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/html-brief/blueprint-tcp-handshake.png)
+![HTML Brief，blueprint 主题，TCP 握手示例](/screenshots/html-brief/blueprint-tcp-handshake.png)
 
 ## 为什么不直接让模型写 HTML
 
@@ -119,7 +119,7 @@ SYN-RECEIVED -> *ESTABLISHED*: get ACK
 
 版面由代码计算：节点尺寸来自标签文本宽度测量，分层顺序经过交叉数优化，回边单独走泳道，标签自动换行以避免重叠。
 
-![HTML Brief，document 主题，中文缓存选型示例](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/html-brief/document-cache-choice.png)
+![HTML Brief，document 主题，中文缓存选型示例](/screenshots/html-brief/document-cache-choice.png)
 
 ## 页面包含什么
 

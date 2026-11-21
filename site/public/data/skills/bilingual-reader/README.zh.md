@@ -25,98 +25,98 @@ GitHub：<https://github.com/chaos-design/skills>
 
 ### `aurora-dashboard`
 
-![aurora-dashboard 模板截图](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/bilingual-reader/aurora-dashboard.webp)
+![aurora-dashboard 模板截图](/screenshots/bilingual-reader/aurora-dashboard.webp)
 
 - 适用：AI 解释文、研究摘要、市场分析、指标较多的技术阅读。
 - 不适用：安静文学随笔、古典内容，或不适合强仪表盘感的文章。
 
 ### `blueprint-grid`
 
-![blueprint-grid 模板截图](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/bilingual-reader/blueprint-grid.webp)
+![blueprint-grid 模板截图](/screenshots/bilingual-reader/blueprint-grid.webp)
 
 - 适用：系统设计、工程笔记、API 概念、产品规格、流程型文章。
 - 不适用：个人随笔或需要温暖感的轻松教学内容。
 
 ### `broadsheet`
 
-![broadsheet 模板截图](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/bilingual-reader/broadsheet.webp)
+![broadsheet 模板截图](/screenshots/bilingual-reader/broadsheet.webp)
 
 - 适用：新闻分析、政策评论、历史写作、公共议题严肃文章。
 - 不适用：高交互学习页面或现代 SaaS / 产品叙事。
 
 ### `card-atlas`
 
-![card-atlas 模板截图](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/bilingual-reader/card-atlas.webp)
+![card-atlas 模板截图](/screenshots/bilingual-reader/card-atlas.webp)
 
 - 适用：长文、原文导读、概念地图、分章节阅读工作坊。
 - 不适用：很短的文本或不需要持续导航的海报式页面。
 
 ### `command-center`
 
-![command-center 模板截图](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/bilingual-reader/command-center.webp)
+![command-center 模板截图](/screenshots/bilingual-reader/command-center.webp)
 
 - 适用：战略简报、发布叙事、运营、安全、行动导向解释文。
 - 不适用：平静反思型文章或考试复习材料。
 
 ### `compact-study`
 
-![compact-study 模板截图](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/bilingual-reader/compact-study.webp)
+![compact-study 模板截图](/screenshots/bilingual-reader/compact-study.webp)
 
 - 适用：考试复习、精读训练、词汇密集材料、技术摘要。
 - 不适用：需要展示感、氛围感和留白的内容。
 
 ### `editorial-split`
 
-![editorial-split 模板截图](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/bilingual-reader/editorial-split.webp)
+![editorial-split 模板截图](/screenshots/bilingual-reader/editorial-split.webp)
 
 - 适用：随笔、访谈、文化评论、设计写作、强调排版气质的阅读。
 - 不适用：高密度技术参考或卡片式背诵材料。
 
 ### `gradient-magazine`
 
-![gradient-magazine 模板截图](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/bilingual-reader/gradient-magazine.webp)
+![gradient-magazine 模板截图](/screenshots/bilingual-reader/gradient-magazine.webp)
 
 - 适用：创意行业文章、趋势报告、产品故事、轻松教育内容。
 - 不适用：监管披露、严肃学术阅读或需要克制视觉的内容。
 
 ### `ink-scroll`
 
-![ink-scroll 模板截图](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/bilingual-reader/ink-scroll.webp)
+![ink-scroll 模板截图](/screenshots/bilingual-reader/ink-scroll.webp)
 
 - 适用：中国文化、历史、哲学、文学随笔、传统气质精读。
 - 不适用：SaaS 仪表盘、运营简报、轻松年轻化内容。
 
 ### `kanban-flow`
 
-![kanban-flow 模板截图](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/bilingual-reader/kanban-flow.webp)
+![kanban-flow 模板截图](/screenshots/bilingual-reader/kanban-flow.webp)
 
 - 适用：产品管理、创业文章、工作流解释、学习计划、执行清单。
 - 不适用：古典文学阅读或情绪性叙事。
 
 ### `midnight-lab`
 
-![midnight-lab 模板截图](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/bilingual-reader/midnight-lab.webp)
+![midnight-lab 模板截图](/screenshots/bilingual-reader/midnight-lab.webp)
 
 - 适用：开发者教育、调试故事、研究笔记、安全分析、实验记录式阅读。
 - 不适用：温暖消费内容或传统纸媒式随笔。
 
 ### `mono-focus`
 
-![mono-focus 模板截图](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/bilingual-reader/mono-focus.webp)
+![mono-focus 模板截图](/screenshots/bilingual-reader/mono-focus.webp)
 
 - 适用：代码相关内容、调查摘要、简报、低干扰技术学习。
 - 不适用：设计感强的社论或高度视觉化叙事。
 
 ### `paper-notes`
 
-![paper-notes 模板截图](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/bilingual-reader/paper-notes.webp)
+![paper-notes 模板截图](/screenshots/bilingual-reader/paper-notes.webp)
 
 - 适用：初学者友好阅读、课堂讲义、引导式学习、反思型文章。
 - 不适用：硬核技术规格或需要强权威感的紧急简报。
 
 ### `synthwave-arcade`
 
-![synthwave-arcade 模板截图](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/bilingual-reader/synthwave-arcade.webp)
+![synthwave-arcade 模板截图](/screenshots/bilingual-reader/synthwave-arcade.webp)
 
 - 适用：游戏、互联网文化、青年科技、创意编程、黑客松复盘。
 - 不适用：医疗、金融、法律或信任敏感场景。

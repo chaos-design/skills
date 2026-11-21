@@ -4,7 +4,7 @@ Turn a complex answer into one HTML page a human can read. The agent writes a
 short Markdown draft; a bundled renderer computes panel layout, diagram
 coordinates, label wrapping, themes and the light/dark switch.
 
-![HTML Brief, blueprint theme, TCP handshake example](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/html-brief/blueprint-tcp-handshake.png)
+![HTML Brief, blueprint theme, TCP handshake example](/screenshots/html-brief/blueprint-tcp-handshake.png)
 
 ## Why not just ask for HTML
 
@@ -132,7 +132,7 @@ Layout is computed: nodes are sized from measured label text, layers are ordered
 to reduce crossings, return arrows get their own lane, and labels are wrapped so
 they never collide.
 
-![HTML Brief, document theme, Chinese cache decision example](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/html-brief/document-cache-choice.png)
+![HTML Brief, document theme, Chinese cache decision example](/screenshots/html-brief/document-cache-choice.png)
 
 ## What the page contains
 

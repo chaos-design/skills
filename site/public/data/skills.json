@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-14 19:17:33",
+  "generatedAt": "2026-11-21 17:55:49",
   "repo": "chaos-design/skills",
   "repoUrl": "https://github.com/chaos-design/skills",
   "installPrefix": "npx skills add https://github.com/chaos-design/skills --skill",
@@ -62,10 +62,10 @@
         "commits7d": 0,
         "weekly": [
           0,
-          0,
           1,
           0,
           1,
+          0,
           1,
           0,
           0
@@ -108,8 +108,8 @@
           0,
           0,
           0,
-          0,
           1,
+          0,
           1,
           0,
           0
@@ -121,9 +121,9 @@
     },
     {
       "name": "docs-site",
-      "version": "0.1.0",
+      "version": "0.4.0",
       "category": "Documentation",
-      "description": "Generate a responsive, multi-page, self-contained static documentation site from Markdown content and a small JSON config. Builds the doc structure automatically, wires a configurable navigation menu, integrates existing Markdown and data formats, and adds a data list page type with client-side sorting (commit count, last-updated), text filters and status badges. Responsive layout: 860px mobile breakpoint, full-screen nav panel, fluid content width, diagram lightbox, light/dark theme and EN/中 toggle.",
+      "description": "Generate a dark-first, responsive, multi-page, self-contained static documentation site from Markdown content and a small JSON config. Builds the doc structure automatically, wires a configurable navigation menu with a pinned desktop sidebar and a mobile dropdown panel, integrates existing Markdown and data formats, and adds a data list page type with client-side sorting (commit count, last-updated), text filters and status badges. Layout: 860px mobile breakpoint, fixed top bar with GitHub/theme/language controls and a morphing toggle, full-width nav panel with backdrop, fluid content width, a sticky right-rail anchor mini-TOC with scrollspy, a prev/next chapter pager, a dependency-free mermaid renderer that draws flowcharts and sequence diagrams as inline SVG with a zoom-and-pan lightbox, light/dark theme and a full EN/中 UI toggle.",
       "tags": [
         "docs",
         "static-site",
@@ -196,10 +196,10 @@
         "commits7d": 0,
         "weekly": [
           0,
-          0,
           1,
           0,
           1,
+          0,
           1,
           0,
           0
@@ -238,10 +238,10 @@
         "commits7d": 0,
         "weekly": [
           0,
-          0,
           1,
           0,
           1,
+          0,
           1,
           0,
           0
@@ -286,8 +286,8 @@
           0,
           0,
           6,
-          0,
           1,
+          0,
           1,
           0,
           0
@@ -330,8 +330,8 @@
           0,
           0,
           0,
-          3,
-          1,
+          4,
+          0,
           1,
           0,
           0
@@ -375,8 +375,8 @@
           0,
           0,
           1,
-          0,
           1,
+          0,
           1,
           0,
           0
@@ -419,8 +419,8 @@
           0,
           0,
           1,
-          0,
           1,
+          0,
           1,
           0,
           0
@@ -458,9 +458,9 @@
         "opencode"
       ],
       "stats": {
-        "totalCommits": 0,
-        "commits8w": 0,
-        "commits7d": 0,
+        "totalCommits": 1,
+        "commits8w": 1,
+        "commits7d": 1,
         "weekly": [
           0,
           0,
@@ -469,11 +469,11 @@
           0,
           0,
           0,
-          0
+          1
         ],
-        "firstCommit": null,
-        "lastCommit": null,
-        "contributors": 0
+        "firstCommit": "2026-11-14",
+        "lastCommit": "2026-11-14",
+        "contributors": 1
       }
     },
     {
@@ -510,9 +510,9 @@
         "weekly": [
           0,
           0,
-          0,
           2,
           1,
+          0,
           1,
           0,
           0
@@ -555,8 +555,8 @@
           0,
           0,
           0,
-          1,
-          1,
+          2,
+          0,
           1,
           0,
           0
@@ -603,8 +603,8 @@
           0,
           0,
           0,
-          0,
           1,
+          0,
           1,
           0,
           2
@@ -646,10 +646,10 @@
         "commits7d": 0,
         "weekly": [
           0,
-          0,
           1,
           0,
           1,
+          0,
           1,
           0,
           0

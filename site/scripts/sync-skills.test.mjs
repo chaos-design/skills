@@ -1,3 +1,6 @@
+import { existsSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import {
   authorKey,
@@ -172,6 +175,36 @@ describe("normalizeReadme", () => {
     expect(out).toBe(
       "![single quoted](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/s/b.webp)",
     );
+  });
+
+  it("serves repository screenshots from the site when the file exists", () => {
+    const screenshotsRoot = path.resolve(
+      path.dirname(fileURLToPath(import.meta.url)),
+      "..",
+      "..",
+      "screenshots",
+    );
+    const relDir = path.join(screenshotsRoot, "s");
+    const file = path.join(relDir, "local.webp");
+    const copied = path.resolve(
+      path.dirname(fileURLToPath(import.meta.url)),
+      "..",
+      "public",
+      "screenshots",
+      "s",
+      "local.webp",
+    );
+    mkdirSync(relDir, { recursive: true });
+    writeFileSync(file, "stub");
+    try {
+      const out = normalizeReadme('<img src="../../screenshots/s/local.webp" alt="local">', "s");
+      expect(out).toBe("![local](/screenshots/s/local.webp)");
+      // the copy must land in public/screenshots for the site to serve it
+      expect(existsSync(copied)).toBe(true);
+    } finally {
+      rmSync(file);
+      rmSync(copied, { force: true });
+    }
   });
 
   it("drops the language-switch lines in both directions", () => {

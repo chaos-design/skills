@@ -25,8 +25,18 @@ visible area.
 ```mermaid
 graph LR
   A[Markdown content] --> C[docs_site.py]
-  B[site.json config] --> C
+  B{site.json config} --> C
   C --> O[Multi-page responsive HTML]
+```
+
+```mermaid
+sequenceDiagram
+  participant U as User
+  participant G as docs_site.py
+  U->>G: generate --config site.json
+  G->>G: render mermaid fences as SVG
+  G-->>U: one self-contained HTML file per page
+  Note over U,G: No network fetches — diagrams render offline
 ```
 
 > Click any diagram to open it in the lightbox and zoom it to the viewport.
