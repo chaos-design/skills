@@ -382,26 +382,39 @@ def build_toc_html(body_html, toc_label):
     """Right-rail mini TOC built from the page's h2/h3/h4 anchors.
 
     Rendered only when the page has at least two headings; list pages have
-    none and simply omit the rail. Heading markup is already escaped once,
-    so the extracted text keeps its entities.
+    none and simply omit the rail. The entries nest into a tree (h3 under
+    the preceding h2, h4 under the preceding h3) so the CSS can draw elbow
+    connectors per level. Heading markup is already escaped once, so the
+    extracted text keeps its entities.
     """
     items = []
     for m in re.finditer(r"<h([234]) id='([^']+)'[^>]*>(.*?)</h\1>", body_html):
         text = re.sub(r"<[^>]+>", "", m.group(3)).strip()
         if text:
-            items.append((m.group(1), m.group(2), text))
+            items.append((int(m.group(1)), m.group(2), text))
     if len(items) < 2:
         return ""
-    lis = []
-    for lvl, hid, text in items:
-        lis.append(
-            "<li class='toc-l%s'><a href='#%s' data-toc-link='%s'>%s</a></li>"
-            % (lvl, hid, hid, text)
-        )
+
+    def render(start, end, level):
+        lis = []
+        i = start
+        while i < end:
+            lvl, hid, text = items[i]
+            j = i + 1
+            while j < end and items[j][0] > level:
+                j += 1
+            entry = "<a href='#%s' data-toc-link='%s'>%s</a>" % (hid, hid, text)
+            if j > i + 1:
+                entry += "<ul class='toc-sub'>%s</ul>" % render(i + 1, j, level + 1)
+            lis.append("<li>%s</li>" % entry)
+            i = j
+        return "".join(lis)
+
+    lis = render(0, len(items), items[0][0])
     return (
         "<aside class='toc'><div class='toc-title' data-i18n='toc'>"
         + html.escape(toc_label)
-        + "</div><ul class='toc-list'>" + "\n".join(lis) + "</ul></aside>"
+        + "</div><ul class='toc-list'>" + lis + "</ul></aside>"
     )
 
 
@@ -719,7 +732,7 @@ svg.theme-icon-sun{display:none}
 .header-github:focus-visible,.nav-link:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 /* content: owns its scrollbar, spans the available column */
 .content{height:100%;min-height:0;overflow-y:auto;overscroll-behavior:contain;
-  padding:0 0 28px}
+  padding:0 0 48px}
 .content-inner{padding:clamp(20px,3vw,56px);padding-top:32px}
 .crumb{font-family:var(--mono);font-size:12px;color:var(--faint);margin-bottom:10px}
 .page-title{font-size:clamp(26px,4vw,40px);line-height:1.1;margin:4px 0 10px;font-weight:750}
@@ -731,15 +744,22 @@ svg.theme-icon-sun{display:none}
 .toc{position:sticky;top:32px;font-size:12.5px;min-width:0}
 .toc-title{font-family:var(--mono);font-size:11px;color:var(--faint);
   text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px}
-.toc-list{list-style:none;margin:0;padding:0;border-left:1px solid var(--line);
+.toc-list{list-style:none;margin:0;padding:0;
   max-height:calc(100vh - 170px);overflow-y:auto}
-.toc-list a{display:block;padding:4px 0 4px 12px;color:var(--muted);
-  border-left:2px solid transparent;margin-left:-1px;line-height:1.4;
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.toc-list a:hover{color:var(--ink);text-decoration:none}
-.toc-list a.is-active{color:var(--accent);border-left-color:var(--accent)}
-.toc-list .toc-l3 a{padding-left:26px}
-.toc-list .toc-l4 a{padding-left:40px}
+.toc-list li{position:relative}
+.toc-list a{display:block;padding:4px 8px 4px 10px;color:var(--muted);
+  border-radius:6px;line-height:1.4;overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap}
+.toc-list a:hover{color:var(--ink);background:var(--surface-2);text-decoration:none}
+.toc-list a.is-active{color:var(--accent);background:rgba(111,157,255,.12)}
+/* nested levels: a vertical guide drops from the parent entry and turns
+   into a short elbow connector for every child (折线, not plain indent) */
+.toc-sub{list-style:none;margin:0;padding-left:18px;position:relative}
+.toc-sub::before{content:'';position:absolute;left:4px;top:2px;bottom:8px;
+  width:1px;background:var(--line)}
+.toc-sub>li::before{content:'';position:absolute;left:-14px;top:14px;
+  width:14px;height:1px;background:var(--line)}
+.toc-sub>li:has(>a.is-active)::before{background:var(--accent)}
 /* bottom prev/next chapter pager: a fixed bar under the content column.
    Fixed (not sticky) so it sits on its own compositor layer and never
    jitters with content scrolling; frosted blur + a single top hairline
@@ -910,7 +930,7 @@ blockquote{border-left:3px solid var(--accent);margin:12px 0;padding:6px 14px;
   .toc{display:none}
   .page-pager{left:0;right:0;padding:8px 20px calc(8px + env(safe-area-inset-bottom))}
   .pager-empty{display:none}
-  .content{padding-bottom:44px}
+  .content{padding-bottom:64px}
 }
 @media (max-width:600px){
   .list-filter input{width:100%}

@@ -93,7 +93,7 @@ svg.theme-icon-sun{display:none}
 .header-github:focus-visible,.nav-link:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 /* content: owns its scrollbar, spans the available column */
 .content{height:100%;min-height:0;overflow-y:auto;overscroll-behavior:contain;
-  padding:0 0 28px}
+  padding:0 0 48px}
 .content-inner{padding:clamp(20px,3vw,56px);padding-top:32px}
 .crumb{font-family:var(--mono);font-size:12px;color:var(--faint);margin-bottom:10px}
 .page-title{font-size:clamp(26px,4vw,40px);line-height:1.1;margin:4px 0 10px;font-weight:750}
@@ -105,15 +105,22 @@ svg.theme-icon-sun{display:none}
 .toc{position:sticky;top:32px;font-size:12.5px;min-width:0}
 .toc-title{font-family:var(--mono);font-size:11px;color:var(--faint);
   text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px}
-.toc-list{list-style:none;margin:0;padding:0;border-left:1px solid var(--line);
+.toc-list{list-style:none;margin:0;padding:0;
   max-height:calc(100vh - 170px);overflow-y:auto}
-.toc-list a{display:block;padding:4px 0 4px 12px;color:var(--muted);
-  border-left:2px solid transparent;margin-left:-1px;line-height:1.4;
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.toc-list a:hover{color:var(--ink);text-decoration:none}
-.toc-list a.is-active{color:var(--accent);border-left-color:var(--accent)}
-.toc-list .toc-l3 a{padding-left:26px}
-.toc-list .toc-l4 a{padding-left:40px}
+.toc-list li{position:relative}
+.toc-list a{display:block;padding:4px 8px 4px 10px;color:var(--muted);
+  border-radius:6px;line-height:1.4;overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap}
+.toc-list a:hover{color:var(--ink);background:var(--surface-2);text-decoration:none}
+.toc-list a.is-active{color:var(--accent);background:rgba(111,157,255,.12)}
+/* nested levels: a vertical guide drops from the parent entry and turns
+   into a short elbow connector for every child (折线, not plain indent) */
+.toc-sub{list-style:none;margin:0;padding-left:18px;position:relative}
+.toc-sub::before{content:'';position:absolute;left:4px;top:2px;bottom:8px;
+  width:1px;background:var(--line)}
+.toc-sub>li::before{content:'';position:absolute;left:-14px;top:14px;
+  width:14px;height:1px;background:var(--line)}
+.toc-sub>li:has(>a.is-active)::before{background:var(--accent)}
 /* bottom prev/next chapter pager: a fixed bar under the content column.
    Fixed (not sticky) so it sits on its own compositor layer and never
    jitters with content scrolling; frosted blur + a single top hairline
@@ -284,7 +291,7 @@ blockquote{border-left:3px solid var(--accent);margin:12px 0;padding:6px 14px;
   .toc{display:none}
   .page-pager{left:0;right:0;padding:8px 20px calc(8px + env(safe-area-inset-bottom))}
   .pager-empty{display:none}
-  .content{padding-bottom:44px}
+  .content{padding-bottom:64px}
 }
 @media (max-width:600px){
   .list-filter input{width:100%}
@@ -395,10 +402,7 @@ blockquote{border-left:3px solid var(--accent);margin:12px 0;padding:6px 14px;
 <p>value. The live count reflects the current filters.</p>
         
       </div>
-      <aside class='toc'><div class='toc-title' data-i18n='toc'>目录</div><ul class='toc-list'><li class='toc-l2'><a href='#config-fields' data-toc-link='config-fields'>Config fields</a></li>
-<li class='toc-l3'><a href='#quick-reference' data-toc-link='quick-reference'>Quick reference</a></li>
-<li class='toc-l2'><a href='#list-pages' data-toc-link='list-pages'>List pages</a></li>
-<li class='toc-l3'><a href='#sorting-and-filtering' data-toc-link='sorting-and-filtering'>Sorting and filtering</a></li></ul></aside>
+      <aside class='toc'><div class='toc-title' data-i18n='toc'>目录</div><ul class='toc-list'><li><a href='#config-fields' data-toc-link='config-fields'>Config fields</a><ul class='toc-sub'><li><a href='#quick-reference' data-toc-link='quick-reference'>Quick reference</a></li></ul></li><li><a href='#list-pages' data-toc-link='list-pages'>List pages</a><ul class='toc-sub'><li><a href='#sorting-and-filtering' data-toc-link='sorting-and-filtering'>Sorting and filtering</a></li></ul></li></ul></aside>
     </div>
   </main>
 </div>

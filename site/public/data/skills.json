@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-21 17:46:49",
+  "generatedAt": "2026-11-21 17:55:49",
   "repo": "chaos-design/skills",
   "repoUrl": "https://github.com/chaos-design/skills",
   "installPrefix": "npx skills add https://github.com/chaos-design/skills --skill",

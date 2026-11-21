@@ -3,14 +3,14 @@
 import Script from "next/script";
 
 // Runs before hydration so the stored theme and language are applied on the
-// first paint: `theme` is "light" | "dark" | "system" (absent or "system"
-// follows the OS), `lang` is "en" | "zh". localStorage wins in both cases;
-// only a first-time visitor gets the OS/browser preference.
+// first paint: `theme` is "light" | "dark" | "system", `lang` is "en" | "zh".
+// localStorage wins; a first-time visitor (no stored choice) gets the dark
+// palette, and an explicit "system" choice keeps following the OS.
 const THEME_INIT = `(function () {
   try {
     var stored = localStorage.getItem("theme");
     var systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    var isDark = stored === "dark" ? true : stored === "light" ? false : systemDark;
+    var isDark = stored === "light" ? false : stored === "system" ? systemDark : true;
     document.documentElement.classList.toggle("dark", isDark);
 
     var lang = localStorage.getItem("lang");
