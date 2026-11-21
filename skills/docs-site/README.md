@@ -34,9 +34,14 @@ are included; both persist to localStorage.
   filters and color-coded status badges, plus a live match count.
 - **Diagram rendering + lightbox** — ` ```mermaid ` fences are drawn as inline
   SVG by a built-in, dependency-free renderer (flowcharts and sequence
-  diagrams; unsupported syntax falls back to the source block), and clicking a
-  diagram opens a full-viewport lightbox with zoom-to-fit and +/− controls;
-  zoomed-in diagrams scroll and drag to pan, so every region stays reachable.
+  diagrams; unsupported syntax falls back to the source block). Clicking a
+  diagram opens a full-viewport lightbox: oversized diagrams shrink to fit,
+  small ones keep their natural size (no forced upscaling), and zoomed-in
+  diagrams scroll and drag to pan, so every region stays reachable.
+- **Anchor mini-TOC + chapter pager** — doc pages with two or more h2/h3
+  headings get a sticky right-rail menu with scrollspy highlighting and
+  smooth anchor jumps; every page ends with prev/next chapter buttons that
+  follow the config page order and translate with the UI toggle.
 - **Theme + i18n** — a persisted light/dark switch (dark by default) and an
   EN/中 toggle that re-labels every piece of UI chrome, nav entries, list
   controls and lightbox buttons in place, keeping `<html lang>` in sync.
@@ -46,7 +51,9 @@ are included; both persist to localStorage.
 Captured from the generated test pages: rendered diagrams, the zoom lightbox
 and the mobile breakpoint.
 
-<img src="../../screenshots/docs-site/lightbox-fit.webp" width="480" alt="Flowchart rendered as SVG and opened in the fit-to-viewport lightbox">
+<img src="../../screenshots/docs-site/desktop-toc-pager.webp" width="480" alt="Desktop page with the sticky anchor mini-TOC on the right and the next-chapter button at the bottom">
+
+<img src="../../screenshots/docs-site/lightbox-fit.webp" width="480" alt="Flowchart opened in the lightbox at its natural size, never upscaled">
 
 <img src="../../screenshots/docs-site/lightbox-zoom.webp" width="480" alt="Lightbox zoomed in and panned — the stage scrolls and drags to reach any region">
 

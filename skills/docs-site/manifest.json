@@ -1,6 +1,6 @@
 {
   "name": "docs-site",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "category": "Documentation · Markdown + config → responsive multi-page static docs site",
   "tags": [
     "docs",
@@ -8,7 +8,7 @@
     "markdown",
     "responsive"
   ],
-  "description": "Generate a dark-first, responsive, multi-page, self-contained static documentation site from Markdown content and a small JSON config. Builds the doc structure automatically, wires a configurable navigation menu with a pinned desktop sidebar and a mobile dropdown panel, integrates existing Markdown and data formats, and adds a data list page type with client-side sorting (commit count, last-updated), text filters and status badges. Layout: 860px mobile breakpoint, fixed top bar with GitHub/theme/language controls and a morphing toggle, full-width nav panel with backdrop, fluid content width, a dependency-free mermaid renderer that draws flowcharts and sequence diagrams as inline SVG with a zoom-and-pan lightbox, light/dark theme and a full EN/中 UI toggle.",
+  "description": "Generate a dark-first, responsive, multi-page, self-contained static documentation site from Markdown content and a small JSON config. Builds the doc structure automatically, wires a configurable navigation menu with a pinned desktop sidebar and a mobile dropdown panel, integrates existing Markdown and data formats, and adds a data list page type with client-side sorting (commit count, last-updated), text filters and status badges. Layout: 860px mobile breakpoint, fixed top bar with GitHub/theme/language controls and a morphing toggle, full-width nav panel with backdrop, fluid content width, a sticky right-rail anchor mini-TOC with scrollspy, a prev/next chapter pager, a dependency-free mermaid renderer that draws flowcharts and sequence diagrams as inline SVG with a zoom-and-pan lightbox, light/dark theme and a full EN/中 UI toggle.",
   "homepage": "https://github.com/chaos-design/skills/tree/main/skills/docs-site",
   "install": {
     "dependsOn": [],

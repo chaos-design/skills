@@ -61,7 +61,6 @@ a:hover{text-decoration:underline}
 .sidebar-github a:hover,.sidebar-github .lang-toggle:hover{border-color:var(--accent);
   color:var(--ink);text-decoration:none}
 .sidebar-github svg{width:16px;height:16px;flex:0 0 auto}
-.sidebar-github .ext-arrow{color:var(--faint)}
 .lang-toggle{border:1px solid var(--line);background:var(--surface-2);color:var(--muted);
   font-size:11.5px;font-weight:600;padding:4px 9px;border-radius:999px;cursor:pointer;
   flex:0 0 auto;transition:color .15s ease,border-color .15s ease}
@@ -93,11 +92,39 @@ svg.theme-icon-sun{display:none}
 .icon-btn:focus-visible,.lang-toggle:focus-visible,.nav-toggle:focus-visible,
 .header-github:focus-visible,.nav-link:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 /* content: owns its scrollbar, spans the available column */
-.content{height:100%;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:0 0 80px}
+.content{height:100%;min-height:0;overflow-y:auto;overscroll-behavior:contain;
+  padding:0 0 80px}
 .content-inner{padding:clamp(20px,3vw,56px);padding-top:32px}
 .crumb{font-family:var(--mono);font-size:12px;color:var(--faint);margin-bottom:10px}
 .page-title{font-size:clamp(26px,4vw,40px);line-height:1.1;margin:4px 0 10px;font-weight:750}
 .page-desc{color:var(--muted);line-height:1.7;max-width:72ch}
+/* right-rail mini toc: sticky anchors menu next to the article */
+.content-inner.has-toc{display:grid;grid-template-columns:minmax(0,1fr) 200px;
+  gap:16px 40px;align-items:start}
+.content-inner .article{min-width:0}
+.toc{position:sticky;top:32px;font-size:12.5px;min-width:0}
+.toc-title{font-family:var(--mono);font-size:11px;color:var(--faint);
+  text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px}
+.toc-list{list-style:none;margin:0;padding:0;border-left:1px solid var(--line)}
+.toc-list a{display:block;padding:4px 0 4px 12px;color:var(--muted);
+  border-left:2px solid transparent;margin-left:-1px;line-height:1.4;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.toc-list a:hover{color:var(--ink);text-decoration:none}
+.toc-list a.is-active{color:var(--accent);border-left-color:var(--accent)}
+.toc-list .toc-l3 a{padding-left:26px}
+/* bottom prev/next chapter pager */
+.page-pager{display:flex;gap:12px;margin-top:40px;border-top:1px solid var(--line);
+  padding-top:20px}
+.pager-link{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0;
+  padding:12px 14px;border:1px solid var(--line);border-radius:10px;
+  background:var(--surface-2);color:var(--ink);text-decoration:none;
+  transition:border-color .15s ease}
+.pager-link:hover{border-color:var(--accent);text-decoration:none}
+.pager-next{text-align:right;align-items:flex-end}
+.pager-dir{font-size:11px;color:var(--faint)}
+.pager-label{font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap}
+.pager-empty{visibility:hidden}
 /* document body */
 .doc-body{max-width:72ch;line-height:1.75;overflow-wrap:break-word;min-width:0}
 .doc-body :not(pre)>code{overflow-wrap:anywhere;background:rgba(100,116,139,.15);
@@ -237,6 +264,12 @@ blockquote{border-left:3px solid var(--accent);margin:12px 0;padding:6px 14px;
   .doc-body{max-width:none}
   /* 72ch would overflow a narrow phone; figures follow the viewport instead */
   .doc-figure{max-width:100%}
+  /* the toc rail is a desktop affordance; the pager stacks instead */
+  .content-inner.has-toc{display:block}
+  .toc{display:none}
+  .page-pager{flex-direction:column}
+  .pager-empty{display:none}
+  .pager-next{text-align:left;align-items:flex-start}
 }
 @media (max-width:600px){
   .list-filter input{width:100%}
@@ -289,17 +322,18 @@ blockquote{border-left:3px solid var(--accent);margin:12px 0;padding:6px 14px;
 </div>
     </div>
     <div class="sidebar-github">
-      <a href="https://github.com/chaos-design/skills" target="_blank" rel="noreferrer"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.73.5.5 5.73.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56 0-.28-.01-1.02-.02-2-3.2.7-3.88-1.54-3.88-1.54-.53-1.34-1.29-1.7-1.29-1.7 -1.05-.72.08-.71.08-.71 1.16.08 1.77 1.2 1.77 1.2 1.03 1.77 2.7 1.26 3.36.96 .1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.09 -.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18.92-.26 1.91-.39 2.89-.4 .98.02 1.97.15 2.89.4 2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05 .74.8 1.19 1.83 1.19 3.09 0 4.42-2.7 5.4-5.27 5.68.41.35.78 1.05.78 2.12 0 1.53-.01 2.77-.01 3.15 0 .31.2.67.8.56A11.51 11.51 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z"/></svg><span data-i18n="github">GitHub</span><span class="ext-arrow">↗</span></a>
+      <a href="https://github.com/chaos-design/skills" target="_blank" rel="noreferrer"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.73.5.5 5.73.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56 0-.28-.01-1.02-.02-2-3.2.7-3.88-1.54-3.88-1.54-.53-1.34-1.29-1.7-1.29-1.7 -1.05-.72.08-.71.08-.71 1.16.08 1.77 1.2 1.77 1.2 1.03 1.77 2.7 1.26 3.36.96 .1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.09 -.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18.92-.26 1.91-.39 2.89-.4 .98.02 1.97.15 2.89.4 2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05 .74.8 1.19 1.83 1.19 3.09 0 4.42-2.7 5.4-5.27 5.68.41.35.78 1.05.78 2.12 0 1.53-.01 2.77-.01 3.15 0 .31.2.67.8.56A11.51 11.51 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z"/></svg><span data-i18n="github">GitHub</span></a>
       <button type="button" class="lang-toggle" data-lang-toggle data-i18n="langLabel">English</button>
     </div>
   </aside>
   <div class="nav-backdrop" aria-hidden="true"></div>
   <main class="content">
-    <div class="content-inner">
-      <div class="crumb">Chaos Design Skills / Quick start</div>
-      <h1 class="page-title">Quick start</h1>
-      <p class="page-desc">A multi-page, responsive documentation site generated by the docs-site skill.</p>
-      <h1 id='quick-start' class='doc-h1'>Quick start</h1>
+    <div class="content-inner has-toc">
+      <div class="article">
+        <div class="crumb">Chaos Design Skills / Quick start</div>
+        <h1 class="page-title">Quick start</h1>
+        <p class="page-desc">A multi-page, responsive documentation site generated by the docs-site skill.</p>
+        <h1 id='quick-start' class='doc-h1'>Quick start</h1>
 <p>Generate a site in one command:</p>
 <pre><code class='language-bash'>python3 skills/docs-site/scripts/docs_site.py generate \
   --config site.json \
@@ -336,13 +370,17 @@ blockquote{border-left:3px solid var(--accent);margin:12px 0;padding:6px 14px;
 <p>A list page sorts by any column marked in <code>sortable</code> (typically commit count</p>
 <p>and last-updated time), supports a status filter and free-text search, and</p>
 <p>renders <code>status_field</code> values as color-coded badges.</p>
-      
+        
+        <nav class='page-pager' aria-label='Chapters'><a class='pager-link pager-prev' href='./pull-requests.html'><span class='pager-dir' data-i18n='prevPage'>← 上一章</span><span class='pager-label' data-i18n='nav.pull-requests'>Pull Requests</span></a><span class='pager-link pager-empty' aria-hidden='true'></span></nav>
+      </div>
+      <aside class='toc'><div class='toc-title' data-i18n='toc'>目录</div><ul class='toc-list'><li class='toc-l2'><a href='#config-fields' data-toc-link='config-fields'>Config fields</a></li>
+<li class='toc-l2'><a href='#list-pages' data-toc-link='list-pages'>List pages</a></li></ul></aside>
     </div>
   </main>
 </div>
 <script>
 (function(){
-  var I={"zh": {"brandSub": "文档中心", "navigate": "导航", "home": "首页", "langShort": "EN", "langLabel": "English", "langTitle": "切换到 English", "navOpen": "打开导航菜单", "navClose": "关闭导航菜单", "github": "GitHub", "theme": "切换主题", "filter": "状态筛选", "search": "搜索", "searchPh": "标题 / 作者", "all": "全部", "results": "条结果", "fit": "适应屏幕", "zoomIn": "放大", "zoomOut": "缩小", "close": "关闭", "diagram": "图表", "diagramZoom": "图表 — 点击放大", "nav.introduction": "简介", "nav.pull-requests": "拉取请求", "group.2": "深入阅读", "nav.quick-start": "快速开始"}, "en": {"brandSub": "Documentation", "navigate": "Navigate", "home": "Home", "langShort": "中", "langLabel": "中文", "langTitle": "Switch to 中文", "navOpen": "Open navigation menu", "navClose": "Close navigation menu", "github": "GitHub", "theme": "Toggle theme", "filter": "Filter status", "search": "Search", "searchPh": "title / author", "all": "All", "results": "results", "fit": "Fit to screen", "zoomIn": "Zoom in", "zoomOut": "Zoom out", "close": "Close", "diagram": "Diagram", "diagramZoom": "Diagram — click to enlarge", "nav.introduction": "Introduction", "nav.pull-requests": "Pull Requests", "group.2": "Guides", "nav.quick-start": "Quick start"}};
+  var I={"zh": {"brandSub": "文档中心", "navigate": "导航", "home": "首页", "langShort": "EN", "langLabel": "English", "langTitle": "切换到 English", "navOpen": "打开导航菜单", "navClose": "关闭导航菜单", "github": "GitHub", "theme": "切换主题", "filter": "状态筛选", "search": "搜索", "searchPh": "标题 / 作者", "all": "全部", "results": "条结果", "fit": "适应屏幕", "zoomIn": "放大", "zoomOut": "缩小", "close": "关闭", "diagram": "图表", "diagramZoom": "图表 — 点击放大", "toc": "目录", "prevPage": "← 上一章", "nextPage": "下一章 →", "nav.introduction": "简介", "nav.pull-requests": "拉取请求", "group.2": "深入阅读", "nav.quick-start": "快速开始"}, "en": {"brandSub": "Documentation", "navigate": "Navigate", "home": "Home", "langShort": "中", "langLabel": "中文", "langTitle": "Switch to 中文", "navOpen": "Open navigation menu", "navClose": "Close navigation menu", "github": "GitHub", "theme": "Toggle theme", "filter": "Filter status", "search": "Search", "searchPh": "title / author", "all": "All", "results": "results", "fit": "Fit to screen", "zoomIn": "Zoom in", "zoomOut": "Zoom out", "close": "Close", "diagram": "Diagram", "diagramZoom": "Diagram — click to enlarge", "toc": "On this page", "prevPage": "← Previous", "nextPage": "Next →", "nav.introduction": "Introduction", "nav.pull-requests": "Pull Requests", "group.2": "Guides", "nav.quick-start": "Quick start"}};
   var langs=["zh", "en"];
   var lang="zh";
   var KEY='docs-site-lang';
@@ -459,7 +497,9 @@ blockquote{border-left:3px solid var(--accent);margin:12px 0;padding:6px 14px;
   }
   function fitBase(){
     if(!box)return;
-    base=Math.min(stage.clientWidth/natW,stage.clientHeight/natH)||1;
+    // Only shrink oversized diagrams to fit; never enlarge small ones, so
+    // the scroll region always holds real content at a sane scale.
+    base=Math.min(1,stage.clientWidth/natW,stage.clientHeight/natH)||1;
   }
   function centerScroll(){
     stage.scrollLeft=Math.max(0,(box.offsetWidth-stage.clientWidth)/2);
@@ -531,6 +571,37 @@ blockquote{border-left:3px solid var(--accent);margin:12px 0;padding:6px 14px;
 })();
 </script>
 <script></script>
+<script>
+(function(){
+  var toc=document.querySelector('.toc');
+  if(!toc)return;
+  var links=[].slice.call(toc.querySelectorAll('[data-toc-link]'));
+  var heads=links.map(function(a){return document.getElementById(a.getAttribute('data-toc-link'));}).filter(Boolean);
+  if(!heads.length)return;
+  var content=document.querySelector('.content');
+  function sync(){
+    var ctop=content.getBoundingClientRect().top;
+    var cur=heads[0];
+    heads.forEach(function(h){
+      if(h.getBoundingClientRect().top-ctop<=96)cur=h;
+    });
+    if(content.scrollTop+content.clientHeight>=content.scrollHeight-4)cur=heads[heads.length-1];
+    links.forEach(function(a){
+      a.classList.toggle('is-active',!!cur&&a.getAttribute('data-toc-link')===cur.id);
+    });
+  }
+  content.addEventListener('scroll',sync,{passive:true});
+  window.addEventListener('resize',sync);
+  // Fragment jumps are instant and some embedders fire the click's default
+  // scroll late (or without a scroll event), so re-sync on hashchange and
+  // twice after every toc click.
+  window.addEventListener('hashchange',function(){setTimeout(sync,30);});
+  links.forEach(function(a){a.addEventListener('click',function(){
+    setTimeout(sync,30);setTimeout(sync,180);
+  });});
+  sync();
+})();
+</script>
 <script>
 (function(){
   var NS='http://www.w3.org/2000/svg';

@@ -174,6 +174,7 @@ def md_to_html(md):
     """Minimal, deterministic Markdown -> HTML. No external libs."""
     lines = md.splitlines()
     out = []
+    used_ids = set()
     in_code = False
     code_lang = ""
     code_buf = []
@@ -267,7 +268,13 @@ def md_to_html(md):
             lvl = len(stripped) - len(stripped.lstrip("#"))
             lvl = min(lvl, 6)
             text = stripped.lstrip("#").strip()
+            # Anchors must stay unique: dedupe repeated heading slugs.
             slug = re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")
+            base, n = slug, 2
+            while slug in used_ids:
+                slug = "%s-%d" % (base, n)
+                n += 1
+            used_ids.add(slug)
             out.append("<h%d id='%s' class='doc-h%d'>%s</h%d>" % (lvl, slug, lvl, inline(text), lvl))
             i += 1
             continue
@@ -371,6 +378,64 @@ def build_nav_html(cfg, active_slug):
     return "\n".join(items)
 
 
+def build_toc_html(body_html, toc_label):
+    """Right-rail mini TOC built from the page's h2/h3 anchors.
+
+    Rendered only when the page has at least two headings; list pages have
+    none and simply omit the rail. Heading markup is already escaped once,
+    so the extracted text keeps its entities.
+    """
+    items = []
+    for m in re.finditer(r"<h([23]) id='([^']+)'[^>]*>(.*?)</h\1>", body_html):
+        text = re.sub(r"<[^>]+>", "", m.group(3)).strip()
+        if text:
+            items.append((m.group(1), m.group(2), text))
+    if len(items) < 2:
+        return ""
+    lis = []
+    for lvl, hid, text in items:
+        lis.append(
+            "<li class='toc-l%s'><a href='#%s' data-toc-link='%s'>%s</a></li>"
+            % (lvl, hid, hid, text)
+        )
+    return (
+        "<aside class='toc'><div class='toc-title' data-i18n='toc'>"
+        + html.escape(toc_label)
+        + "</div><ul class='toc-list'>" + "\n".join(lis) + "</ul></aside>"
+    )
+
+
+def pager_slot(page, kind, initial):
+    if not page:
+        return "<span class='pager-link pager-empty' aria-hidden='true'></span>"
+    ps = str(page.get("slug") or page_slug(page))
+    label = str(page.get("title") or ps)
+    dir_key = "prevPage" if kind == "prev" else "nextPage"
+    return (
+        "<a class='pager-link pager-%s' href='./%s'>"
+        "<span class='pager-dir' data-i18n='%s'>%s</span>"
+        "<span class='pager-label' data-i18n='nav.%s'>%s</span></a>"
+        % (kind, html.escape(slug_filename(ps)), dir_key,
+           html.escape(str(initial[dir_key])), html.escape(ps), html.escape(label))
+    )
+
+
+def build_page_pager(cfg, slug, initial):
+    """Bottom prev/next chapter navigation following the config page order."""
+    pages = cfg.get("pages", [])
+    idx = next((i for i, p in enumerate(pages) if page_slug(p) == slug), None)
+    if idx is None:
+        return ""
+    prev_p = pages[idx - 1] if idx > 0 else None
+    next_p = pages[idx + 1] if idx < len(pages) - 1 else None
+    return (
+        "<nav class='page-pager' aria-label='Chapters'>"
+        + pager_slot(prev_p, "prev", initial)
+        + pager_slot(next_p, "next", initial)
+        + "</nav>"
+    )
+
+
 def status_badge(status):
     # The class is interpolated into a quoted attribute, so escape quotes too.
     cls = html.escape("badge-" + status)
@@ -459,6 +524,9 @@ def build_i18n_map(cfg, page):
             "close": cfg_text(cfg, "close_zh", "关闭"),
             "diagram": "图表",
             "diagramZoom": "图表 — 点击放大",
+            "toc": "目录",
+            "prevPage": "← 上一章",
+            "nextPage": "下一章 →",
         },
         "en": {
             "brandSub": cfg_text(cfg, "brand_sub", "Documentation"),
@@ -482,6 +550,9 @@ def build_i18n_map(cfg, page):
             "close": cfg_text(cfg, "close", "Close"),
             "diagram": "Diagram",
             "diagramZoom": "Diagram — click to enlarge",
+            "toc": "On this page",
+            "prevPage": "← Previous",
+            "nextPage": "Next →",
         },
     }
     for idx, item in enumerate(cfg.get("nav", [])):
@@ -500,6 +571,17 @@ def build_i18n_map(cfg, page):
             key = "nav." + slug
             strings["zh"][key] = str(child.get("label_zh") or child.get("label") or slug)
             strings["en"][key] = str(child.get("label") or slug)
+    # Pages outside the nav still need labels for the bottom pager; the nav
+    # entry's translated label wins when one exists.
+    for page in cfg.get("pages", []):
+        slug = str(page.get("slug") or "")
+        if not slug:
+            continue
+        key = "nav." + slug
+        if key not in strings["zh"]:
+            title = str(page.get("title") or slug)
+            strings["zh"][key] = title
+            strings["en"][key] = title
     return strings
 
 
@@ -605,7 +687,6 @@ a:hover{text-decoration:underline}
 .sidebar-github a:hover,.sidebar-github .lang-toggle:hover{border-color:var(--accent);
   color:var(--ink);text-decoration:none}
 .sidebar-github svg{width:16px;height:16px;flex:0 0 auto}
-.sidebar-github .ext-arrow{color:var(--faint)}
 .lang-toggle{border:1px solid var(--line);background:var(--surface-2);color:var(--muted);
   font-size:11.5px;font-weight:600;padding:4px 9px;border-radius:999px;cursor:pointer;
   flex:0 0 auto;transition:color .15s ease,border-color .15s ease}
@@ -637,11 +718,39 @@ svg.theme-icon-sun{display:none}
 .icon-btn:focus-visible,.lang-toggle:focus-visible,.nav-toggle:focus-visible,
 .header-github:focus-visible,.nav-link:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 /* content: owns its scrollbar, spans the available column */
-.content{height:100%;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:0 0 80px}
+.content{height:100%;min-height:0;overflow-y:auto;overscroll-behavior:contain;
+  padding:0 0 80px}
 .content-inner{padding:clamp(20px,3vw,56px);padding-top:32px}
 .crumb{font-family:var(--mono);font-size:12px;color:var(--faint);margin-bottom:10px}
 .page-title{font-size:clamp(26px,4vw,40px);line-height:1.1;margin:4px 0 10px;font-weight:750}
 .page-desc{color:var(--muted);line-height:1.7;max-width:72ch}
+/* right-rail mini toc: sticky anchors menu next to the article */
+.content-inner.has-toc{display:grid;grid-template-columns:minmax(0,1fr) 200px;
+  gap:16px 40px;align-items:start}
+.content-inner .article{min-width:0}
+.toc{position:sticky;top:32px;font-size:12.5px;min-width:0}
+.toc-title{font-family:var(--mono);font-size:11px;color:var(--faint);
+  text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px}
+.toc-list{list-style:none;margin:0;padding:0;border-left:1px solid var(--line)}
+.toc-list a{display:block;padding:4px 0 4px 12px;color:var(--muted);
+  border-left:2px solid transparent;margin-left:-1px;line-height:1.4;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.toc-list a:hover{color:var(--ink);text-decoration:none}
+.toc-list a.is-active{color:var(--accent);border-left-color:var(--accent)}
+.toc-list .toc-l3 a{padding-left:26px}
+/* bottom prev/next chapter pager */
+.page-pager{display:flex;gap:12px;margin-top:40px;border-top:1px solid var(--line);
+  padding-top:20px}
+.pager-link{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0;
+  padding:12px 14px;border:1px solid var(--line);border-radius:10px;
+  background:var(--surface-2);color:var(--ink);text-decoration:none;
+  transition:border-color .15s ease}
+.pager-link:hover{border-color:var(--accent);text-decoration:none}
+.pager-next{text-align:right;align-items:flex-end}
+.pager-dir{font-size:11px;color:var(--faint)}
+.pager-label{font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap}
+.pager-empty{visibility:hidden}
 /* document body */
 .doc-body{max-width:72ch;line-height:1.75;overflow-wrap:break-word;min-width:0}
 .doc-body :not(pre)>code{overflow-wrap:anywhere;background:rgba(100,116,139,.15);
@@ -781,6 +890,12 @@ blockquote{border-left:3px solid var(--accent);margin:12px 0;padding:6px 14px;
   .doc-body{max-width:none}
   /* 72ch would overflow a narrow phone; figures follow the viewport instead */
   .doc-figure{max-width:100%}
+  /* the toc rail is a desktop affordance; the pager stacks instead */
+  .content-inner.has-toc{display:block}
+  .toc{display:none}
+  .page-pager{flex-direction:column}
+  .pager-empty{display:none}
+  .pager-next{text-align:left;align-items:flex-start}
 }
 @media (max-width:600px){
   .list-filter input{width:100%}
@@ -853,6 +968,38 @@ LIST_JS = """
   document.addEventListener('docs:lang',updateCount);
   applySort();
   updateCount();
+})();
+"""
+
+TOC_JS = """
+(function(){
+  var toc=document.querySelector('.toc');
+  if(!toc)return;
+  var links=[].slice.call(toc.querySelectorAll('[data-toc-link]'));
+  var heads=links.map(function(a){return document.getElementById(a.getAttribute('data-toc-link'));}).filter(Boolean);
+  if(!heads.length)return;
+  var content=document.querySelector('.content');
+  function sync(){
+    var ctop=content.getBoundingClientRect().top;
+    var cur=heads[0];
+    heads.forEach(function(h){
+      if(h.getBoundingClientRect().top-ctop<=96)cur=h;
+    });
+    if(content.scrollTop+content.clientHeight>=content.scrollHeight-4)cur=heads[heads.length-1];
+    links.forEach(function(a){
+      a.classList.toggle('is-active',!!cur&&a.getAttribute('data-toc-link')===cur.id);
+    });
+  }
+  content.addEventListener('scroll',sync,{passive:true});
+  window.addEventListener('resize',sync);
+  // Fragment jumps are instant and some embedders fire the click's default
+  // scroll late (or without a scroll event), so re-sync on hashchange and
+  // twice after every toc click.
+  window.addEventListener('hashchange',function(){setTimeout(sync,30);});
+  links.forEach(function(a){a.addEventListener('click',function(){
+    setTimeout(sync,30);setTimeout(sync,180);
+  });});
+  sync();
 })();
 """
 
@@ -978,7 +1125,9 @@ LIGHTBOX_JS = """
   }
   function fitBase(){
     if(!box)return;
-    base=Math.min(stage.clientWidth/natW,stage.clientHeight/natH)||1;
+    // Only shrink oversized diagrams to fit; never enlarge small ones, so
+    // the scroll region always holds real content at a sane scale.
+    base=Math.min(1,stage.clientWidth/natW,stage.clientHeight/natH)||1;
   }
   function centerScroll(){
     stage.scrollLeft=Math.max(0,(box.offsetWidth-stage.clientWidth)/2);
@@ -1567,6 +1716,8 @@ def render_page(cfg, page, out_dir, slug):
         "data-i18n='diagramZoom'>" + html.escape(str(initial["diagramZoom"])) + "<",
     )
 
+    toc = build_toc_html(body_html, str(initial["toc"]))
+    pager = build_page_pager(cfg, slug, initial)
     lightbox = lightbox_html(body_html)
 
     nav_html = build_nav_html(cfg, slug)
@@ -1643,18 +1794,22 @@ def render_page(cfg, page, out_dir, slug):
       {nav}
     </div>
     <div class="sidebar-github">
-      <a href="{repo_url}" target="_blank" rel="noreferrer">{github_icon}<span data-i18n="github">GitHub</span><span class="ext-arrow">↗</span></a>
+      <a href="{repo_url}" target="_blank" rel="noreferrer">{github_icon}<span data-i18n="github">GitHub</span></a>
       <button type="button" class="lang-toggle" data-lang-toggle data-i18n="langLabel">{lang_label}</button>
     </div>
   </aside>
   <div class="nav-backdrop" aria-hidden="true"></div>
   <main class="content">
-    <div class="content-inner">
-      <div class="crumb">{crumb}</div>
-      <h1 class="page-title">{title}</h1>
-      <p class="page-desc">{desc}</p>
-      {body}
-      {lightbox}
+    <div class="content-inner{has_toc}">
+      <div class="article">
+        <div class="crumb">{crumb}</div>
+        <h1 class="page-title">{title}</h1>
+        <p class="page-desc">{desc}</p>
+        {body}
+        {lightbox}
+        {pager}
+      </div>
+      {toc}
     </div>
   </main>
 </div>
@@ -1663,6 +1818,7 @@ def render_page(cfg, page, out_dir, slug):
 <script>{nav_js}</script>
 <script>{lb_js}</script>
 <script>{list_js}</script>
+<script>{toc_js}</script>
 <script>{mermaid_js}</script>
 </body>
 </html>
@@ -1692,11 +1848,15 @@ def render_page(cfg, page, out_dir, slug):
         desc=html.escape(desc),
         body=body_html,
         lightbox=lightbox,
+        pager=pager,
+        has_toc=(" has-toc" if toc else ""),
+        toc=toc,
         i18n_js=i18n_js,
         theme_js=theme_js,
         nav_js=nav_js,
         lb_js=LIGHTBOX_JS,
         list_js=(LIST_JS if is_list else ""),
+        toc_js=TOC_JS,
         mermaid_js=MERMAID_JS,
     )
 
@@ -1761,7 +1921,10 @@ def cmd_check(args):
             "lang-toggle": "data-lang-toggle" in text and "data-i18n" in text,
             "theme-switch": "data-theme-toggle" in text,
             "pinned-layout": "grid-template-columns:var(--sidebar-w)" in text,
+            "page-pager": "page-pager" in text and "pager-label" in text,
         }
+        if "class='toc'" in text:
+            checks["toc-anchors"] = "data-toc-link" in text
         if "class='doc-figure'" in text:
             checks["mermaid-figure"] = (
                 "mermaid-view" in text

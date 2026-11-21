@@ -47,6 +47,18 @@ language toggle.
   themselves instead of widening the column. Markdown tables are wrapped in a
   `.table-scroll` container (`overflow-x: auto`), which is what actually
   absorbs wide tables on narrow viewports.
+- When a doc page has two or more h2/h3 headings, `.content-inner` becomes a
+  two-column grid (`minmax(0,1fr)` + `200px`): the article stays in the first
+  column and a sticky `.toc` rail renders in the second — mono uppercase
+  title, left border list, `.is-active` accent for the heading currently in
+  view (`TOC_JS` re-syncs on scroll, resize, hashchange and toc clicks).
+  Heading slugs are deduped (`-2`, `-3`, …) so anchors stay unique. Below the
+  breakpoint the rail hides and the grid collapses.
+- `.page-pager` closes every page: two equal cards linking the previous and
+  next chapter in config page order (empty slots render as hidden
+  placeholders on first/last pages). Directory captions and labels carry
+  `data-i18n` keys, so the language toggle re-labels them in place; the pager
+  stacks vertically on mobile.
 
 ## Mobile top bar and dropdown
 
@@ -106,13 +118,15 @@ At ≤ 860px:
   scaled layout size (`floor(natW·s)` × `floor(natH·s)`), so the stage — an
   `overflow: auto` flex container with the box centered via `margin: auto` —
   grows scrollbars exactly when the zoomed content outgrows the viewport.
-- The base scale fits the stage against the SVG's `viewBox`; +/− multiply a
-  user zoom on top (fit resets it). Zoom steps re-anchor the currently
-  centered point instead of jumping, and the stage gains a `can-pan` grab
-  cursor when panning is possible. Mouse drag pans the stage (touch pans
-  natively; wheel and scrollbars always work). When the renderer fell back to
-  source, the source block is staged the same way. Esc closes and the body
-  scroll lock is released.
+- The base scale only shrinks oversized diagrams to fit the stage against the
+  SVG's `viewBox`; small diagrams open at their natural size instead of being
+  upscaled, so the scroll region always holds real content at a sane scale.
+  +/− multiply a user zoom on top (fit resets it). Zoom steps re-anchor the
+  currently centered point instead of jumping, and the stage gains a
+  `can-pan` grab cursor when panning is possible. Mouse drag pans the stage
+  (touch pans natively; wheel and scrollbars always work). When the renderer
+  fell back to source, the source block is staged the same way. Esc closes
+  and the body scroll lock is released.
 
 ## Multi-page
 

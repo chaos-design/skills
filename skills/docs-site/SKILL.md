@@ -44,8 +44,12 @@ full EN/中 UI toggle complete the design.
   client-side renderer draws flowcharts and sequence diagrams as inline SVG
   (theme-aware, offline, with a graceful fallback to the source block), and
   every diagram opens in a zoom lightbox.
+- Adds a sticky right-rail mini TOC (anchor links with scrollspy highlight)
+  to doc pages that have two or more h2/h3 headings, and a bottom
+  prev/next chapter pager on every page following the config page order.
 - Re-labels the entire UI on EN/中 switch (nav, chrome, list controls,
-  lightbox) and persists both language and theme choices to localStorage.
+  toc, pager, lightbox) and persists both language and theme choices to
+  localStorage.
 
 ## Inputs
 
@@ -151,6 +155,10 @@ full EN/中 UI toggle complete the design.
   the breakpoint and `1200px` the sidebar narrows to `250px` so mid-size
   windows keep a usable content column, and wide Markdown tables scroll inside
   a `.table-scroll` wrapper instead of stretching the column.
+- Doc pages with two or more h2/h3 headings also get a sticky right-rail
+  `.toc` (anchor links, scrollspy highlight, hidden below the breakpoint);
+  every page ends with a `.page-pager` linking the previous and next chapter
+  in config page order, re-labeled by the language toggle.
 - Mobile (≤ breakpoint, `860px` by default): a fixed `56px` top bar carries the
   brand, a GitHub icon button, a theme button, a square language pill and a
   three-bar toggle that morphs into a close cross. The sidebar becomes a
@@ -187,10 +195,12 @@ original position (never a second source block):
 - If the source cannot be parsed, the figure falls back to showing the source
   as a code block — the page never breaks on unsupported syntax.
 - Clicking a figure opens a full-viewport lightbox that stages the rendered
-  SVG scaled to fit, with fit/+−/close SVG-icon controls and Esc to close.
-  Zooming past the viewport makes the stage scrollable and mouse-draggable
-  (touch pans natively), so any region of a zoomed diagram stays reachable;
-  +/− keep the centered point anchored instead of jumping the view.
+  SVG with fit/+−/close SVG-icon controls and Esc to close. Oversized
+  diagrams shrink to fit the viewport; small ones open at their natural size
+  instead of being upscaled. Zooming past the viewport makes the stage
+  scrollable and mouse-draggable (touch pans natively), so any region of a
+  zoomed diagram stays reachable; +/− keep the centered point anchored
+  instead of jumping the view.
 
 ## Output contract
 
