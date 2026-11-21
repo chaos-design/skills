@@ -40,8 +40,9 @@ are included; both persist to localStorage.
   diagrams scroll and drag to pan, so every region stays reachable.
 - **Anchor mini-TOC + chapter pager** — doc pages with two or more h2/h3
   headings get a sticky right-rail menu with scrollspy highlighting and
-  smooth anchor jumps; every page ends with prev/next chapter buttons that
-  follow the config page order and translate with the UI toggle.
+  anchor jumps; a prev/next chapter bar stays pinned to the bottom of the
+  viewport while reading (settling at the page end), follows the config page
+  order and translates with the UI toggle.
 - **Theme + i18n** — a persisted light/dark switch (dark by default) and an
   EN/中 toggle that re-labels every piece of UI chrome, nav entries, list
   controls and lightbox buttons in place, keeping `<html lang>` in sync.
@@ -51,7 +52,7 @@ are included; both persist to localStorage.
 Captured from the generated test pages: rendered diagrams, the zoom lightbox
 and the mobile breakpoint.
 
-<img src="../../screenshots/docs-site/desktop-toc-pager.webp" width="480" alt="Desktop page with the sticky anchor mini-TOC on the right and the next-chapter button at the bottom">
+<img src="../../screenshots/docs-site/desktop-toc-pager.webp" width="480" alt="Desktop page with the sticky anchor mini-TOC on the right and the next-chapter button pinned to the bottom">
 
 <img src="../../screenshots/docs-site/lightbox-fit.webp" width="480" alt="Flowchart opened in the lightbox at its natural size, never upscaled">
 

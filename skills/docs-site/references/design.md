@@ -56,9 +56,14 @@ language toggle.
   breakpoint the rail hides and the grid collapses.
 - `.page-pager` closes every page: two equal cards linking the previous and
   next chapter in config page order (empty slots render as hidden
-  placeholders on first/last pages). Directory captions and labels carry
-  `data-i18n` keys, so the language toggle re-labels them in place; the pager
-  stacks vertically on mobile.
+  placeholders on first/last pages). The bar is `position: sticky;
+  bottom: 16px` inside the content column — a floating surface card that
+  pins to the viewport bottom while reading and settles into its flow
+  position at the page end (the content column keeps no bottom padding, so
+  the sticky line matches the viewport edge; the article's own padding
+  provides the end-of-page breathing room). Directory captions and labels
+  carry `data-i18n` keys, so the language toggle re-labels them in place;
+  the pager stacks vertically on mobile with a safe-area offset.
 
 ## Mobile top bar and dropdown
 

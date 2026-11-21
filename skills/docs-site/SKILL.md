@@ -45,8 +45,9 @@ full EN/中 UI toggle complete the design.
   (theme-aware, offline, with a graceful fallback to the source block), and
   every diagram opens in a zoom lightbox.
 - Adds a sticky right-rail mini TOC (anchor links with scrollspy highlight)
-  to doc pages that have two or more h2/h3 headings, and a bottom
-  prev/next chapter pager on every page following the config page order.
+  to doc pages that have two or more h2/h3 headings, and a prev/next chapter
+  pager pinned to the bottom of the viewport while reading (it settles into
+  place at the end of the page) on every page following the config order.
 - Re-labels the entire UI on EN/中 switch (nav, chrome, list controls,
   toc, pager, lightbox) and persists both language and theme choices to
   localStorage.
@@ -157,8 +158,9 @@ full EN/中 UI toggle complete the design.
   a `.table-scroll` wrapper instead of stretching the column.
 - Doc pages with two or more h2/h3 headings also get a sticky right-rail
   `.toc` (anchor links, scrollspy highlight, hidden below the breakpoint);
-  every page ends with a `.page-pager` linking the previous and next chapter
-  in config page order, re-labeled by the language toggle.
+  every page carries a `.page-pager` linking the previous and next chapter
+  in config page order — sticky to the viewport bottom while reading,
+  settling at the page end — re-labeled by the language toggle.
 - Mobile (≤ breakpoint, `860px` by default): a fixed `56px` top bar carries the
   brand, a GitHub icon button, a theme button, a square language pill and a
   three-bar toggle that morphs into a close cross. The sidebar becomes a
