@@ -35,7 +35,8 @@ are included; both persist to localStorage.
 - **Diagram rendering + lightbox** — ` ```mermaid ` fences are drawn as inline
   SVG by a built-in, dependency-free renderer (flowcharts and sequence
   diagrams; unsupported syntax falls back to the source block), and clicking a
-  diagram opens a full-viewport lightbox with zoom-to-fit and +/− controls.
+  diagram opens a full-viewport lightbox with zoom-to-fit and +/− controls;
+  zoomed-in diagrams scroll and drag to pan, so every region stays reachable.
 - **Theme + i18n** — a persisted light/dark switch (dark by default) and an
   EN/中 toggle that re-labels every piece of UI chrome, nav entries, list
   controls and lightbox buttons in place, keeping `<html lang>` in sync.
@@ -47,7 +48,7 @@ and the mobile breakpoint.
 
 <img src="../../screenshots/docs-site/lightbox-fit.webp" width="480" alt="Flowchart rendered as SVG and opened in the fit-to-viewport lightbox">
 
-<img src="../../screenshots/docs-site/lightbox-zoom.webp" width="480" alt="Lightbox zoomed in with the + control">
+<img src="../../screenshots/docs-site/lightbox-zoom.webp" width="480" alt="Lightbox zoomed in and panned — the stage scrolls and drags to reach any region">
 
 <img src="../../screenshots/docs-site/mobile-diagram.webp" width="300" alt="Mobile top bar with GitHub, theme and language controls above adapted diagrams">
 

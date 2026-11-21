@@ -100,12 +100,19 @@ At ≤ 860px:
 ## Lightbox
 
 - Clicking a `.doc-figure` (or pressing Enter on it) opens a full-viewport
-  lightbox. `LIGHTBOX_JS` stages a deep clone of the figure's rendered SVG at
-  its natural size and scales it with `transform: scale()` — the base scale is
-  computed from the stage size versus the SVG's `viewBox`, and +/− multiply a
-  user zoom on top (fit resets it). When the renderer fell back to source, the
-  source block is staged instead. Fit, +/− and close are SVG icon buttons;
-  Esc closes and the body scroll lock is released.
+  lightbox. `LIGHTBOX_JS` stages a deep clone of the figure's rendered SVG
+  inside a `.lb-box` → `.lb-diagram` pair: the wrap is pinned to the diagram's
+  natural size and carries `transform: scale(s)`, while the box takes the
+  scaled layout size (`floor(natW·s)` × `floor(natH·s)`), so the stage — an
+  `overflow: auto` flex container with the box centered via `margin: auto` —
+  grows scrollbars exactly when the zoomed content outgrows the viewport.
+- The base scale fits the stage against the SVG's `viewBox`; +/− multiply a
+  user zoom on top (fit resets it). Zoom steps re-anchor the currently
+  centered point instead of jumping, and the stage gains a `can-pan` grab
+  cursor when panning is possible. Mouse drag pans the stage (touch pans
+  natively; wheel and scrollbars always work). When the renderer fell back to
+  source, the source block is staged the same way. Esc closes and the body
+  scroll lock is released.
 
 ## Multi-page
 

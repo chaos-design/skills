@@ -188,6 +188,9 @@ original position (never a second source block):
   as a code block — the page never breaks on unsupported syntax.
 - Clicking a figure opens a full-viewport lightbox that stages the rendered
   SVG scaled to fit, with fit/+−/close SVG-icon controls and Esc to close.
+  Zooming past the viewport makes the stage scrollable and mouse-draggable
+  (touch pans natively), so any region of a zoomed diagram stays reachable;
+  +/− keep the centered point anchored instead of jumping the view.
 
 ## Output contract
 

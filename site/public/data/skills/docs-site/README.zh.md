@@ -11,7 +11,7 @@
 - **格式集成**——文档页用 Markdown（支持可选 front-matter），列表页用 JSON 数据。
 - **响应式 + 多页面**——视口锁定的双栏外壳中仅内容区滚动；≤860px 时启用固定顶栏与可变形汉堡键，点击遮罩或 Esc 关闭抽屉，内容宽度流式自适应不溢出；宽表格在独立容器内横向滚动，860–1200px 区间侧栏收敛为 250px。
 - **列表页类型**——数据表格，支持客户端排序（任意列，包括提交数量与最后更新时间）、全文搜索、状态筛选与彩色状态徽章，以及实时匹配计数。
-- **图表渲染 + 弹层**——` ```mermaid ` 代码块由内置零依赖渲染器绘制为内联 SVG（支持流程图与时序图，无法解析的语法回退为源码展示），点击图表在视口全屏弹层中缩放适配，支持 +/− 控制。
+- **图表渲染 + 弹层**——` ```mermaid ` 代码块由内置零依赖渲染器绘制为内联 SVG（支持流程图与时序图，无法解析的语法回退为源码展示），点击图表在视口全屏弹层中缩放适配，支持 +/− 控制；放大后的弹层可滚动、可拖拽平移，任意局部都能看到。
 - **主题 + 国际化**——持久化的明暗切换（默认深色），以及可就地切换全部界面文案、导航项、列表控件与弹层按钮的中/EN 开关，并同步 `<html lang>`。
 
 ## 截图
@@ -20,7 +20,7 @@
 
 ![流程图渲染为 SVG 并在视口自适应弹层中打开](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/docs-site/lightbox-fit.webp)
 
-![弹层通过 + 控件放大后的效果](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/docs-site/lightbox-zoom.webp)
+![弹层放大并平移后的局部视图——舞台可滚动、可拖拽](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/docs-site/lightbox-zoom.webp)
 
 ![移动端顶栏（GitHub、主题、语言控件）与自适应的图表](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/docs-site/mobile-diagram.webp)
 

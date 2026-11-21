@@ -172,9 +172,15 @@ blockquote{border-left:3px solid var(--accent);margin:12px 0;padding:6px 14px;
 .lightbox.is-open{display:flex;flex-direction:column}
 .lightbox-head{display:flex;align-items:center;gap:10px;color:#e2e8f0;margin-bottom:10px}
 .lightbox-head .lb-title{flex:1;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.lightbox-stage{flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden}
-.lightbox pre{max-width:100%;max-height:100%;margin:0;transform-origin:center}
-.lightbox .lb-diagram{transform-origin:center center}
+/* The stage scrolls when the scaled diagram outgrows the viewport: the
+   .lb-box holds the scaled layout size and centers via margin:auto, so
+   overflow pans naturally (wheel, touch, scrollbar, mouse drag). */
+.lightbox-stage{flex:1;display:flex;overflow:auto;min-height:0}
+.lightbox-stage.can-pan{cursor:grab}
+.lightbox-stage.is-panning{cursor:grabbing;user-select:none}
+.lb-box{flex:0 0 auto;margin:auto}
+.lightbox pre{margin:0;transform-origin:0 0}
+.lightbox .lb-diagram{transform-origin:0 0}
 .lightbox .lb-diagram svg{display:block}
 .lightbox .lb-btn{width:40px;height:40px;border-radius:9px;border:1px solid rgba(255,255,255,.25);
   background:rgba(255,255,255,.08);color:#fff;cursor:pointer;
@@ -422,31 +428,70 @@ blockquote{border-left:3px solid var(--accent);margin:12px 0;padding:6px 14px;
   var lb=document.querySelector('.lightbox');
   if(!lb)return;
   var stage=lb.querySelector('.lightbox-stage');
-  var wrap=null,base=1,cur=1;
-  function apply(){if(wrap)wrap.style.transform='scale('+(base*cur)+')';}
-  // Base scale fits the staged content to the viewport; cur is the user zoom.
-  function fitBase(){
-    if(!wrap)return;
-    var w=wrap.offsetWidth||1,h=wrap.offsetHeight||1;
-    base=Math.min(stage.clientWidth/w,stage.clientHeight/h)||1;
+  var box=null,wrap=null,natW=0,natH=0,base=1,cur=1;
+  // The box takes the scaled layout size so the stage scrolls; the wrap
+  // carries the visual transform from its top-left corner.
+  function apply(anchor){
+    if(!box||!wrap)return;
+    var s=base*cur;
+    // floor keeps the fitted size from rounding 1px past the stage edge
+    box.style.width=Math.max(1,Math.floor(natW*s))+'px';
+    box.style.height=Math.max(1,Math.floor(natH*s))+'px';
+    wrap.style.transform='scale('+s+')';
+    if(anchor){
+      stage.scrollLeft=anchor.x*s-stage.clientWidth/2;
+      stage.scrollTop=anchor.y*s-stage.clientHeight/2;
+    }
+    stage.classList.toggle('can-pan',
+      box.offsetWidth>stage.clientWidth||box.offsetHeight>stage.clientHeight);
   }
-  function fitZoom(){cur=1;fitBase();apply();}
+  // The natural-space point currently centered in the stage; kept stable
+  // across zoom steps so +/− does not jump the view.
+  function anchorPoint(){
+    var s=base*cur;
+    return {x:(stage.scrollLeft+stage.clientWidth/2)/s,
+            y:(stage.scrollTop+stage.clientHeight/2)/s};
+  }
+  function fitBase(){
+    if(!box)return;
+    base=Math.min(stage.clientWidth/natW,stage.clientHeight/natH)||1;
+  }
+  function centerScroll(){
+    stage.scrollLeft=Math.max(0,(box.offsetWidth-stage.clientWidth)/2);
+    stage.scrollTop=Math.max(0,(box.offsetHeight-stage.clientHeight)/2);
+  }
+  function fitZoom(){cur=1;fitBase();apply();centerScroll();}
   function open(fig){
-    stage.innerHTML='';wrap=null;
+    stage.innerHTML='';box=null;wrap=null;
     var svg=fig.querySelector('.mermaid-view svg');
     if(svg){
+      box=document.createElement('div');box.className='lb-box';
       wrap=document.createElement('div');wrap.className='lb-diagram';
       var c=svg.cloneNode(true);
       var vb=c.viewBox&&c.viewBox.baseVal;
       if(vb&&vb.width){c.setAttribute('width',vb.width);c.setAttribute('height',vb.height);}
       c.style.maxWidth='none';
-      wrap.appendChild(c);stage.appendChild(wrap);
+      wrap.appendChild(c);box.appendChild(wrap);stage.appendChild(box);
+      var r=c.getBoundingClientRect();
+      natW=vb&&vb.width?vb.width:r.width;
+      natH=vb&&vb.height?vb.height:r.height;
+      // A block-level wrap would stretch to the box; pin it to the natural
+      // size so scale() transforms the diagram exactly once.
+      wrap.style.width=natW+'px';
+      wrap.style.height=natH+'px';
     }else{
       var src=fig.querySelector('.mermaid-src');
-      if(src){wrap=document.createElement('pre');wrap.textContent=src.textContent;stage.appendChild(wrap);}
+      if(src){
+        box=document.createElement('div');box.className='lb-box';
+        wrap=document.createElement('pre');wrap.className='lb-diagram';
+        wrap.textContent=src.textContent;
+        wrap.style.width='max-content';wrap.style.maxWidth='none';
+        box.appendChild(wrap);stage.appendChild(box);
+        natW=wrap.scrollWidth||1;natH=wrap.scrollHeight||1;
+      }
     }
-    if(!wrap)return;
-    lb.classList.add('is-open');cur=1;fitBase();apply();
+    if(!box)return;
+    lb.classList.add('is-open');cur=1;fitBase();apply();centerScroll();
     document.body.style.overflow='hidden';
   }
   function closeLb(){lb.classList.remove('is-open');document.body.style.overflow='';}
@@ -456,10 +501,28 @@ blockquote{border-left:3px solid var(--accent);margin:12px 0;padding:6px 14px;
   });
   lb.querySelectorAll('[data-lb-close]').forEach(function(b){b.addEventListener('click',closeLb);});
   lb.querySelectorAll('[data-lb-fit]').forEach(function(b){b.addEventListener('click',fitZoom);});
-  lb.querySelectorAll('[data-lb-plus]').forEach(function(b){b.addEventListener('click',function(){cur=Math.min(4,cur+0.25);apply();});});
-  lb.querySelectorAll('[data-lb-minus]').forEach(function(b){b.addEventListener('click',function(){cur=Math.max(0.4,cur-0.25);apply();});});
+  lb.querySelectorAll('[data-lb-plus]').forEach(function(b){b.addEventListener('click',function(){
+    var a=anchorPoint();cur=Math.min(4,cur+0.25);apply(a);});});
+  lb.querySelectorAll('[data-lb-minus]').forEach(function(b){b.addEventListener('click',function(){
+    var a=anchorPoint();cur=Math.max(0.4,cur-0.25);apply(a);});});
   document.addEventListener('keydown',function(e){if(e.key==='Escape'&&lb.classList.contains('is-open'))closeLb();});
-  window.addEventListener('resize',function(){fitBase();apply();});
+  window.addEventListener('resize',function(){fitBase();apply();centerScroll();});
+  // Mouse drag pans the stage; touch pans natively through the scroller.
+  var drag=null;
+  stage.addEventListener('pointerdown',function(e){
+    if(e.pointerType!=='mouse'||!box)return;
+    if(box.offsetWidth<=stage.clientWidth&&box.offsetHeight<=stage.clientHeight)return;
+    drag={x:e.clientX,y:e.clientY,l:stage.scrollLeft,t:stage.scrollTop};
+    stage.classList.add('is-panning');
+  });
+  window.addEventListener('pointermove',function(e){
+    if(!drag)return;
+    stage.scrollLeft=drag.l-(e.clientX-drag.x);
+    stage.scrollTop=drag.t-(e.clientY-drag.y);
+  });
+  window.addEventListener('pointerup',function(){
+    if(drag){drag=null;stage.classList.remove('is-panning');}
+  });
 })();
 </script>
 <script></script>
