@@ -5,7 +5,7 @@ one fixed layout, packets on the wires, a scrolling log, counters, bars that fli
 state past a threshold, side triggers that light up in turn. Output is an H.264
 mp4 for X or Xiaohongshu, or a page that runs live in any browser.
 
-![Live Panel, terminal-dark theme, skills pipeline example at t=15s](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/live-panel/frame_2-t15.png)
+![Live Panel, terminal-dark theme, skills pipeline example at t=15s](/screenshots/live-panel/frame_2-t15.png)
 
 ## What you ask, what you get
 
@@ -124,7 +124,7 @@ timing recipe that works at 30 s.
   animation's own state, and it is labelled. Never invent a measurement and let
   it look real.
 
-![The same panel at t=25s: different gauge states, a different trigger lit, the log moved on](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/live-panel/frame_3-t25.png)
+![The same panel at t=25s: different gauge states, a different trigger lit, the log moved on](/screenshots/live-panel/frame_3-t25.png)
 
 ## Validation
 

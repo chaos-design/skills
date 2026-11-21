@@ -78,7 +78,7 @@ Screenshots are generated from `tests/frontend-slides/<template>/index.html` and
 
 ### `8-bit-orbit`
 
-![8-bit-orbit template screenshot](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/8-bit-orbit.webp)
+![8-bit-orbit template screenshot](/screenshots/frontend-slides/8-bit-orbit.webp)
 
 - Name: 8-Bit Orbit
 - Tagline: Pixel-art neon arcade aesthetic on a deep navy void.
@@ -86,7 +86,7 @@ Screenshots are generated from `tests/frontend-slides/<template>/index.html` and
 
 ### `biennale-yellow`
 
-![biennale-yellow template screenshot](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/biennale-yellow.webp)
+![biennale-yellow template screenshot](/screenshots/frontend-slides/biennale-yellow.webp)
 
 - Name: Biennale Yellow
 - Tagline: Solar yellow on warm parchment with deep indigo serif and atmospheric sun-glow gradients.
@@ -94,7 +94,7 @@ Screenshots are generated from `tests/frontend-slides/<template>/index.html` and
 
 ### `block-frame`
 
-![block-frame template screenshot](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/block-frame.webp)
+![block-frame template screenshot](/screenshots/frontend-slides/block-frame.webp)
 
 - Name: BlockFrame
 - Tagline: Neobrutalist deck with pastel-neon color blocks and chunky black borders.
@@ -102,7 +102,7 @@ Screenshots are generated from `tests/frontend-slides/<template>/index.html` and
 
 ### `blue-professional`
 
-![blue-professional template screenshot](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/blue-professional.webp)
+![blue-professional template screenshot](/screenshots/frontend-slides/blue-professional.webp)
 
 - Name: Blue Professional
 - Tagline: Cream paper background with electric cobalt blue accents; clean modern professional.
@@ -110,7 +110,7 @@ Screenshots are generated from `tests/frontend-slides/<template>/index.html` and
 
 ### `bold-poster`
 
-![bold-poster template screenshot](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/bold-poster.webp)
+![bold-poster template screenshot](/screenshots/frontend-slides/bold-poster.webp)
 
 - Name: Bold Poster
 - Tagline: Editorial poster aesthetic with massive Shrikhand display and a single fire-engine red accent.
@@ -118,7 +118,7 @@ Screenshots are generated from `tests/frontend-slides/<template>/index.html` and
 
 ### `broadside`
 
-![broadside template screenshot](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/broadside.webp)
+![broadside template screenshot](/screenshots/frontend-slides/broadside.webp)
 
 - Name: Broadside
 - Tagline: Dark editorial canvas with a single fire orange accent and bilingual Latin/Chinese type stack.
@@ -126,7 +126,7 @@ Screenshots are generated from `tests/frontend-slides/<template>/index.html` and
 
 ### `capsule`
 
-![capsule template screenshot](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/capsule.webp)
+![capsule template screenshot](/screenshots/frontend-slides/capsule.webp)
 
 - Name: Capsule
 - Tagline: Modular pill-shaped cards on warm bone with a full pastel-pop palette.
@@ -134,7 +134,7 @@ Screenshots are generated from `tests/frontend-slides/<template>/index.html` and
 
 ### `cartesian`
 
-![cartesian template screenshot](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/cartesian.webp)
+![cartesian template screenshot](/screenshots/frontend-slides/cartesian.webp)
 
 - Name: Cartesian
 - Tagline: Quiet warm-neutral palette with classical Playfair serifs; tasteful and unhurried.
@@ -142,7 +142,7 @@ Screenshots are generated from `tests/frontend-slides/<template>/index.html` and
 
 ### `cobalt-grid`
 
-![cobalt-grid template screenshot](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/cobalt-grid.webp)
+![cobalt-grid template screenshot](/screenshots/frontend-slides/cobalt-grid.webp)
 
 - Name: Cobalt Grid
 - Tagline: Electric cobalt serifs on a graph-paper canvas, anchored by stair-stepped pixel-glitch decorations and slim hairline rules.
@@ -150,7 +150,7 @@ Screenshots are generated from `tests/frontend-slides/<template>/index.html` and
 
 ### `coral`
 
-![coral template screenshot](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/coral.webp)
+![coral template screenshot](/screenshots/frontend-slides/coral.webp)
 
 - Name: Coral
 - Tagline: Cream and coral on near-black, set in oversized Bebas Neue.
@@ -158,7 +158,7 @@ Screenshots are generated from `tests/frontend-slides/<template>/index.html` and
 
 ### `creative-mode`
 
-![creative-mode template screenshot](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/creative-mode.webp)
+![creative-mode template screenshot](/screenshots/frontend-slides/creative-mode.webp)
 
 - Name: Creative Mode
 - Tagline: Cream paper canvas with confident multi-color (green, pink, orange, yellow) accents and Archivo Black display.
@@ -166,7 +166,7 @@ Screenshots are generated from `tests/frontend-slides/<template>/index.html` and
 
 ### `daisy-days`
 
-![daisy-days template screenshot](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/daisy-days.webp)
+![daisy-days template screenshot](/screenshots/frontend-slides/daisy-days.webp)
 
 - Name: Daisy Days
 - Tagline: Cheerful pastel deck with hand-drawn daisies, stars, and rainbows. Friendly, soft, and warm.
@@ -174,7 +174,7 @@ Screenshots are generated from `tests/frontend-slides/<template>/index.html` and
 
 ### `editorial-forest`
 
-![editorial-forest template screenshot](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/editorial-forest.webp)
+![editorial-forest template screenshot](/screenshots/frontend-slides/editorial-forest.webp)
 
 - Name: Editorial Forest
 - Tagline: Forest green, dusty pink, and warm cream meet Source Serif 4 in a quiet, intentional quarterly-review deck.
@@ -182,7 +182,7 @@ Screenshots are generated from `tests/frontend-slides/<template>/index.html` and
 
 ### `editorial-tri-tone`
 
-![editorial-tri-tone template screenshot](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/editorial-tri-tone.webp)
+![editorial-tri-tone template screenshot](/screenshots/frontend-slides/editorial-tri-tone.webp)
 
 - Name: Editorial Tri-Tone
 - Tagline: Three-color editorial system: dusty pink, mustard cream, and deep burgundy, set in Bricolage + Instrument Serif.
@@ -190,7 +190,7 @@ Screenshots are generated from `tests/frontend-slides/<template>/index.html` and
 
 ### `emerald-editorial`
 
-![emerald-editorial template screenshot](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/emerald-editorial.webp)
+![emerald-editorial template screenshot](/screenshots/frontend-slides/emerald-editorial.webp)
 
 - Name: Emerald Editorial
 - Tagline: A magazine-cover business deck: emerald + navy + paper, double-rule masthead ornaments, and a bold Bodoni-style display serif.
@@ -198,7 +198,7 @@ Screenshots are generated from `tests/frontend-slides/<template>/index.html` and
 
 ### `grove`
 
-![grove template screenshot](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/grove.webp)
+![grove template screenshot](/screenshots/frontend-slides/grove.webp)
 
 - Name: Grove
 - Tagline: Forest-green canvas with cream type, classical Playfair serifs, and a single rust accent.
@@ -206,7 +206,7 @@ Screenshots are generated from `tests/frontend-slides/<template>/index.html` and
 
 ### `long-table`
 
-![long-table template screenshot](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/long-table.webp)
+![long-table template screenshot](/screenshots/frontend-slides/long-table.webp)
 
 - Name: Long Table
 - Tagline: Warm cream and rust-red supper-club aesthetic with bold uppercase grotesk headlines, Fraunces serifs, and pill-shaped outlined buttons.
@@ -214,7 +214,7 @@ Screenshots are generated from `tests/frontend-slides/<template>/index.html` and
 
 ### `mat`
 
-![mat template screenshot](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/mat.webp)
+![mat template screenshot](/screenshots/frontend-slides/mat.webp)
 
 - Name: Mat
 - Tagline: Dark sage canvas with bone paper and burnt-orange accent; mid-century modern with wood undertones.
@@ -222,7 +222,7 @@ Screenshots are generated from `tests/frontend-slides/<template>/index.html` and
 
 ### `monochrome`
 
-![monochrome template screenshot](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/monochrome.webp)
+![monochrome template screenshot](/screenshots/frontend-slides/monochrome.webp)
 
 - Name: Monochrome
 - Tagline: Ivory ledger paper with all-black type; Lora serif headlines, Jost body, no color at all.
@@ -230,7 +230,7 @@ Screenshots are generated from `tests/frontend-slides/<template>/index.html` and
 
 ### `neo-grid-bold`
 
-![neo-grid-bold template screenshot](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/neo-grid-bold.webp)
+![neo-grid-bold template screenshot](/screenshots/frontend-slides/neo-grid-bold.webp)
 
 - Name: Neo-Grid Bold
 - Tagline: Editorial neo-brutalism with a single neon yellow accent on off-white paper.
@@ -238,7 +238,7 @@ Screenshots are generated from `tests/frontend-slides/<template>/index.html` and
 
 ### `peoples-platform`
 
-![peoples-platform template screenshot](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/peoples-platform.webp)
+![peoples-platform template screenshot](/screenshots/frontend-slides/peoples-platform.webp)
 
 - Name: People's Platform (Block & Bold)
 - Tagline: Activist poster energy: blue, orange, red on cream, with Alfa Slab + Caveat Brush.
@@ -246,7 +246,7 @@ Screenshots are generated from `tests/frontend-slides/<template>/index.html` and
 
 ### `pin-and-paper`
 
-![pin-and-paper template screenshot](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/pin-and-paper.webp)
+![pin-and-paper template screenshot](/screenshots/frontend-slides/pin-and-paper.webp)
 
 - Name: Pin & Paper
 - Tagline: Yellow paper with safety-pin illustrations, ink-blue handwritten Caveat, paper-grain texture.
@@ -254,7 +254,7 @@ Screenshots are generated from `tests/frontend-slides/<template>/index.html` and
 
 ### `pink-script`
 
-![pink-script template screenshot](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/pink-script.webp)
+![pink-script template screenshot](/screenshots/frontend-slides/pink-script.webp)
 
 - Name: Pink Script — After Hours
 - Tagline: Black canvas, hot pink accent, pearl-cream paper, Instrument Serif headlines: late-night editorial luxury.
@@ -262,7 +262,7 @@ Screenshots are generated from `tests/frontend-slides/<template>/index.html` and
 
 ### `playful`
 
-![playful template screenshot](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/playful.webp)
+![playful template screenshot](/screenshots/frontend-slides/playful.webp)
 
 - Name: Playful
 - Tagline: Sun-warm peach background with Syne display: a friendly indie launch deck.
@@ -270,7 +270,7 @@ Screenshots are generated from `tests/frontend-slides/<template>/index.html` and
 
 ### `raw-grid`
 
-![raw-grid template screenshot](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/raw-grid.webp)
+![raw-grid template screenshot](/screenshots/frontend-slides/raw-grid.webp)
 
 - Name: Raw Grid
 - Tagline: Neo-brutalist deck with thick borders, offset shadows, and a pink/sage/ink palette.
@@ -278,7 +278,7 @@ Screenshots are generated from `tests/frontend-slides/<template>/index.html` and
 
 ### `retro-windows`
 
-![retro-windows template screenshot](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/retro-windows.webp)
+![retro-windows template screenshot](/screenshots/frontend-slides/retro-windows.webp)
 
 - Name: Retro Windows
 - Tagline: Windows 95 chrome: gray title bars, MS Sans Serif, pixel typography, full nostalgia.
@@ -286,7 +286,7 @@ Screenshots are generated from `tests/frontend-slides/<template>/index.html` and
 
 ### `retro-zine`
 
-![retro-zine template screenshot](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/retro-zine.webp)
+![retro-zine template screenshot](/screenshots/frontend-slides/retro-zine.webp)
 
 - Name: Retro Zine
 - Tagline: Beige paper with green accent and Bebas Neue + Caveat: a riso-printed zine in HTML form.
@@ -294,7 +294,7 @@ Screenshots are generated from `tests/frontend-slides/<template>/index.html` and
 
 ### `sakura-chroma`
 
-![sakura-chroma template screenshot](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/sakura-chroma.webp)
+![sakura-chroma template screenshot](/screenshots/frontend-slides/sakura-chroma.webp)
 
 - Name: Sakura Chroma
 - Tagline: Vintage Japanese cassette-package aesthetic: cream paper, diagonal rainbow ribbons, condensed bold type, JIS-style spec checkboxes.
@@ -302,7 +302,7 @@ Screenshots are generated from `tests/frontend-slides/<template>/index.html` and
 
 ### `scatterbrain`
 
-![scatterbrain template screenshot](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/scatterbrain.webp)
+![scatterbrain template screenshot](/screenshots/frontend-slides/scatterbrain.webp)
 
 - Name: Scatterbrain
 - Tagline: Post-it inspired: pastel sticky notes, Caveat handwriting, Shrikhand and Zilla Slab type stack.
@@ -310,7 +310,7 @@ Screenshots are generated from `tests/frontend-slides/<template>/index.html` and
 
 ### `signal`
 
-![signal template screenshot](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/signal.webp)
+![signal template screenshot](/screenshots/frontend-slides/signal.webp)
 
 - Name: Signal
 - Tagline: Deep navy canvas with bone paper and a single muted-gold accent; institutional with quiet weight.
@@ -318,7 +318,7 @@ Screenshots are generated from `tests/frontend-slides/<template>/index.html` and
 
 ### `soft-editorial`
 
-![soft-editorial template screenshot](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/soft-editorial.webp)
+![soft-editorial template screenshot](/screenshots/frontend-slides/soft-editorial.webp)
 
 - Name: Soft Editorial
 - Tagline: Cormorant Garamond serif on warm paper with sage, blush, and lemon accents.
@@ -326,7 +326,7 @@ Screenshots are generated from `tests/frontend-slides/<template>/index.html` and
 
 ### `stencil-tablet`
 
-![stencil-tablet template screenshot](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/stencil-tablet.webp)
+![stencil-tablet template screenshot](/screenshots/frontend-slides/stencil-tablet.webp)
 
 - Name: Stencil & Tablet
 - Tagline: Bone paper with stencil-cut headlines and a six-color earth palette: archaeology meets brand.
@@ -334,7 +334,7 @@ Screenshots are generated from `tests/frontend-slides/<template>/index.html` and
 
 ### `studio`
 
-![studio template screenshot](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/studio.webp)
+![studio template screenshot](/screenshots/frontend-slides/studio.webp)
 
 - Name: Studio
 - Tagline: Black canvas with electric-yellow type; high-voltage design studio aesthetic.
@@ -342,7 +342,7 @@ Screenshots are generated from `tests/frontend-slides/<template>/index.html` and
 
 ### `vellum`
 
-![vellum template screenshot](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/frontend-slides/vellum.webp)
+![vellum template screenshot](/screenshots/frontend-slides/vellum.webp)
 
 - Name: Vellum
 - Tagline: Deep navy canvas with warm-yellow Cormorant serifs and a single dusty teal accent. A quiet, scholarly aesthetic.

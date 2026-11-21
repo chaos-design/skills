@@ -19,15 +19,15 @@
 
 均截取自真实生成的测试页面：图表渲染、放大弹层与移动端适配。
 
-![桌面端页面：右侧多级锚点迷你目录，底部毛玻璃吸底切换条](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/docs-site/desktop-toc-pager.webp)
+![桌面端页面：右侧多级锚点迷你目录，底部毛玻璃吸底切换条](/screenshots/docs-site/desktop-toc-pager.webp)
 
-![流程图以原始尺寸在弹层中打开，不强行放大](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/docs-site/lightbox-fit.webp)
+![流程图以原始尺寸在弹层中打开，不强行放大](/screenshots/docs-site/lightbox-fit.webp)
 
-![弹层放大并平移后的局部视图——舞台可滚动、可拖拽](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/docs-site/lightbox-zoom.webp)
+![弹层放大并平移后的局部视图——舞台可滚动、可拖拽](/screenshots/docs-site/lightbox-zoom.webp)
 
-![移动端顶栏（GitHub、主题、语言控件）与自适应的图表](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/docs-site/mobile-diagram.webp)
+![移动端顶栏（GitHub、主题、语言控件）与自适应的图表](/screenshots/docs-site/mobile-diagram.webp)
 
-![在全屏导航面板上展开的移动端导航](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/docs-site/mobile-nav-panel.webp)
+![在全屏导航面板上展开的移动端导航](/screenshots/docs-site/mobile-nav-panel.webp)
 
 ## 使用
 

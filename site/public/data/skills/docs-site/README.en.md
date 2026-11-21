@@ -51,15 +51,15 @@ are included; both persist to localStorage.
 Captured from the generated test pages: rendered diagrams, the zoom lightbox
 and the mobile breakpoint.
 
-![Desktop page with the multi-level anchor mini-TOC on the right and the frosted chapter bar pinned to the bottom](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/docs-site/desktop-toc-pager.webp)
+![Desktop page with the multi-level anchor mini-TOC on the right and the frosted chapter bar pinned to the bottom](/screenshots/docs-site/desktop-toc-pager.webp)
 
-![Flowchart opened in the lightbox at its natural size, never upscaled](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/docs-site/lightbox-fit.webp)
+![Flowchart opened in the lightbox at its natural size, never upscaled](/screenshots/docs-site/lightbox-fit.webp)
 
-![Lightbox zoomed in and panned — the stage scrolls and drags to reach any region](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/docs-site/lightbox-zoom.webp)
+![Lightbox zoomed in and panned — the stage scrolls and drags to reach any region](/screenshots/docs-site/lightbox-zoom.webp)
 
-![Mobile top bar with GitHub, theme and language controls above adapted diagrams](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/docs-site/mobile-diagram.webp)
+![Mobile top bar with GitHub, theme and language controls above adapted diagrams](/screenshots/docs-site/mobile-diagram.webp)
 
-![Mobile navigation panel opened over the dimmed content](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/docs-site/mobile-nav-panel.webp)
+![Mobile navigation panel opened over the dimmed content](/screenshots/docs-site/mobile-nav-panel.webp)
 
 ## Usage
 

@@ -32,7 +32,7 @@ When an agent discovers that `web-markdown` is missing, it should ask the user b
 
 ## Screenshot
 
-![Content Slides example deck screenshot](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/content-slides/a-practical-guide-to-building-ai-agents.webp)
+![Content Slides example deck screenshot](/screenshots/content-slides/a-practical-guide-to-building-ai-agents.webp)
 
 The screenshot is generated from `tests/content-slides/a-practical-guide-to-building-ai-agents/a-practical-guide-to-building-ai-agents.html`.
 

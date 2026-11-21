@@ -66,11 +66,13 @@ export function SkillReadme({ skillName }: { skillName: string }) {
             remarkPlugins={[remarkGfm]}
             components={{
               a: ({ node: _node, ...props }) => <a {...props} target="_blank" rel="noreferrer" />,
-              // Plain <img>: the doc's images are remote (raw.githubusercontent)
-              // and the export ships unoptimized, so next/image buys nothing.
+              // Plain <img>: doc images are site-local screenshots (or remote
+              // raw.githubusercontent ones) and the export ships unoptimized,
+              // so next/image buys nothing. lazy never fires for images inside
+              // this viewport-locked layout, so load eagerly.
               img: ({ node: _node, ...props }) => (
-                // biome-ignore lint/performance/noImgElement: remote doc images, unoptimized static export
-                <img {...props} alt={props.alt ?? ""} loading="lazy" />
+                // biome-ignore lint/performance/noImgElement: doc images, unoptimized static export
+                <img {...props} alt={props.alt ?? ""} />
               ),
             }}
           >
