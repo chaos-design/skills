@@ -14,6 +14,18 @@
 - **图表渲染 + 弹层**——` ```mermaid ` 代码块由内置零依赖渲染器绘制为内联 SVG（支持流程图与时序图，无法解析的语法回退为源码展示），点击图表在视口全屏弹层中缩放适配，支持 +/− 控制。
 - **主题 + 国际化**——持久化的明暗切换（默认深色），以及可就地切换全部界面文案、导航项、列表控件与弹层按钮的中/EN 开关，并同步 `<html lang>`。
 
+## 截图
+
+均截取自真实生成的测试页面：图表渲染、放大弹层与移动端适配。
+
+![流程图渲染为 SVG 并在视口自适应弹层中打开](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/docs-site/lightbox-fit.webp)
+
+![弹层通过 + 控件放大后的效果](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/docs-site/lightbox-zoom.webp)
+
+![移动端顶栏（GitHub、主题、语言控件）与自适应的图表](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/docs-site/mobile-diagram.webp)
+
+![在全屏导航面板上展开的移动端导航](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/docs-site/mobile-nav-panel.webp)
+
 ## 使用
 
 ```bash

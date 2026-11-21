@@ -38,6 +38,19 @@ are included; both persist to localStorage.
   EN/中 toggle that re-labels every piece of UI chrome, nav entries, list
   controls and lightbox buttons in place, keeping `<html lang>` in sync.
 
+## Screenshots
+
+Captured from the generated test pages: rendered diagrams, the zoom lightbox
+and the mobile breakpoint.
+
+![Flowchart rendered as SVG and opened in the fit-to-viewport lightbox](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/docs-site/lightbox-fit.webp)
+
+![Lightbox zoomed in with the + control](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/docs-site/lightbox-zoom.webp)
+
+![Mobile top bar with GitHub, theme and language controls above adapted diagrams](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/docs-site/mobile-diagram.webp)
+
+![Mobile navigation panel opened over the dimmed content](https://raw.githubusercontent.com/chaos-design/skills/main/screenshots/docs-site/mobile-nav-panel.webp)
+
 ## Usage
 
 ```bash
