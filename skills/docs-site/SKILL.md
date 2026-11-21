@@ -44,10 +44,10 @@ full EN/中 UI toggle complete the design.
   client-side renderer draws flowcharts and sequence diagrams as inline SVG
   (theme-aware, offline, with a graceful fallback to the source block), and
   every diagram opens in a zoom lightbox.
-- Adds a sticky right-rail mini TOC (anchor links with scrollspy highlight)
-  to doc pages that have two or more h2/h3 headings, and a prev/next chapter
-  pager pinned to the bottom of the viewport while reading (it settles into
-  place at the end of the page) on every page following the config order.
+- Adds a sticky right-rail mini TOC (h2/h3/h4 anchor links with scrollspy
+  highlight and a list that auto-follows the active entry) to doc pages that
+  have two or more headings, and a prev/next chapter bar pinned to the
+  bottom of the content column on every page following the config order.
 - Re-labels the entire UI on EN/中 switch (nav, chrome, list controls,
   toc, pager, lightbox) and persists both language and theme choices to
   localStorage.
@@ -156,11 +156,15 @@ full EN/中 UI toggle complete the design.
   the breakpoint and `1200px` the sidebar narrows to `250px` so mid-size
   windows keep a usable content column, and wide Markdown tables scroll inside
   a `.table-scroll` wrapper instead of stretching the column.
-- Doc pages with two or more h2/h3 headings also get a sticky right-rail
-  `.toc` (anchor links, scrollspy highlight, hidden below the breakpoint);
-  every page carries a `.page-pager` linking the previous and next chapter
-  in config page order — sticky to the viewport bottom while reading,
-  settling at the page end — re-labeled by the language toggle.
+- Doc pages with two or more h2/h3/h4 headings also get a sticky right-rail
+  `.toc` (multi-level anchor links with per-level indent, scrollspy
+  highlight, an internally scrolling list that follows the active entry,
+  hidden below the breakpoint); every page carries a `.page-pager` linking
+  the previous and next chapter in config page order — `position: fixed` at
+  the viewport bottom under the content column (one compositor layer, so
+  scrolling never jitters it), styled as a frosted blur band with a single
+  top hairline instead of a floating bordered box — re-labeled by the
+  language toggle.
 - Mobile (≤ breakpoint, `860px` by default): a fixed `56px` top bar carries the
   brand, a GitHub icon button, a theme button, a square language pill and a
   three-bar toggle that morphs into a close cross. The sidebar becomes a

@@ -38,11 +38,12 @@ are included; both persist to localStorage.
   diagram opens a full-viewport lightbox: oversized diagrams shrink to fit,
   small ones keep their natural size (no forced upscaling), and zoomed-in
   diagrams scroll and drag to pan, so every region stays reachable.
-- **Anchor mini-TOC + chapter pager** — doc pages with two or more h2/h3
-  headings get a sticky right-rail menu with scrollspy highlighting and
-  anchor jumps; a prev/next chapter bar stays pinned to the bottom of the
-  viewport while reading (settling at the page end), follows the config page
-  order and translates with the UI toggle.
+- **Anchor mini-TOC + chapter pager** — doc pages with two or more headings
+  get a sticky right-rail menu (h2/h3/h4 with per-level indents, scrollspy
+  highlight and a list that auto-follows for quick locating); a prev/next
+  chapter bar stays fixed to the bottom of the content column — a frosted
+  blur band with a single top hairline that never jitters with scrolling —
+  follows the config page order and translates with the UI toggle.
 - **Theme + i18n** — a persisted light/dark switch (dark by default) and an
   EN/中 toggle that re-labels every piece of UI chrome, nav entries, list
   controls and lightbox buttons in place, keeping `<html lang>` in sync.
@@ -52,7 +53,7 @@ are included; both persist to localStorage.
 Captured from the generated test pages: rendered diagrams, the zoom lightbox
 and the mobile breakpoint.
 
-<img src="../../screenshots/docs-site/desktop-toc-pager.webp" width="480" alt="Desktop page with the sticky anchor mini-TOC on the right and the next-chapter button pinned to the bottom">
+<img src="../../screenshots/docs-site/desktop-toc-pager.webp" width="480" alt="Desktop page with the multi-level anchor mini-TOC on the right and the frosted chapter bar pinned to the bottom">
 
 <img src="../../screenshots/docs-site/lightbox-fit.webp" width="480" alt="Flowchart opened in the lightbox at its natural size, never upscaled">
 

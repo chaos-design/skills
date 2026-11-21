@@ -379,14 +379,14 @@ def build_nav_html(cfg, active_slug):
 
 
 def build_toc_html(body_html, toc_label):
-    """Right-rail mini TOC built from the page's h2/h3 anchors.
+    """Right-rail mini TOC built from the page's h2/h3/h4 anchors.
 
     Rendered only when the page has at least two headings; list pages have
     none and simply omit the rail. Heading markup is already escaped once,
     so the extracted text keeps its entities.
     """
     items = []
-    for m in re.finditer(r"<h([23]) id='([^']+)'[^>]*>(.*?)</h\1>", body_html):
+    for m in re.finditer(r"<h([234]) id='([^']+)'[^>]*>(.*?)</h\1>", body_html):
         text = re.sub(r"<[^>]+>", "", m.group(3)).strip()
         if text:
             items.append((m.group(1), m.group(2), text))
@@ -719,7 +719,7 @@ svg.theme-icon-sun{display:none}
 .header-github:focus-visible,.nav-link:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 /* content: owns its scrollbar, spans the available column */
 .content{height:100%;min-height:0;overflow-y:auto;overscroll-behavior:contain;
-  padding:0}
+  padding:0 0 28px}
 .content-inner{padding:clamp(20px,3vw,56px);padding-top:32px}
 .crumb{font-family:var(--mono);font-size:12px;color:var(--faint);margin-bottom:10px}
 .page-title{font-size:clamp(26px,4vw,40px);line-height:1.1;margin:4px 0 10px;font-weight:750}
@@ -731,27 +731,35 @@ svg.theme-icon-sun{display:none}
 .toc{position:sticky;top:32px;font-size:12.5px;min-width:0}
 .toc-title{font-family:var(--mono);font-size:11px;color:var(--faint);
   text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px}
-.toc-list{list-style:none;margin:0;padding:0;border-left:1px solid var(--line)}
+.toc-list{list-style:none;margin:0;padding:0;border-left:1px solid var(--line);
+  max-height:calc(100vh - 170px);overflow-y:auto}
 .toc-list a{display:block;padding:4px 0 4px 12px;color:var(--muted);
   border-left:2px solid transparent;margin-left:-1px;line-height:1.4;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .toc-list a:hover{color:var(--ink);text-decoration:none}
 .toc-list a.is-active{color:var(--accent);border-left-color:var(--accent)}
 .toc-list .toc-l3 a{padding-left:26px}
-/* bottom prev/next chapter pager: sticky to the viewport bottom while
-   reading, settling into its flow position at the end of the page */
-.page-pager{display:flex;gap:10px;margin-top:40px;padding:10px;
-  position:sticky;bottom:16px;z-index:10;
-  background:var(--surface);border:1px solid var(--line);border-radius:12px;
-  box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.toc-list .toc-l4 a{padding-left:40px}
+/* bottom prev/next chapter pager: a fixed bar under the content column.
+   Fixed (not sticky) so it sits on its own compositor layer and never
+   jitters with content scrolling; frosted blur + a single top hairline
+   keeps it blended with the page instead of a floating box. */
+.page-pager{position:fixed;left:var(--sidebar-w);right:0;bottom:0;z-index:40;
+  display:flex;gap:10px;padding:10px clamp(20px,3vw,56px);
+  background:var(--surface);border-top:1px solid var(--line)}
+@supports ((backdrop-filter:blur(10px)) or (-webkit-backdrop-filter:blur(10px))){
+  .page-pager{background:color-mix(in srgb,var(--surface) 72%,transparent);
+    -webkit-backdrop-filter:blur(10px) saturate(1.3);
+    backdrop-filter:blur(10px) saturate(1.3)}
+}
 .pager-link{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0;
-  padding:12px 14px;border:1px solid var(--line);border-radius:10px;
+  padding:8px 12px;border:1px solid var(--line);border-radius:10px;
   background:var(--surface-2);color:var(--ink);text-decoration:none;
   transition:border-color .15s ease}
 .pager-link:hover{border-color:var(--accent);text-decoration:none}
 .pager-next{text-align:right;align-items:flex-end}
-.pager-dir{font-size:11px;color:var(--faint)}
-.pager-label{font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;
+.pager-dir{font-size:10.5px;color:var(--faint)}
+.pager-label{font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;
   white-space:nowrap}
 .pager-empty{visibility:hidden}
 /* document body */
@@ -893,12 +901,12 @@ blockquote{border-left:3px solid var(--accent);margin:12px 0;padding:6px 14px;
   .doc-body{max-width:none}
   /* 72ch would overflow a narrow phone; figures follow the viewport instead */
   .doc-figure{max-width:100%}
-  /* the toc rail is a desktop affordance; the pager stacks instead */
+  /* the toc rail is a desktop affordance; the pager bar spans full width */
   .content-inner.has-toc{display:block}
   .toc{display:none}
-  .page-pager{flex-direction:column;bottom:calc(10px + env(safe-area-inset-bottom))}
+  .page-pager{left:0;padding:8px 14px calc(8px + env(safe-area-inset-bottom))}
   .pager-empty{display:none}
-  .pager-next{text-align:left;align-items:flex-start}
+  .content{padding-bottom:44px}
 }
 @media (max-width:600px){
   .list-filter input{width:100%}
@@ -982,6 +990,8 @@ TOC_JS = """
   var heads=links.map(function(a){return document.getElementById(a.getAttribute('data-toc-link'));}).filter(Boolean);
   if(!heads.length)return;
   var content=document.querySelector('.content');
+  var list=toc.querySelector('.toc-list');
+  var last='';
   function sync(){
     var ctop=content.getBoundingClientRect().top;
     var cur=heads[0];
@@ -992,6 +1002,18 @@ TOC_JS = """
     links.forEach(function(a){
       a.classList.toggle('is-active',!!cur&&a.getAttribute('data-toc-link')===cur.id);
     });
+    // Long toc lists follow the active entry so quick locating always works.
+    var act=toc.querySelector('a.is-active');
+    if(act&&list){
+      var id=act.getAttribute('data-toc-link');
+      if(id!==last){
+        last=id;
+        var lr=act.getBoundingClientRect(),tr=list.getBoundingClientRect();
+        if(lr.top<tr.top+4||lr.bottom>tr.bottom-4){
+          list.scrollTop+=lr.top-tr.top-list.clientHeight/2+act.offsetHeight/2;
+        }
+      }
+    }
   }
   content.addEventListener('scroll',sync,{passive:true});
   window.addEventListener('resize',sync);
@@ -1810,12 +1832,12 @@ def render_page(cfg, page, out_dir, slug):
         <p class="page-desc">{desc}</p>
         {body}
         {lightbox}
-        {pager}
       </div>
       {toc}
     </div>
   </main>
 </div>
+{pager}
 <script>{i18n_js}</script>
 <script>{theme_js}</script>
 <script>{nav_js}</script>

@@ -47,23 +47,27 @@ language toggle.
   themselves instead of widening the column. Markdown tables are wrapped in a
   `.table-scroll` container (`overflow-x: auto`), which is what actually
   absorbs wide tables on narrow viewports.
-- When a doc page has two or more h2/h3 headings, `.content-inner` becomes a
-  two-column grid (`minmax(0,1fr)` + `200px`): the article stays in the first
-  column and a sticky `.toc` rail renders in the second — mono uppercase
-  title, left border list, `.is-active` accent for the heading currently in
-  view (`TOC_JS` re-syncs on scroll, resize, hashchange and toc clicks).
-  Heading slugs are deduped (`-2`, `-3`, …) so anchors stay unique. Below the
-  breakpoint the rail hides and the grid collapses.
-- `.page-pager` closes every page: two equal cards linking the previous and
+- When a doc page has two or more h2/h3/h4 headings, `.content-inner` becomes
+  a two-column grid (`minmax(0,1fr)` + `200px`): the article stays in the
+  first column and a sticky `.toc` rail renders in the second — mono
+  uppercase title, left border list with per-level indents (h3/h4), and the
+  `.is-active` accent for the heading currently in view (`TOC_JS` re-syncs on
+  scroll, resize, hashchange and toc clicks). The list scrolls internally
+  (`max-height: calc(100vh - 170px)`) and keeps the active entry in view so
+  long documents stay quickly navigable. Heading slugs are deduped
+  (`-2`, `-3`, …) so anchors stay unique. Below the breakpoint the rail hides
+  and the grid collapses.
+- `.page-pager` closes every page: a `position: fixed` bar pinned to the
+  viewport bottom spanning from the sidebar edge to the right viewport edge
+  (full width on mobile), holding two equal cards that link the previous and
   next chapter in config page order (empty slots render as hidden
-  placeholders on first/last pages). The bar is `position: sticky;
-  bottom: 16px` inside the content column — a floating surface card that
-  pins to the viewport bottom while reading and settles into its flow
-  position at the page end (the content column keeps no bottom padding, so
-  the sticky line matches the viewport edge; the article's own padding
-  provides the end-of-page breathing room). Directory captions and labels
-  carry `data-i18n` keys, so the language toggle re-labels them in place;
-  the pager stacks vertically on mobile with a safe-area offset.
+  placeholders on first/last pages). Fixed — not sticky — keeps the bar on
+  its own compositor layer, so scrolling never jitters it; visually it is a
+  frosted band (`backdrop-filter: blur` over a 72% surface, solid surface
+  fallback) separated from the page by a single top hairline rather than a
+  floating bordered box. The content column reserves bottom padding for the
+  bar on both desktop and mobile. Directory captions and labels carry
+  `data-i18n` keys, so the language toggle re-labels them in place.
 
 ## Mobile top bar and dropdown
 
