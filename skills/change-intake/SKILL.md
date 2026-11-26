@@ -38,6 +38,7 @@ directory.
 S=skills/change-intake/scripts/change_intake.py
 
 python3 $S init                                   # once per repository
+python3 $S init-plans                             # minimum plans/README.md contract
 python3 $S probe [--json]                         # decide github vs local
 python3 $S new "Add SSO login" --kind feature \
   --goal "Users can sign in with SSO" \
@@ -126,9 +127,10 @@ anything remote. A duplicate title is refused — resume the existing record.
 
 ### 5b. Local path (plan-flow)
 
-1. Load the `plan-flow` skill and follow it. Its `plans/README.md` is the
-   contract; if the repository has no `plans/README.md`, create one following
-   that contract before continuing (or ask the user).
+1. `new` already bootstraps a minimal `plans/README.md` in local mode when the
+   repository lacks one (or run `init-plans` explicitly). It never overwrites
+   an existing contract. Load the `plan-flow` skill and follow it; its own
+   `SKILL.md` remains the authority for the contract.
 2. Create the plan with the same goal and tasks:
    `python3 skills/plan-flow/scripts/plan_flow.py new "<title>" --goal "<goal>" --task "<task>" ...`
    Choose P0/P1/P2 by that README, then replace every `待补充` / `待拆解`

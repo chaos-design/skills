@@ -57,6 +57,7 @@ python3 $S check --strict
 | 命令 | 用途 |
 | --- | --- |
 | `init` | 每个仓库创建一次 `changes/README.md` |
+| `init-plans` | 缺失时创建最小 `plans/README.md`（plan-flow 契约），不覆盖已有文件 |
 | `probe` | 输出 `github`/`local`、仓库标识、理由与检查结果（`--json`） |
 | `new <title>` | 创建路由记录（`--kind feature\|fix`、`--goal`、`--task`、`--slug`、`--mode`、`--repo`、`--cwd`） |
 | `bind <id>` | 回写 `--main` / `--child`（GitHub）或 `--plan`（本地），可带 `--note` |
@@ -83,7 +84,7 @@ sub-issues GraphQL mutation `addSubIssue` 挂载（失败时退回 REST
 - Python 3.9+，仅标准库。
 - GitHub 路径：`gh` CLI 已认证，且对仓库有 `triage`/`push`/`maintain`/`admin`
   权限。
-- 本地路径：`plan-flow` 技能，以及仓库中的 `plans/README.md`。
+- 本地路径：`plan-flow` 技能；缺少 `plans/README.md` 时会自动生成。
 
 ## 不做的事
 

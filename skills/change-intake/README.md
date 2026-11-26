@@ -60,6 +60,7 @@ python3 $S check --strict
 | Command | Purpose |
 | --- | --- |
 | `init` | Create `changes/README.md` once per repo |
+| `init-plans` | Create a minimal `plans/README.md` (plan-flow contract) if absent; never overwrites |
 | `probe` | Report `github`/`local`, repo slug, reason and checks (`--json`) |
 | `new <title>` | Create a routing record (`--kind feature\|fix`, `--goal`, `--task`, `--slug`, `--mode`, `--repo`, `--cwd`) |
 | `bind <id>` | Write back `--main` / `--child` (GitHub) or `--plan` (local), with an optional `--note` |
@@ -89,7 +90,8 @@ from real `gh` output.
 - Python 3.9+, standard library only.
 - For the GitHub path: `gh` CLI, authenticated, with `triage`/`push`/
   `maintain`/`admin` permission on the repository.
-- For the local path: the `plan-flow` skill and a repository `plans/README.md`.
+- For the local path: the `plan-flow` skill; a missing `plans/README.md` is
+  bootstrapped automatically.
 
 ## Non-goals
 

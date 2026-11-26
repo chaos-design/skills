@@ -193,6 +193,27 @@ jobs:
             echo "duplicate title must fail"; exit 1
           fi
 
+      - name: Local mode bootstraps the plan-flow contract
+        run: |
+          root=$(mktemp -d)
+          mkdir -p "$root/changes"
+          echo '# changes' > "$root/changes/README.md"
+          S=skills/change-intake/scripts/change_intake.py
+          python3 $S new "Fix login" --kind fix --goal "Login works" \
+            --task "Correct redirect" --mode local --root "$root"
+          test -f "$root/plans/README.md"
+          grep -q 'planing' "$root/plans/README.md"
+          grep -q 'unit_test_result' "$root/plans/README.md"
+          # The generated root is usable by plan-flow itself.
+          python3 skills/plan-flow/scripts/plan_flow.py --root "$root/plans" \
+            new "Fix login" --goal "Login works" --task "Correct redirect"
+          # An existing contract is never overwritten.
+          echo '# custom' >> "$root/plans/README.md"
+          python3 $S init-plans --root "$root"
+          grep -q '# custom' "$root/plans/README.md"
+          python3 $S bind 001 --plan 01 --root "$root"
+          python3 $S check --strict --root "$root"
+
       - name: Publish creates issues and binds real numbers
         run: |
           python3 - <<'PY'
