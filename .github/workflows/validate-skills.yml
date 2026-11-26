@@ -214,6 +214,127 @@ jobs:
           python3 $S bind 001 --plan 01 --root "$root"
           python3 $S check --strict --root "$root"
 
+      - name: Security gates and edge cases
+        run: |
+          python3 - <<'PY'
+          import contextlib, importlib.util, io, pathlib, tempfile
+          spec = importlib.util.spec_from_file_location("ci", "skills/change-intake/scripts/change_intake.py")
+          m = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(m)
+          # credentials in an HTTPS remote never reach logs
+          remote = "https://user:secret-token@github.com/a/b.git"
+          assert "<redacted>" in m.sanitize_remote(remote)
+          assert "secret-token" not in m.sanitize_remote(remote)
+          root = pathlib.Path(tempfile.mkdtemp())
+          changes = root / "changes"
+          changes.mkdir()
+          (changes / "README.md").write_text("# c\n", encoding="utf-8")
+          common = dict(root=str(root), cwd=None, mode="github", repo="a/b",
+                        kind="fix", goal="g", slug=None)
+          def new(title, tasks, **kw):
+              m.cmd_new(type("A", (), {**common, "title": title, "task": tasks, **kw})())
+          try:
+              new("Bad", ["t"], slug="../escape")
+          except m.IntakeError:
+              pass
+          else:
+              raise AssertionError("slug path traversal accepted")
+          assert not (changes / "001-..").exists()
+          try:
+              new("Bad\nplan: 99", ["t"])
+          except m.IntakeError:
+              pass
+          else:
+              raise AssertionError("newline in title accepted")
+          # dry-run must not write the record or call gh
+          new("Safe", ["t1", "t2"], slug="safe")
+          rec = m.resolve(changes, "001")
+          before = rec.path.read_text(encoding="utf-8")
+          def explode(args):
+              raise AssertionError("gh called during dry-run")
+          m.publish_record(rec, gh=explode, dry_run=True)
+          assert rec.path.read_text(encoding="utf-8") == before
+          # an interrupted run resumes: one main, missing children only
+          new("Resume", ["a", "b"], slug="resume")
+          calls, counter = [], {"n": 10}
+          def fake(args):
+              calls.append(list(args))
+              if args[:2] == ["label", "list"]:
+                  return "rfc,task-pool,change-intake,fix"
+              if args[:2] == ["issue", "create"]:
+                  counter["n"] += 1
+                  return f"https://github.com/a/b/issues/{counter['n']}"
+              if args[:2] == ["api", "graphql"]:
+                  return "11"
+              if args[0] == "api" and "--jq" in args:
+                  return "NODE_1"
+              return ""
+          result = m.publish_record(m.resolve(changes, "002"), gh=fake)
+          assert result["main"] == "11" and result["children"] == ["12", "13"], result
+          partial = m.resolve(changes, "002")
+          partial.set_meta("children", "12")
+          partial.save()
+          previous = len([a for a in calls if a[:2] == ["issue", "create"]])
+          resumed = m.publish_record(m.resolve(changes, "002"), gh=fake)
+          # the record is the source of truth: task "a" is not duplicated and
+          # only the missing task gets a new child (#14)
+          assert resumed["main"] == "11" and resumed["children"] == ["12", "14"], resumed
+          assert len([a for a in calls if a[:2] == ["issue", "create"]]) == previous + 1
+          # failed native links keep the checklist and warn honestly
+          new("Fallback", ["a"], slug="fallback")
+          def broken(args):
+              if args[:2] == ["label", "list"]:
+                  return "rfc,task-pool,change-intake,fix"
+              if args[:2] == ["issue", "create"]:
+                  return "https://github.com/a/b/issues/20"
+              if args[:2] == ["api", "graphql"] or "-X" in args:
+                  raise m.IntakeError("api down")
+              if args[0] == "api" and "--jq" in args:
+                  return "NODE_1"
+              return ""
+          warn = io.StringIO()
+          with contextlib.redirect_stdout(warn):
+              fallback = m.publish_record(m.resolve(changes, "003"), gh=broken)
+          assert fallback["children"] == ["20"], fallback
+          assert "warning: native sub-issue link failed" in warn.getvalue()
+          # ambiguous refs and cross-mode bindings are refused
+          new("Alpha one", ["a"], slug="alpha-one")
+          new("Alpha two", ["a"], slug="alpha-two")
+          try:
+              m.resolve(changes, "alpha")
+          except m.IntakeError:
+              pass
+          else:
+              raise AssertionError("ambiguous ref accepted")
+          m.cmd_new(type("A", (), {"root": str(root), "cwd": None, "mode": "local",
+                                   "repo": "-", "kind": "fix", "title": "Local x",
+                                   "goal": "g", "task": ["t"], "slug": "local-x"})())
+          wrong = m.resolve(changes, "006")
+          wrong.set_meta("main", "99")
+          wrong.save()
+          report = io.StringIO()
+          with contextlib.redirect_stdout(report):
+              try:
+                  m.cmd_check(type("A", (), {"root": str(root), "strict": True})())
+              except SystemExit:
+                  pass
+          assert "006: local record has issue bindings" in report.getvalue()
+          # publishing must never target a repo other than the current origin
+          original_probe = m.probe
+          m.probe = lambda: {"mode": "github", "repo": "other/repo",
+                             "reason": "x", "checks": {}}
+          try:
+              m.cmd_publish(type("A", (), {"root": str(root), "ref": "002",
+                                           "dry_run": True})())
+          except m.IntakeError:
+              pass
+          else:
+              raise AssertionError("publish to the wrong repo accepted")
+          finally:
+              m.probe = original_probe
+          print("security gates and edge cases: ok")
+          PY
+
       - name: Publish creates issues and binds real numbers
         run: |
           python3 - <<'PY'

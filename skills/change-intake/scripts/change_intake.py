@@ -54,6 +54,11 @@ def parse_github_remote(url: str) -> str:
     return f"{owner}/{name}"
 
 
+def sanitize_remote(url: str) -> str:
+    """Never print credentials embedded in an HTTPS remote URL."""
+    return re.sub(r"(://)[^/@\s]+@", r"\1<redacted>@", url)
+
+
 def decide(checks: dict) -> tuple[str, str]:
     """The whole routing policy. Kept pure so it can be tested offline."""
     if not checks["github_url"]:
@@ -112,7 +117,7 @@ def probe_checks(cwd: Path | None = None) -> dict:
                 perms = {}
             issue_write = any(perms.get(key) is True for key in WRITE_PERMS)
     return {
-        "remote": remote,
+        "remote": sanitize_remote(remote),
         "github_url": bool(from_remote),
         "gh_cli": gh_cli,
         "gh_auth": gh_auth,
@@ -576,6 +581,9 @@ def cmd_new(args: argparse.Namespace) -> None:
         raise IntakeError("at least one --task is required; a change with no steps needs no record")
 
     title = args.title.strip()
+    # A title is injected into YAML frontmatter; a newline could forge fields.
+    if any(char in title for char in "\r\n"):
+        raise IntakeError("title must be a single line")
     for record in all_records(root):
         existing = record.meta().get("title", "").strip().lower()
         if existing == title.lower():
@@ -584,6 +592,8 @@ def cmd_new(args: argparse.Namespace) -> None:
     slug = args.slug or re.sub(r"[^a-z0-9]+", "-", title.lower()).strip("-")
     if not slug:
         raise IntakeError("title has no ASCII characters; pass --slug")
+    if not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", slug):
+        raise IntakeError("--slug must be lowercase letters/digits separated by single hyphens")
     number = next_number(root)
     target = root / f"{number:03d}-{slug}.md"
     stamp = now()
@@ -698,6 +708,14 @@ def cmd_bind(args: argparse.Namespace) -> None:
 def cmd_publish(args: argparse.Namespace) -> None:
     root = find_root(args.root)
     record = resolve(root, args.ref)
+    detected = probe()
+    repo = record.meta().get("repo", "-")
+    # A real remote wins: never publish to a repository other than the one the
+    # current working directory actually points at.
+    if detected["mode"] == "github" and detected["repo"] != repo:
+        raise IntakeError(
+            f"record targets {repo} but cwd is {detected['repo']}; refusing to publish to the wrong repo"
+        )
     result = publish_record(record, dry_run=args.dry_run)
     print(
         f"{record.path.name}: main=#{result['main']} "

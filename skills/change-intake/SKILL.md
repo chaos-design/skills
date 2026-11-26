@@ -26,6 +26,13 @@ and nothing is left untracked.
 | `github` | GitHub origin + authenticated `gh` + issue write permission | GitHub issues | feature → `RFC: <title>` + sub-issues; fix → `Task Pool: <title>` + fix records |
 | `local` | no GitHub remote, or `gh` missing/unauthenticated, or no issue permission | plan-flow plan in `plans/` | one plan with the same goal and tasks |
 
+## Minimal surface
+
+One standard-library script and one Markdown record per change. The GitHub
+path loads no other skill; `gh` is invoked only by `publish`. The local path
+loads `plan-flow` only when the probe actually returned `local`. No pip/npm
+packages, no background watchers and no network calls at import time.
+
 ## Script
 
 All routing state goes through the script, so gates are enforced rather than
@@ -112,8 +119,9 @@ anything remote. A duplicate title is refused — resume the existing record.
    `python3 $S bind <id> --main N` and let `publish` create only the missing
    children. Otherwise continue.
 2. Preview the whole operation:
-   `python3 $S publish <id> --dry-run`. Check the titles, labels and body before
-   creating anything real.
+   `python3 $S publish <id> --dry-run`. Show the printed commands, titles,
+   labels and body to the user and get confirmation before creating anything
+   real — `publish` is the only command with an external side effect.
 3. Execute: `python3 $S publish <id>`. It creates the missing labels, the main
    issue (`RFC: <title>` for a feature, `Task Pool: <problem>` for a fix), one
    child issue per task, attaches each child with the native sub-issues
