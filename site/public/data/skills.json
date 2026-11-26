@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-21 17:55:49",
+  "generatedAt": "2026-11-27 00:13:09",
   "repo": "chaos-design/skills",
   "repoUrl": "https://github.com/chaos-design/skills",
   "installPrefix": "npx skills add https://github.com/chaos-design/skills --skill",
@@ -7,27 +7,27 @@
     {
       "id": "claude-ai",
       "name": "Claude",
-      "skills": 14
+      "skills": 15
     },
     {
       "id": "codex-cli",
       "name": "Codex CLI",
-      "skills": 14
+      "skills": 15
     },
     {
       "id": "cursor",
       "name": "Cursor",
-      "skills": 14
+      "skills": 15
     },
     {
       "id": "gemini-cli",
       "name": "Gemini CLI",
-      "skills": 14
+      "skills": 15
     },
     {
       "id": "opencode",
       "name": "OpenCode",
-      "skills": 14
+      "skills": 15
     }
   ],
   "skills": [
@@ -61,18 +61,66 @@
         "commits8w": 3,
         "commits7d": 0,
         "weekly": [
-          0,
           1,
           0,
           1,
           0,
           1,
+          0,
           0,
           0
         ],
         "firstCommit": "2026-06-19",
         "lastCommit": "2026-10-28",
         "contributors": 1
+      }
+    },
+    {
+      "name": "change-intake",
+      "version": "0.1.0",
+      "category": "Workflow",
+      "description": "Routes a proposed change into the right tracking structure. Probes whether the repo is on GitHub and whether gh is authenticated with issue write permission; on GitHub publish creates an RFC main issue with child issues for a feature or a Task Pool with fix records for a bug, attaching sub-issues through GraphQL and binding real numbers into a local changes/ record. Without GitHub, gh auth or issue permission it delegates to plan-flow and plans into the repository's plans/ directory. Gates and timestamps are enforced by a standard-library Python script.",
+      "tags": [
+        "planning",
+        "github",
+        "workflow"
+      ],
+      "repo": "chaos-design/skills",
+      "homepage": "https://github.com/chaos-design/skills/tree/main/skills/change-intake",
+      "install": {
+        "dependsOn": [],
+        "optionalDeps": [
+          "plan-flow"
+        ],
+        "runtime": [
+          "Python 3.9+ standard library only, no pip packages",
+          "GitHub CLI (gh), authenticated with issue write permission, for the github mode"
+        ]
+      },
+      "compat": [
+        "claude-ai",
+        "cursor",
+        "codex-cli",
+        "gemini-cli",
+        "opencode"
+      ],
+      "stats": {
+        "totalCommits": 0,
+        "commits8w": 0,
+        "commits7d": 0,
+        "weekly": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "firstCommit": null,
+        "lastCommit": null,
+        "contributors": 0
       }
     },
     {
@@ -107,10 +155,10 @@
         "weekly": [
           0,
           0,
-          0,
           1,
           0,
           1,
+          0,
           0,
           0
         ],
@@ -149,21 +197,21 @@
         "opencode"
       ],
       "stats": {
-        "totalCommits": 4,
-        "commits8w": 4,
-        "commits7d": 0,
+        "totalCommits": 17,
+        "commits8w": 17,
+        "commits7d": 13,
         "weekly": [
-          0,
           0,
           0,
           0,
           0,
           4,
           0,
-          0
+          0,
+          13
         ],
         "firstCommit": "2026-10-27",
-        "lastCommit": "2026-10-28",
+        "lastCommit": "2026-11-21",
         "contributors": 1
       }
     },
@@ -195,12 +243,12 @@
         "commits8w": 3,
         "commits7d": 0,
         "weekly": [
-          0,
           1,
           0,
           1,
           0,
           1,
+          0,
           0,
           0
         ],
@@ -237,12 +285,12 @@
         "commits8w": 3,
         "commits7d": 0,
         "weekly": [
-          0,
           1,
           0,
           1,
           0,
           1,
+          0,
           0,
           0
         ],
@@ -284,11 +332,11 @@
         "commits7d": 0,
         "weekly": [
           0,
-          0,
           6,
           1,
           0,
           1,
+          0,
           0,
           0
         ],
@@ -329,10 +377,10 @@
         "weekly": [
           0,
           0,
-          0,
           4,
           0,
           1,
+          0,
           0,
           0
         ],
@@ -373,11 +421,11 @@
         "commits7d": 0,
         "weekly": [
           0,
-          0,
           1,
           1,
           0,
           1,
+          0,
           0,
           0
         ],
@@ -417,11 +465,11 @@
         "commits7d": 0,
         "weekly": [
           0,
-          0,
           1,
           1,
           0,
           1,
+          0,
           0,
           0
         ],
@@ -509,11 +557,11 @@
         "commits7d": 0,
         "weekly": [
           0,
-          0,
           2,
           1,
           0,
           1,
+          0,
           0,
           0
         ],
@@ -554,10 +602,10 @@
         "weekly": [
           0,
           0,
-          0,
           2,
           0,
           1,
+          0,
           0,
           0
         ],
@@ -598,16 +646,16 @@
       "stats": {
         "totalCommits": 7,
         "commits8w": 4,
-        "commits7d": 2,
+        "commits7d": 0,
         "weekly": [
           0,
           0,
-          0,
           1,
           0,
           1,
           0,
-          2
+          2,
+          0
         ],
         "firstCommit": "2026-06-19",
         "lastCommit": "2026-11-11",
@@ -645,12 +693,12 @@
         "commits8w": 3,
         "commits7d": 0,
         "weekly": [
-          0,
           1,
           0,
           1,
           0,
           1,
+          0,
           0,
           0
         ],
