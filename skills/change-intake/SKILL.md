@@ -30,8 +30,9 @@ and nothing is left untracked.
 
 All routing state goes through the script, so gates are enforced rather than
 remembered. Python 3.9+, standard library only. The root is found from
-`--root`, then `CHANGE_INTAKE_ROOT`, then the nearest `changes/README.md` above
-the working directory.
+`--root` (the repository root containing `changes/`), then
+`CHANGE_INTAKE_ROOT`, then the nearest `changes/README.md` above the working
+directory.
 
 ```bash
 S=skills/change-intake/scripts/change_intake.py
@@ -41,12 +42,20 @@ python3 $S probe [--json]                         # decide github vs local
 python3 $S new "Add SSO login" --kind feature \
   --goal "Users can sign in with SSO" \
   --task "Add callback endpoint" --task "Verify id tokens"
-python3 $S bind 001 --main 123 --child 124 --child 125
+python3 $S publish 001 --dry-run                  # preview every gh command
+python3 $S publish 001                            # create issues + bind numbers
 python3 $S bind 001 --plan 07                     # local mode only
 python3 $S show 001
 python3 $S status [--json]
 python3 $S check --strict                         # gate: every record bound
 ```
+
+`publish` creates the main issue and its children through `gh`, attaches the
+children with the native sub-issues API, updates the main issue checklist and
+writes the real numbers back to the record. It is idempotent: an existing main
+issue is reused and only missing children are created; each creation is saved
+immediately so an interrupted run can resume. `--dry-run` prints every `gh`
+command without creating anything.
 
 `--mode github|local` and `--repo owner/name` on `new` are rehearsal overrides;
 in normal use the mode comes from `probe`. `--cwd` on `probe`/`new` chooses the
@@ -96,44 +105,24 @@ anything remote. A duplicate title is refused — resume the existing record.
 
 ### 5a. GitHub path (RFC / Task Pool)
 
-1. Ensure the labels exist (safe to re-run):
-   `gh label create rfc --color 1d76db --description "Design proposal" --force`,
-   then `task-pool`, `change-intake` and `fix` the same way.
-2. **Never duplicate the main issue.** Search first:
+1. **Never duplicate the main issue.** Search for an existing one first:
    `gh issue list --state all --label rfc --search "<title>" --json number,title,state,url`.
-   Reuse an exact title match only after confirming it covers this change;
-   otherwise create a new one.
-3. For a **feature**, create the RFC:
-   ```bash
-   url=$(gh issue create --title "RFC: <title>" --label "rfc,change-intake" --body-file - <<'EOF'
-   <goal, scope (included/excluded), task checklist, risks and rollback>
-   EOF
-   )
-   main=${url##*/}
-   ```
-   For a **fix**, do the same with title `Task Pool: <problem>` and label
-   `task-pool,change-intake`; the body is the pool of fix records with symptom,
-   reproduction, expected behavior and acceptance criteria.
-4. Create each child issue from the record's tasks, then attach it under the
-   main issue:
-   ```bash
-   child_url=$(gh issue create --title "<task>" --label "change-intake,fix" \
-     --body-file - <<'EOF'
-   <symptom / reproduction / expected / acceptance>
-   EOF
-   )
-   child=${child_url##*/}
-   node=$(gh api repos/OWNER/REPO/issues/$child --jq .node_id)
-   gh api -X POST repos/OWNER/REPO/issues/$main/sub_issues -f sub_issue_id="$node"
-   ```
-   Update the main issue body so its checklist shows `#<child>` for each task:
-   `gh issue view $main --json body -q .body > /tmp/main.md`, edit, then
-   `gh issue edit $main --body-file /tmp/main.md`.
-   If the sub-issues API is unavailable, keep the checklist links as the
-   parent-child structure and tell the user native sub-issues were not set.
-5. Bind real numbers back to the record:
-   `python3 $S bind <id> --main "$main" --child "$child" ...`. Never invent an
-   issue number — take it from `gh` output.
+   If an exact match already covers this change, bind it with
+   `python3 $S bind <id> --main N` and let `publish` create only the missing
+   children. Otherwise continue.
+2. Preview the whole operation:
+   `python3 $S publish <id> --dry-run`. Check the titles, labels and body before
+   creating anything real.
+3. Execute: `python3 $S publish <id>`. It creates the missing labels, the main
+   issue (`RFC: <title>` for a feature, `Task Pool: <problem>` for a fix), one
+   child issue per task, attaches each child with the native sub-issues
+   GraphQL mutation `addSubIssue` (REST `POST /sub_issues` as fallback),
+   updates the main issue checklist with `#<child>` references, and binds the
+   real numbers into the record after every creation.
+4. Verify with `python3 $S show <id>` and `gh issue view <main>`. If a native
+   sub-issue link failed, `publish` reports a warning but keeps the checklist
+   links; tell the user and fix it manually if needed. Never invent an issue
+   number — every number comes from `gh` output.
 
 ### 5b. Local path (plan-flow)
 

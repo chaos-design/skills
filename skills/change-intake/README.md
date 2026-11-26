@@ -50,7 +50,8 @@ python3 $S probe --json
 python3 $S new "Add SSO login" --kind feature \
   --goal "Users can sign in with SSO" \
   --task "Add callback endpoint" --task "Verify id tokens"
-python3 $S bind 001 --main 123 --child 124 --child 125   # github mode
+python3 $S publish 001 --dry-run                         # preview gh commands
+python3 $S publish 001                                   # create issues + bind
 python3 $S bind 001 --plan 07                            # local mode
 python3 $S status
 python3 $S check --strict
@@ -62,22 +63,26 @@ python3 $S check --strict
 | `probe` | Report `github`/`local`, repo slug, reason and checks (`--json`) |
 | `new <title>` | Create a routing record (`--kind feature\|fix`, `--goal`, `--task`, `--slug`, `--mode`, `--repo`, `--cwd`) |
 | `bind <id>` | Write back `--main` / `--child` (GitHub) or `--plan` (local), with an optional `--note` |
+| `publish <id>` | Create the GitHub issues and bind their real numbers (`--dry-run` to preview); idempotent |
 | `show <id>` | Numbered task breakdown of a record |
 | `status` | Table of all routed changes (`--json`) |
 | `check` | Report inconsistent bindings; `--strict` exits non-zero |
 
-The root is resolved from `--root`, then `CHANGE_INTAKE_ROOT`, then the nearest
-`changes/README.md` above the working directory. `--mode` and `--repo` on
+The root is resolved from `--root` (the repository root containing `changes/`),
+then `CHANGE_INTAKE_ROOT`, then the nearest `changes/README.md` above the
+working directory. `--mode` and `--repo` on
 `new` are rehearsal overrides for offline testing.
 
 ## GitHub details
 
 The main issue uses the `rfc` label for features and `task-pool` for fixes;
-every issue carries `change-intake`. Children are attached with the native
-sub-issues API (`POST /issues/{main}/sub_issues`) and also listed as a
-checklist in the main issue body. If the API is unavailable, the checklist
-links remain the parent-child structure and the limitation is reported.
-All issue numbers come from real `gh` output.
+every issue carries `change-intake`. `publish` ensures those labels exist,
+creates one child per task, attaches it with the native sub-issues GraphQL
+mutation `addSubIssue` (REST `POST /issues/{main}/sub_issues` as fallback) and
+lists it as a checklist in the main issue body. Re-running reuses the existing
+main issue and creates only missing children. If the API is unavailable, the checklist links remain the
+parent-child structure and the limitation is reported. All issue numbers come
+from real `gh` output.
 
 ## Requirements
 
@@ -88,9 +93,8 @@ All issue numbers come from real `gh` output.
 
 ## Non-goals
 
-- It does not create issues itself; the agent uses `gh` so every number is real.
-- It does not edit plans or tick their progress; plan-flow owns that.
-- It does not push or commit; version baselines stay with the maintainers.
+- It does not plan or tick progress locally; plan-flow owns that.
+- It does not push commits or close issues; version baselines stay with maintainers.
 
 ## License
 

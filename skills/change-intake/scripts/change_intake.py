@@ -4,7 +4,8 @@
 A local `changes/` directory is the only state. One record per proposed change
 holds the routing decision, the breakdown and the hand-off to the real tracker
 (issue numbers on GitHub, a plan-flow `NN` locally). The script enforces the
-routing gates; it never calls `gh` or modifies `plans/` itself.
+routing gates. `publish` creates the GitHub issues through `gh` and writes the
+real numbers back; the script never modifies `plans/` itself.
 
 Standard library only. All timestamps are UTC+8 (`YYYY-MM-DD HH:mm:ss`).
 """
@@ -15,6 +16,7 @@ import argparse
 import json
 import os
 import re
+import shlex
 import shutil
 import subprocess
 import sys
@@ -131,16 +133,19 @@ def probe(cwd: Path | None = None) -> dict:
 
 
 def find_root(explicit: str | None) -> Path:
+    """Resolve the `changes/` directory. `--root` names the repository root."""
     candidate = explicit or os.environ.get("CHANGE_INTAKE_ROOT")
     if candidate:
-        root = Path(candidate).expanduser().resolve()
-        if not root.is_dir():
-            raise IntakeError(f"changes root does not exist: {root}")
-        return root
+        base = Path(candidate).expanduser().resolve()
+        if (base / "changes" / "README.md").is_file():
+            return base / "changes"
+        if base.name == "changes" and (base / "README.md").is_file():
+            return base
+        raise IntakeError(f"no changes/ directory under {base}; run `init` first")
     here = Path.cwd().resolve()
     for directory in (here, *here.parents):
         if (directory / ROOT_MARKER).is_file():
-            return directory
+            return directory / "changes"
     raise IntakeError("no changes/ directory found; run `init` or pass --root")
 
 
@@ -253,6 +258,224 @@ and the hand-off to the real tracker — issue numbers on GitHub, a plan-flow
 while any record is unbound or has a binding that contradicts its mode. All
 timestamps are UTC+8, `YYYY-MM-DD HH:mm:ss`.
 """
+
+
+# --------------------------------------------------------------------------- #
+# GitHub publishing (injectable `gh` so the whole flow is testable offline)
+# --------------------------------------------------------------------------- #
+
+LABEL_SPECS = {
+    "rfc": ("1d76db", "Design proposal tracked by change-intake"),
+    "task-pool": ("0e8a16", "Pool of fix records tracked by change-intake"),
+    "change-intake": ("fbca04", "Created by the change-intake skill"),
+    "fix": ("d93f0b", "Fix record tracked by change-intake"),
+}
+SUBISSUE_MUTATION = (
+    "mutation($issueId:ID!,$subIssueId:ID!){"
+    "addSubIssue(input:{issueId:$issueId,subIssueId:$subIssueId})"
+    "{issue{number}subIssue{number}}}"
+)
+
+
+def real_gh(args: list[str]) -> str:
+    """Run one gh command; fail loudly so no issue number is ever fabricated."""
+    if not shutil.which("gh"):
+        raise IntakeError("gh CLI is not installed")
+    try:
+        result = subprocess.run(
+            ["gh", *args], capture_output=True, text=True, check=False, timeout=60
+        )
+    except (OSError, subprocess.SubprocessError) as exc:
+        raise IntakeError(f"gh {' '.join(args[:3])} failed: {exc}") from exc
+    if result.returncode != 0:
+        detail = (result.stderr or result.stdout).strip().splitlines()
+        raise IntakeError(
+            f"gh {' '.join(args[:3])} failed: {detail[-1] if detail else 'unknown error'}"
+        )
+    return result.stdout.strip()
+
+
+def breakdown_tasks(record: Record) -> list[str]:
+    tasks: list[str] = []
+    in_section = False
+    for line in record.lines:
+        if line.startswith("## "):
+            in_section = line.strip() == "## 拆解"
+            continue
+        if in_section and re.match(r"^- \[[ xX]\] ", line):
+            tasks.append(line[6:].strip())
+    return tasks
+
+
+def section_text(record: Record, heading: str) -> str:
+    start = next((i for i, line in enumerate(record.lines) if line.strip() == heading), -1)
+    if start < 0:
+        return ""
+    end = next(
+        (i for i in range(start + 1, len(record.lines)) if record.lines[i].startswith("## ")),
+        len(record.lines),
+    )
+    return "\n".join(line for line in record.lines[start + 1 : end] if line.strip()).strip()
+
+
+def issue_number(output: str) -> str:
+    match = re.search(r"/issues/(\d+)", output)
+    if not match:
+        raise IntakeError(f"cannot read an issue number from gh output: {output!r}")
+    return match.group(1)
+
+
+def main_body(record: Record, tasks: list[str], children: list[str]) -> str:
+    label = "RFC" if record.meta().get("kind") == "feature" else "Task Pool"
+    lines = [
+        f"{label} generated from `changes/{record.path.name}`.",
+        "",
+        "## 目标",
+        "",
+        section_text(record, "## 目标") or "待补充",
+        "",
+        "## 任务",
+        "",
+    ]
+    for index, task in enumerate(tasks):
+        ref = f"#{children[index]}" if index < len(children) else "待创建"
+        lines.append(f"- [ ] {ref} — {task}")
+    lines += ["", "## 风险与回滚", "", "待补充", ""]
+    return "\n".join(lines)
+
+
+def mapping_lines(main: str, children: list[str], label: str) -> list[str]:
+    return [
+        f"- 主 issue：#{main}（{label}）",
+        f"- 子 issue：{', '.join('#' + c for c in children) if children else '待创建'}",
+        "- 本地计划：不适用",
+    ]
+
+
+def preview_gh(repo: str):
+    """Dry-run gh: print every command, return shaped fake responses."""
+    counter = {"n": 100}
+
+    def preview(args: list[str]) -> str:
+        print("gh " + " ".join(shlex.quote(arg) for arg in args))
+        if args[:2] == ["issue", "create"]:
+            counter["n"] += 1
+            return f"https://github.com/{repo}/issues/{counter['n']}"
+        if args[:2] == ["api", "graphql"]:
+            return "101"
+        if args[0] == "api" and "--jq" in args:
+            return "NODE_dry_run"
+        return ""
+
+    return preview
+
+
+def link_subissue(gh, repo: str, main: str, child: str) -> bool:
+    """Attach child under main. GraphQL is the working path; REST is a fallback."""
+    parent_node = gh(["api", f"repos/{repo}/issues/{main}", "--jq", ".node_id"])
+    child_node = gh(["api", f"repos/{repo}/issues/{child}", "--jq", ".node_id"])
+    if parent_node and child_node:
+        try:
+            result = gh(
+                ["api", "graphql", "-f", f"query={SUBISSUE_MUTATION}",
+                 "-f", f"issueId={parent_node}", "-f", f"subIssueId={child_node}",
+                 "--jq", ".data.addSubIssue.issue.number"]
+            )
+            if result.strip().isdigit():
+                return True
+        except IntakeError:
+            pass
+    try:
+        gh(
+            ["api", "-X", "POST", f"repos/{repo}/issues/{main}/sub_issues",
+             "-F", f"sub_issue_id={child}"]
+        )
+        return True
+    except IntakeError:
+        return False
+
+
+def publish_record(record: Record, gh=real_gh, dry_run: bool = False) -> dict:
+    """Create or resume the issues for one routed change; bind real numbers.
+
+    Re-running is safe: an existing main issue is reused and only missing
+    children are created. Each creation is saved immediately, so an interrupted
+    run can resume without duplicating anything.
+    """
+    meta = record.meta()
+    if meta.get("mode") != "github":
+        raise IntakeError(f"{record.path.name} is a local record; publish needs mode=github")
+    repo = meta.get("repo", "-")
+    if not repo or repo == "-":
+        raise IntakeError(f"{record.path.name} has no repository to publish to")
+
+    working = record
+    if dry_run:
+        gh = preview_gh(repo)
+        working = Record.__new__(Record)
+        working.path = record.path
+        working.lines = list(record.lines)
+
+    tasks = breakdown_tasks(working)
+    if not tasks:
+        raise IntakeError(f"{record.path.name} has no tasks to publish")
+    main = working.meta().get("main", "")
+    children = [c.strip() for c in working.meta().get("children", "").split(",") if c.strip()]
+    kind = working.meta().get("kind", "")
+    label = "RFC" if kind == "feature" else "Task Pool"
+    labels = "rfc,change-intake" if kind == "feature" else "task-pool,change-intake"
+
+    existing = set(gh(["label", "list", "--json", "name", "-q", ".[].name"]).splitlines())
+    for name, (color, description) in LABEL_SPECS.items():
+        if name not in existing:
+            gh(["label", "create", name, "--color", color, "--description", description])
+
+    if not main:
+        url = gh(
+            [
+                "issue", "create",
+                "--title", f"{label}: {working.meta().get('title', '')}",
+                "--label", labels,
+                "--body", main_body(working, tasks, []),
+            ]
+        )
+        main = issue_number(url)
+        working.set_meta("main", main)
+        working.replace_section("## 远端映射", mapping_lines(main, children, label))
+        working.log(f"publish: created {label} #{main}")
+        if not dry_run:
+            working.save()
+        print(f"created {label} #{main}")
+    else:
+        print(f"reusing {label} #{main}")
+
+    for index in range(len(children), len(tasks)):
+        task = tasks[index]
+        body = f"- 主 issue：#{main}\n- 任务：{task}\n- 验收：完成本条任务后关闭该 issue。"
+        child_url = gh(
+            [
+                "issue", "create",
+                "--title", task,
+                "--label", "change-intake,fix",
+                "--body", body,
+            ]
+        )
+        child = issue_number(child_url)
+        if not link_subissue(gh, repo, main, child):
+            print(f"warning: native sub-issue link failed for #{child}; checklist kept")
+        children.append(child)
+        working.set_meta("children", ", ".join(children))
+        working.replace_section("## 远端映射", mapping_lines(main, children, label))
+        working.log(f"publish: created child #{child} — {task}")
+        if not dry_run:
+            working.save()
+        print(f"  created child #{child}: {task}")
+
+    if not dry_run:
+        gh(["issue", "edit", main, "--body", main_body(working, tasks, children)])
+        working.log(f"publish: linked {len(children)} child issue(s) to #{main}")
+        working.save()
+    return {"main": main, "children": children, "created": len(children)}
 
 
 # --------------------------------------------------------------------------- #
@@ -373,8 +596,8 @@ def cmd_new(args: argparse.Namespace) -> None:
     target.write_text("\n".join(lines), encoding="utf-8")
     print(f"created {target.relative_to(root)}  mode={mode} kind={args.kind}")
     if mode == "github":
-        print("next: create/locate the main issue with gh, child issues below it, then:")
-        print(f"  change_intake.py bind {number:03d} --main N [--child N ...]")
+        print("next: create the issues and bind their real numbers in one step:")
+        print(f"  change_intake.py publish {number:03d}")
     else:
         print("next: load the plan-flow skill, create its plan, then:")
         print(f"  change_intake.py bind {number:03d} --plan NN")
@@ -411,6 +634,16 @@ def cmd_bind(args: argparse.Namespace) -> None:
     record.log(args.note or f"绑定远端映射（mode={mode}）")
     record.save()
     print(f"bound {record.path.name}: {'; '.join(mapping)}")
+
+
+def cmd_publish(args: argparse.Namespace) -> None:
+    root = find_root(args.root)
+    record = resolve(root, args.ref)
+    result = publish_record(record, dry_run=args.dry_run)
+    print(
+        f"{record.path.name}: main=#{result['main']} "
+        f"children={len(result['children'])} (dry-run={args.dry_run})"
+    )
 
 
 def cmd_show(args: argparse.Namespace) -> None:
@@ -530,6 +763,12 @@ def build_parser() -> argparse.ArgumentParser:
     p_bind.add_argument("--note")
     p_bind.add_argument("--root")
     p_bind.set_defaults(func=cmd_bind)
+
+    p_publish = sub.add_parser("publish", help="create the GitHub issues and bind their numbers")
+    p_publish.add_argument("ref")
+    p_publish.add_argument("--dry-run", action="store_true", help="print gh commands without running them")
+    p_publish.add_argument("--root")
+    p_publish.set_defaults(func=cmd_publish)
 
     p_show = sub.add_parser("show", help="numbered breakdown of one record")
     p_show.add_argument("ref")

@@ -7,7 +7,7 @@
     "github",
     "workflow"
   ],
-  "description": "Routes a proposed change into the right tracking structure. Probes whether the repo is on GitHub and whether gh is authenticated with issue write permission; on GitHub a feature becomes an RFC main issue with child issues and a fix becomes a Task Pool main issue with fix records, all cross-referenced by a local changes/ record. Without GitHub, gh auth or issue permission it delegates to plan-flow and plans into the repository's plans/ directory. Gates and timestamps are enforced by a standard-library Python script.",
+  "description": "Routes a proposed change into the right tracking structure. Probes whether the repo is on GitHub and whether gh is authenticated with issue write permission; on GitHub publish creates an RFC main issue with child issues for a feature or a Task Pool with fix records for a bug, attaching sub-issues through GraphQL and binding real numbers into a local changes/ record. Without GitHub, gh auth or issue permission it delegates to plan-flow and plans into the repository's plans/ directory. Gates and timestamps are enforced by a standard-library Python script.",
   "homepage": "https://github.com/chaos-design/skills/tree/main/skills/change-intake",
   "install": {
     "dependsOn": [],

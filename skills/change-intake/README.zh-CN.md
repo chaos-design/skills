@@ -47,7 +47,8 @@ python3 $S probe --json
 python3 $S new "Add SSO login" --kind feature \
   --goal "Users can sign in with SSO" \
   --task "Add callback endpoint" --task "Verify id tokens"
-python3 $S bind 001 --main 123 --child 124 --child 125   # github 模式
+python3 $S publish 001 --dry-run                         # 预览 gh 命令
+python3 $S publish 001                                   # 创建 issue 并回写编号
 python3 $S bind 001 --plan 07                            # local 模式
 python3 $S status
 python3 $S check --strict
@@ -59,20 +60,23 @@ python3 $S check --strict
 | `probe` | 输出 `github`/`local`、仓库标识、理由与检查结果（`--json`） |
 | `new <title>` | 创建路由记录（`--kind feature\|fix`、`--goal`、`--task`、`--slug`、`--mode`、`--repo`、`--cwd`） |
 | `bind <id>` | 回写 `--main` / `--child`（GitHub）或 `--plan`（本地），可带 `--note` |
+| `publish <id>` | 直接创建 GitHub issue 并回写真实编号（`--dry-run` 只预览）；可重复执行 |
 | `show <id>` | 按编号列出记录中的任务拆解 |
 | `status` | 所有已路由改动的表格（`--json`） |
 | `check` | 报告不一致的绑定；`--strict` 出错时非零退出 |
 
-根目录解析顺序：`--root`、`CHANGE_INTAKE_ROOT`、当前目录向上最近的
-`changes/README.md`。`new` 的 `--mode` 和 `--repo` 仅供离线演练/测试覆盖。
+根目录解析顺序：`--root`（包含 `changes/` 的仓库根目录）、
+`CHANGE_INTAKE_ROOT`、当前目录向上最近的 `changes/README.md`。`new` 的
+`--mode` 和 `--repo` 仅供离线演练/测试覆盖。
 
 ## GitHub 细节
 
 功能主 issue 用 `rfc` 标签，修复主 issue 用 `task-pool`，所有 issue 都带
-`change-intake`。子 issue 通过原生 sub-issues API
-（`POST /issues/{main}/sub_issues`）挂载，同时在主 issue 正文的清单中列出。
-API 不可用时保留清单链接作为父子结构，并如实说明限制。所有 issue 编号都
-来自真实的 `gh` 输出。
+`change-intake`。`publish` 会确保标签存在、为每个任务创建子 issue、通过原生
+sub-issues GraphQL mutation `addSubIssue` 挂载（失败时退回 REST
+`POST /issues/{main}/sub_issues`），并在主 issue 正文的清单中列出。重复执行会
+复用已有主 issue、只补建缺失的子 issue。两种方式都不可用时保留清单链接作为
+父子结构，并如实说明限制。所有 issue 编号都来自真实的 `gh` 输出。
 
 ## 要求
 
@@ -83,9 +87,8 @@ API 不可用时保留清单链接作为父子结构，并如实说明限制。�
 
 ## 不做的事
 
-- 不自己创建 issue；由 Agent 调用 `gh`，保证每个编号真实。
-- 不编辑计划、不勾选计划进度；这些归 plan-flow 负责。
-- 不 push、不提交；版本基线由维护者决定。
+- 不在本地规划或勾选进度；这些归 plan-flow 负责。
+- 不 push、不关闭 issue、不提交；版本基线由维护者决定。
 
 ## 许可证
 

@@ -193,6 +193,53 @@ jobs:
             echo "duplicate title must fail"; exit 1
           fi
 
+      - name: Publish creates issues and binds real numbers
+        run: |
+          python3 - <<'PY'
+          import importlib.util, pathlib, tempfile
+          spec = importlib.util.spec_from_file_location("ci", "skills/change-intake/scripts/change_intake.py")
+          m = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(m)
+          root = pathlib.Path(tempfile.mkdtemp())
+          (root / "changes").mkdir()
+          (root / "changes/README.md").write_text("# changes\n", encoding="utf-8")
+          m.cmd_new(type("A", (), {
+              "root": str(root), "cwd": None, "mode": "github", "repo": "a/b",
+              "kind": "feature", "title": "Add SSO login", "goal": "Users can sign in",
+              "task": ["Add callback", "Verify tokens"], "slug": None,
+          })())
+          rec = m.resolve(root / "changes", "001")
+          calls, counter = [], {"n": 10}
+          def fake(args):
+              calls.append(list(args))
+              if args[:2] == ["label", "list"]:
+                  return ""
+              if args[:2] == ["issue", "create"]:
+                  counter["n"] += 1
+                  return f"https://github.com/a/b/issues/{counter['n']}"
+              if args[:2] == ["api", "graphql"]:
+                  return "11"
+              if args[0] == "api" and "--jq" in args:
+                  return "NODE_1"
+              return ""
+          result = m.publish_record(rec, gh=fake)
+          assert result["main"] == "11" and result["children"] == ["12", "13"], result
+          titles = [a[a.index("--title") + 1] for a in calls if a[:2] == ["issue", "create"]]
+          assert titles[0] == "RFC: Add SSO login", titles
+          links = [a for a in calls if a[:2] == ["api", "graphql"]]
+          assert len(links) == 2, links
+          assert all(any(arg.startswith("subIssueId=") for arg in a) for a in links), links
+          saved = m.resolve(root / "changes", "001").meta()
+          assert saved["main"] == "11" and saved["children"] == "12, 13", saved
+          # re-run is idempotent: no duplicate issues
+          bodies = [a[a.index("--body") + 1] for a in calls if a[:2] == ["issue", "edit"]]
+          assert "- [ ] #12 " in bodies[-1] and "- [ ] #13 " in bodies[-1], bodies[-1]
+          before = len([a for a in calls if a[:2] == ["issue", "create"]])
+          m.publish_record(m.resolve(root / "changes", "001"), gh=fake)
+          assert before == len([a for a in calls if a[:2] == ["issue", "create"]])
+          print("publish flow: ok")
+          PY
+
   static:
     runs-on: ubuntu-latest
     steps:
