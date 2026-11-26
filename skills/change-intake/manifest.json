@@ -1,0 +1,28 @@
+{
+  "name": "change-intake",
+  "version": "0.1.0",
+  "category": "Workflow · Change proposal → routing decision → RFC/Task Pool issues or local plan",
+  "tags": [
+    "planning",
+    "github",
+    "workflow"
+  ],
+  "description": "Routes a proposed change into the right tracking structure. Probes whether the repo is on GitHub and whether gh is authenticated with issue write permission; on GitHub a feature becomes an RFC main issue with child issues and a fix becomes a Task Pool main issue with fix records, all cross-referenced by a local changes/ record. Without GitHub, gh auth or issue permission it delegates to plan-flow and plans into the repository's plans/ directory. Gates and timestamps are enforced by a standard-library Python script.",
+  "homepage": "https://github.com/chaos-design/skills/tree/main/skills/change-intake",
+  "install": {
+    "dependsOn": [],
+    "optionalDeps": ["plan-flow"],
+    "runtime": [
+      "Python 3.9+ standard library only, no pip packages",
+      "GitHub CLI (gh), authenticated with issue write permission, for the github mode"
+    ]
+  },
+  "compat": [
+    "claude-code",
+    "claude-ai",
+    "cursor",
+    "codex-cli",
+    "gemini-cli",
+    "opencode"
+  ]
+}

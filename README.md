@@ -34,6 +34,7 @@ and license file so that agents can install and use it independently.
 | Skill | Purpose | Documentation |
 | --- | --- | --- |
 | `bilingual-reader` | Builds bilingual reading pages with structured summaries, translations, and glossary support. | [English](./skills/bilingual-reader/README.md) / [中文](./skills/bilingual-reader/README.zh-CN.md) |
+| `change-intake` | Routes a proposed change into the right tracker: probes GitHub auth and issue permission, turns features into RFC issues with children and fixes into Task Pool issues, or falls back to plan-flow in local `plans/`. | [English](./skills/change-intake/README.md) / [中文](./skills/change-intake/README.zh-CN.md) |
 | `content-slides` | Converts normalized content into self-contained presentation slides. | [English](./skills/content-slides/README.md) / [中文](./skills/content-slides/README.zh-CN.md) |
 | `docs-site` | Quickly creates a responsive, multi-page static documentation site from Markdown + config: auto structure, configurable navigation, Markdown/data integration, a pull-request list page with sorting/filtering/status, responsive layout and multi-page support. | [English](./skills/docs-site/README.md) / [中文](./skills/docs-site/README.zh-CN.md) |
 | `frontend-slides` | Generates frontend-oriented slide pages and visual presentation material. | [English](./skills/frontend-slides/README.md) / [中文](./skills/frontend-slides/README.zh-CN.md) |
@@ -72,6 +73,7 @@ Install a skill directly from this repository with `npx skills add`:
 
 ```bash
 npx skills add https://github.com/chaos-design/skills --skill bilingual-reader
+npx skills add https://github.com/chaos-design/skills --skill change-intake
 npx skills add https://github.com/chaos-design/skills --skill content-slides
 npx skills add https://github.com/chaos-design/skills --skill frontend-slides
 npx skills add https://github.com/chaos-design/skills --skill geo-flow-map
@@ -103,6 +105,15 @@ mid-run feedback into that plan:
 ```bash
 npx skills add https://github.com/chaos-design/skills --skill plan-flow
 npx skills add https://github.com/chaos-design/skills --skill task-inject
+```
+
+`change-intake` probes the repository when a change is proposed. On a GitHub
+repo with issue permission it creates RFC/Task Pool issues; otherwise it hands
+the work to `plan-flow` and keeps the plan in local `plans/`:
+
+```bash
+npx skills add https://github.com/chaos-design/skills --skill change-intake
+npx skills add https://github.com/chaos-design/skills --skill plan-flow
 ```
 
 `web-markdown` uses `x-tweet-fetcher` as its low-level bridge for X/Twitter and

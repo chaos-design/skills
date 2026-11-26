@@ -128,6 +128,71 @@ jobs:
           case "$out" in *004*) ;; *) echo "id must continue at 004, got: $out"; exit 1;; esac
           $ti log --last 4
 
+  change-intake:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+
+      - name: Compile scripts
+        run: python3 -m py_compile skills/change-intake/scripts/*.py
+
+      - name: Probe falls back to local without a GitHub remote
+        run: |
+          root=$(mktemp -d)
+          git init -q "$root"
+          out=$(python3 skills/change-intake/scripts/change_intake.py probe --cwd "$root" --json)
+          echo "$out" | grep -q '"mode": "local"'
+          echo "$out" | grep -q 'origin is not a GitHub repository'
+
+      - name: Routing policy rejects every missing capability
+        run: |
+          python3 - <<'PY'
+          import importlib.util
+          spec = importlib.util.spec_from_file_location("ci", "skills/change-intake/scripts/change_intake.py")
+          m = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(m)
+          for remote, want in [
+              ("git@github.com:a/b.git", "a/b"),
+              ("https://github.com/a/b.git", "a/b"),
+              ("ssh://git@github.com/a/b", "a/b"),
+              ("https://gitlab.com/a/b.git", ""),
+          ]:
+              assert m.parse_github_remote(remote) == want, remote
+          checks = {"github_url": True, "gh_cli": True, "gh_auth": True,
+                    "repo_slug": "a/b", "issue_write": True}
+          assert m.decide(checks)[0] == "github"
+          for key in checks:
+              broken = dict(checks)
+              broken[key] = False
+              assert m.decide(broken)[0] == "local", key
+          print("routing policy ok")
+          PY
+
+      - name: Route, bind and gate a real flow
+        run: |
+          root=$(mktemp -d)
+          S=skills/change-intake/scripts/change_intake.py
+          python3 $S init --root "$root"
+          python3 $S new "Add SSO login" --kind feature --goal "Users can sign in" \
+            --task "Add callback endpoint" --task "Verify id tokens" --mode local --root "$root"
+          if python3 $S check --strict --root "$root"; then echo "unbound record must fail strict"; exit 1; fi
+          python3 $S bind 001 --plan 07 --root "$root"
+          python3 $S check --strict --root "$root"
+          python3 $S new "Fix pagination" --kind fix --goal "Page 2 is correct" \
+            --task "Correct offset" --mode github --repo chaos-design/skills --root "$root"
+          if python3 $S bind 002 --plan 08 --root "$root"; then echo "mode mismatch must fail"; exit 1; fi
+          python3 $S bind 002 --main 42 --child 43 --root "$root"
+          python3 $S check --strict --root "$root"
+          python3 $S status --root "$root"
+          python3 $S show 002 --root "$root"
+          if python3 $S new "Add SSO login" --kind feature --task x --mode local --root "$root"; then
+            echo "duplicate title must fail"; exit 1
+          fi
+
   static:
     runs-on: ubuntu-latest
     steps:
